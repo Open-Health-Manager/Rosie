@@ -1,5 +1,6 @@
 // This shows the getting started page.
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class GetStarted extends StatelessWidget {
   const GetStarted({Key? key}) : super(key: key);
@@ -10,7 +11,7 @@ class GetStarted extends StatelessWidget {
       Container(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
-          const Text("Get Started with Preventative Health Check", style: TextStyle(fontSize: 24.0)),
+          Text("Get Started with Preventative Health Check", style: GoogleFonts.ubuntu(fontSize: 24.0)),
           const SizedBox(height: 300),
           const Text("Looks like you don't have any health data sources yet", style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
