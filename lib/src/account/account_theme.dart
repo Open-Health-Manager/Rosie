@@ -9,6 +9,10 @@ class AccountThemePalette {
 ThemeData createAccountTheme() {
   return ThemeData(
     brightness: Brightness.dark,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AccountThemePalette.background,
+      elevation: 0.0
+    ),
     backgroundColor: AccountThemePalette.darkGrey,
     inputDecorationTheme: const InputDecorationTheme(
       border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),

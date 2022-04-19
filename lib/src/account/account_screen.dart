@@ -31,25 +31,36 @@ class AccountScreen extends StatelessWidget {
       child: Text(submitLabel),
       onPressed: onSubmit
     ));
-    return Scaffold(appBar: AppBar(),
-      backgroundColor: AccountThemePalette.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // This is the "real" box
-            Container(
-              margin: const EdgeInsets.fromLTRB(40.0, 20.0, 40.0, 0.0),
-              padding: const EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 20.0),
-              decoration: createAccountBoxDecoration(),
-              child: Theme(
-                data: createAccountTheme(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: formChildren
-                )
+    return Theme(
+      data: createAccountTheme(),
+      child: Scaffold(
+        appBar: AppBar(),
+        backgroundColor: AccountThemePalette.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // This exists for padding
+              const SizedBox(height: 20.0),
+              // Create a stack to place Rosie on top of the screen
+              Stack(
+                alignment: AlignmentDirectional.topCenter,
+                children: [
+                  // Rosie is 163x145
+                  // This is the "real" box
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(40.0, 132.0, 40.0, 0.0),
+                    padding: const EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 20.0),
+                    decoration: createAccountBoxDecoration(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: formChildren
+                    )
+                  ),
+                  const Image(image: AssetImage("assets/pdm_comic_avatar.png"))
+                ]
               )
-            )
-          ]
+            ]
+          )
         )
       )
     );
