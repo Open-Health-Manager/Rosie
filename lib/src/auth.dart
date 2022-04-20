@@ -1,8 +1,12 @@
 // Mock authentication service (to be replaced with a real system once one exists)
 
 import 'package:flutter/material.dart';
+import 'open_health_manager/open_health_manager.dart';
 
 class OpenHealthManagerAuth extends ChangeNotifier {
+  OpenHealthManagerAuth(this.healthManager) : super();
+
+  final OpenHealthManager healthManager;
   String? _email;
 
   bool get signedIn => _email != null;
@@ -10,15 +14,14 @@ class OpenHealthManagerAuth extends ChangeNotifier {
 
   Future<bool> signIn(String email, String password) async {
     print("Signing in as $email");
-    await Future<void>.delayed(const Duration(milliseconds: 200));
+    await healthManager.signIn(email, password);
     _email = email;
     notifyListeners();
     return true;
   }
 
   Future<bool> createAccount(String fullName, String email) async {
-    print("Creating an account for $fullName with email $email");
-    await Future<void>.delayed(const Duration(milliseconds: 200));
+    await healthManager.createAccount(fullName, email);
     _email = email;
     notifyListeners();
     return true;

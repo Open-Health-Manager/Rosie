@@ -53,22 +53,12 @@ class _SignInState extends State<SignIn> {
       onSubmit: () async {
         if (email != null && password != null) {
           await OpenHealthManagerAuthScope.of(context).signIn(email!, password!);
+          return true;
         } else {
           // Show a dialog?
+          return false;
         }
       },
     );
   }
 }
-
-// This provides the black bordered thing around the widget
-// class AccountWidget extends StatelessWidget {
-//   const AccountWidget({Key? key, required this.child}): super(key: key);
-
-//   final Widget child;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     //
-//   }
-// }

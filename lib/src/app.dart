@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'open_health_manager/open_health_manager.dart';
+import 'open_health_manager/open_health_manager_scope.dart';
 import 'auth.dart';
 import 'rosie_theme.dart';
 import 'home.dart';
@@ -12,23 +14,29 @@ class RosieApp extends StatefulWidget {
 }
 
 class _RosieState extends State<RosieApp> {
-  final auth = OpenHealthManagerAuth();
+  late final OpenHealthManagerAuth auth;
 
   @override
   void initState() {
+    // Create the health manager
+    final healthManager = OpenHealthManager(fhirBase: Uri.http('localhost:8080', 'fhir/'));
+    auth = OpenHealthManagerAuth(healthManager);
     auth.addListener(_handleAuthStateChanged);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return OpenHealthManagerAuthScope(
-      notifier: auth,
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: createRosieTheme(),
-        darkTheme: createRosieTheme(brightness: Brightness.dark),
-        home: auth.signedIn ? const HomeScreen() : const Onboarding(),
+    return OpenHealthManagerScope(
+      manager: auth.healthManager,
+      child: OpenHealthManagerAuthScope(
+        notifier: auth,
+        child: MaterialApp(
+          title: 'Flutter Demo',
+          theme: createRosieTheme(),
+          darkTheme: createRosieTheme(brightness: Brightness.dark),
+          home: auth.signedIn ? const HomeScreen() : const Onboarding(),
+        )
       )
     );
   }

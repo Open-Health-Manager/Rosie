@@ -55,8 +55,10 @@ class _SignUpState extends State<SignUp> {
       onSubmit: () async {
         if (fullName != null && email != null) {
           await OpenHealthManagerAuthScope.of(context).createAccount(fullName!, email!);
+          return true;
         } else {
           // Show a dialog?
+          return false;
         }
       }
     );
