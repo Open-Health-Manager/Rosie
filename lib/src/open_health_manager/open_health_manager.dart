@@ -20,11 +20,33 @@ class NoUserException implements Exception {
   }
 }
 
+class InvalidConfigError extends Error {
+  InvalidConfigError(this.message) : super();
+  final String message;
+
+  @override
+  String toString() {
+    return message;
+  }
+}
+
 // Provides APIs for accessing parts of Open Health Manager.
 class OpenHealthManager {
   final Uri fhirBase;
 
   const OpenHealthManager({required this.fhirBase});
+
+  static OpenHealthManager fromConfig(Map<String,dynamic> config) {
+    if (!config.containsKey("fhirBase")) {
+      throw InvalidConfigError('Missing required key "fhirBase"');
+    }
+    var fhirBase = config["fhirBase"];
+    if (fhirBase is String) {
+      return OpenHealthManager(fhirBase: Uri.parse(fhirBase));
+    } else {
+      throw InvalidConfigError('Invalid value for key "fhirBase": $fhirBase');
+    }
+  }
 
   // Attempts to sign in. Throws exception on failure.
   signIn(String email, String password) async {
