@@ -11,7 +11,7 @@ class _Page {
   final String nextLabel;
 }
 
-const List<_Page> agreementPages = [
+const List<_Page> _comicPages = [
   _Page(altText: "Get control of your health. Follow me and learn how!"),
   _Page(altText: "Your data can come from anywhere... from you, the doctor\u2019s office, or a device like your phone. We put it all in the same place."),
   _Page(altText: "Now you can finally have one place to see your entire health picture."),
@@ -139,7 +139,7 @@ class ComicPage extends StatelessWidget {
     final List<Widget> children = [
       Expanded(child: Image(image: AssetImage(comicPage), fit: BoxFit.contain)),
       Container(
-        padding: const EdgeInsets.only(left: 40, right: 40),
+        padding: const EdgeInsets.symmetric(horizontal: 40),
         child:
         ElevatedButton(
           onPressed: () {
@@ -159,20 +159,28 @@ class ComicPage extends StatelessWidget {
     ];
     if (pageNumber == 0) {
       // Add a way to log in
-      children.insert(0, Row(children: [
-        const Text("Already have an account?"),
-        TextButton(
-          child: const Text("Sign In"),
-          onPressed: () {
-            Navigator.pushNamed(context, "signIn");
-          }
+      children.insert(0,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 36),
+          child: Row(children: [
+            const Text("Already have an account?"),
+            TextButton(
+              child: const Text("Sign In"),
+              onPressed: () {
+                Navigator.pushNamed(context, "signIn");
+              }
+            )
+          ])
         )
-      ]));
+      );
     }
     return Scaffold(
       appBar: AppBar(),
       body: SafeArea(
-        child: Column(children: children)
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Column(children: children)
+        )
       )
     );
   }
@@ -180,22 +188,19 @@ class ComicPage extends StatelessWidget {
 }
 
 Widget createPage(int pageNumber) {
-  if (pageNumber < 0 || pageNumber > agreementPages.length) {
-    throw RangeError.range(pageNumber, 0, agreementPages.length, "pageNumber");
+  if (pageNumber < 0 || pageNumber > _comicPages.length) {
+    throw RangeError.range(pageNumber, 0, _comicPages.length, "pageNumber");
   }
-  if (pageNumber < agreementPages.length) {
-    final page = agreementPages[pageNumber];
-    return Theme(
-      data: createOnboardingTheme(),
-      child: ComicPage(
-        text: page.altText,
-        comicPage: "assets/data_use_agreement/page${pageNumber + 1}.png",
-        pageNumber: pageNumber,
-        nextLabel: page.nextLabel
-      )
+  if (pageNumber < _comicPages.length) {
+    final page = _comicPages[pageNumber];
+    return ComicPage(
+      text: page.altText,
+      comicPage: "assets/data_use_agreement/page${pageNumber + 1}.png",
+      pageNumber: pageNumber,
+      nextLabel: page.nextLabel
     );
   } else {
     // In this case, they're at the end, so show the signature page
-    return Theme(data: createOnboardingTheme(), child: const SignaturePage());
+    return const SignaturePage();
   }
 }

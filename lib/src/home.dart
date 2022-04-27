@@ -72,10 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
           )
         ],
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor: Colors.white,
-        unselectedItemColor: Colors.deepPurple,
-        selectedItemColor: Colors.purple
+        onTap: _onItemTapped
       ),
     );
   }

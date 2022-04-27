@@ -61,6 +61,7 @@ flutter:
 
   assets:
     - assets/data_use_agreement/
+    - assets/rosie/
     - assets/pdm_comic_avatar.png
     - assets/config/config.json
 
