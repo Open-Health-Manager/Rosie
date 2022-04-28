@@ -1,7 +1,7 @@
 // A single page in the data agreement comic.
 
 import 'package:flutter/material.dart';
-import 'onboarding_theme.dart';
+import 'signature_page.dart';
 
 // Holds data about a single page
 class _Page {
@@ -26,103 +26,6 @@ const List<_Page> _comicPages = [
   _Page(altText: "You can transfer your data. We won\u2019t keep a copy."),
   _Page(altText: "We\u2019re responsible for keeping your data safe. You can hold us accountable if there is a data breach from Open Health Manager.")
 ];
-
-class SignaturePage extends StatefulWidget {
-  const SignaturePage({Key? key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => SignaturePageState();
-}
-
-class SignaturePageState extends State<SignaturePage> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String? fullname;
-  bool checked = false;
-
-  @override Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Signature")),
-      body: Container(
-        padding: const EdgeInsets.all(40),
-        child: Form(
-          key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.only(bottom: 50),
-                child: TextFormField(
-                  decoration: const InputDecoration(hintText: "Type your full name to sign"),
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return "Your name is required";
-                    }
-                    return null;
-                  },
-                  onChanged: (value) {
-                    fullname = value;
-                  },
-                )
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                FormField<bool>(
-                  builder: (field) => Checkbox(
-                    value: field.value,
-                    onChanged: (newValue) {
-                      field.didChange(newValue);
-                      checked = newValue ?? false;
-                    }
-                  ),
-                  initialValue: false,
-                ),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: const Text(
-                      "By checking this box, I understand and agree to the terms of the Patient Data Use Agreement and acknowledge that typing my name above represents my electronic signature.",
-                      softWrap: true,
-                      textAlign: TextAlign.start,
-                    )
-                  )
-                )
-              ],),
-              Container(
-                padding: const EdgeInsets.only(top: 50),
-                child:
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(child: TextButton(
-                        child: const Text("Disagree"),
-                        onPressed: () {}
-                      )
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        child: const Text("Agree"),
-                        onPressed: () {
-                          if (checked && fullname != null && fullname!.isNotEmpty) {
-                            Navigator.pushNamed(context, "signUp");
-                          } else {
-                            // Show an error
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(primary: OnboardingTheme.primary)
-                      )
-                    )
-                  ]
-                )
-              )
-            ]
-          )
-        )
-      )
-    );
-  }
-}
 
 // A single comic page. Requires
 class ComicPage extends StatelessWidget {
