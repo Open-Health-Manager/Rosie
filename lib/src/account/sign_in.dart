@@ -1,8 +1,9 @@
 // This provides the sign in process
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'account_screen.dart';
-import '../auth.dart';
+import '../open_health_manager/open_health_manager.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
@@ -52,8 +53,8 @@ class _SignInState extends State<SignIn> {
       submitLabel: "Sign In",
       onSubmit: () async {
         if (email != null && password != null) {
-          await OpenHealthManagerAuthScope.of(context).signIn(email!, password!);
-          return true;
+          final auth = await context.read<OpenHealthManager>().signIn(email!, password!);
+          return auth != null;
         } else {
           // Show a dialog?
           return false;

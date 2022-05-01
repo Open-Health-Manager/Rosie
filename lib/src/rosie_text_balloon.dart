@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'rosie_theme.dart';
 
 class RosieExpression {
   const RosieExpression(this.assetPath);
@@ -18,11 +18,7 @@ class RosieExpression {
 class RosieTextBalloon extends StatelessWidget {
   const RosieTextBalloon({Key? key, required this.body, required this.rosieImage}) : super(key: key);
 
-  static final defaultTextStyle = GoogleFonts.comicNeue(
-    color: Colors.black,
-    fontSize: 16,
-    height: 1.15,
-  );
+  static final defaultTextStyle = RosieTheme.comicFont(color: Colors.black);
 
   // The actual message Rosie is saying. This can be any widget but usually the
   // build factories are used to create text.

@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   google_fonts: ^2.3.1
   http: ^0.13.4
+  fhir: ^0.6.0
+  provider: ^6.0.2
   url_launcher:
 
 dev_dependencies:

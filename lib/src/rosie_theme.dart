@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'dart:ui';
 
 class RosieTheme {
   static const Color primary = Color.fromARGB(255, 109, 211, 233);
@@ -6,9 +8,14 @@ class RosieTheme {
   static const Color blush = Color.fromARGB(255, 242, 109, 178);
   static const Color buttonColor = Color.fromARGB(255, 103, 80, 164);
   static const Color onButtonColor = Colors.white;
+  static const Color belowOptimal = Color.fromARGB(255, 60, 126, 205);
   static const Color optimal = Color.fromARGB(255, 97, 78, 222);
   static const Color concern = Color.fromARGB(255, 175, 54, 174);
   static const Color urgent = Color.fromARGB(255, 205, 25, 133);
+  static const Color inactiveBelowOptimal = Color.fromARGB(255, 22, 46, 75);
+  static const Color inactiveOptimal = Color.fromARGB(255, 32, 26, 74);
+  static const Color inactiveConcern = Color.fromARGB(255, 84, 39, 85);
+  static const Color inactiveUrgent = Color.fromARGB(255, 68, 8, 44);
   static const Color backgroundTop = Colors.white;
   static const Color backgroundBottom = Color.fromARGB(255, 0x42, 0x8C, 0xE3);
   static const Gradient backgroundGradient = LinearGradient(
@@ -16,7 +23,52 @@ class RosieTheme {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter
   );
-  static const List<Color> urgencyPalette = [ optimal, concern, urgent ];
+  static const List<Color> urgencyPalette = [ belowOptimal, optimal, concern, urgent ];
+
+  // Generates the comic font for the Rosie theme.
+  static TextStyle comicFont({
+    TextStyle? textStyle,
+    Color? color,
+    Color? backgroundColor,
+    double? fontSize,
+    FontWeight? fontWeight,
+    FontStyle? fontStyle,
+    double? letterSpacing,
+    double? wordSpacing,
+    TextBaseline? textBaseline,
+    double? height,
+    Locale? locale,
+    Paint? foreground,
+    Paint? background,
+    List<Shadow>? shadows,
+    List<FontFeature>? fontFeatures,
+    TextDecoration? decoration,
+    Color? decorationColor,
+    TextDecorationStyle? decorationStyle,
+    double? decorationThickness}
+  ) {
+    return GoogleFonts.comicNeue(
+      textStyle: textStyle,
+      color: color,
+      backgroundColor: backgroundColor,
+      fontSize: fontSize ?? 16,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
+      letterSpacing: letterSpacing,
+      wordSpacing: wordSpacing,
+      textBaseline: textBaseline,
+      height: height ?? 1.15,
+      locale: locale,
+      foreground: foreground,
+      background: background,
+      shadows: shadows,
+      fontFeatures: fontFeatures,
+      decoration: decoration,
+      decorationColor: decorationColor,
+      decorationStyle: decorationStyle,
+      decorationThickness: decorationThickness
+    );
+  }
 }
 
 ColorScheme createRosieColorScheme({required Brightness brightness}) {

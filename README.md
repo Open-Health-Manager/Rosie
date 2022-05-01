@@ -1,4 +1,4 @@
-# rosie
+# Rosie
 
 Rosie health manager app for the Open Health Manager.
 

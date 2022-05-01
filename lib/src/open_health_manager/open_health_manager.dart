@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:fhir/r4.dart';
 
 class InternalException implements Exception {
-  InternalException(this.message);
+  const InternalException(this.message);
   final String message;
 
   @override
@@ -11,9 +13,36 @@ class InternalException implements Exception {
   }
 }
 
-class NoUserException implements Exception {
-  NoUserException(this.message);
+// Indicates the server raised an error.
+class ServerErrorException implements Exception {
+  const ServerErrorException(this.statusCode, this.reasonPhrase, this.message);
+  ServerErrorException.fromResponse(http.Response response, String message) : this(response.statusCode, response.reasonPhrase, message);
+
   final String message;
+  final int statusCode;
+  final String? reasonPhrase;
+
+  @override
+  String toString() {
+    var b = StringBuffer()
+      ..write('Server error: ')
+      ..write(message)
+      ..write(' (HTTP ')
+      ..write(statusCode.toString());
+    if (reasonPhrase != null) {
+      b.write(' ');
+      b.write(reasonPhrase);
+    }
+    b.write(')');
+    return b.toString();
+  }
+}
+
+// Thrown when the server indicates a success, but the response could not be handled.
+class InvalidResponseException implements Exception {
+  const InvalidResponseException(this.message);
+  final String message;
+
   @override
   String toString() {
     return message;
@@ -30,11 +59,22 @@ class InvalidConfigError extends Error {
   }
 }
 
-// Provides APIs for accessing parts of Open Health Manager.
-class OpenHealthManager {
-  final Uri fhirBase;
+// Mostly a place-holder class, this represents the authentication information. At present, this just contains the
+// patient ID.
+class AuthData {
+  const AuthData(this.id);
+  final Id id;
+}
 
-  const OpenHealthManager({required this.fhirBase});
+// Provides APIs for accessing parts of Open Health Manager.
+// This also holds on to the authentication information.
+class OpenHealthManager with ChangeNotifier {
+  OpenHealthManager({required this.fhirBase});
+
+  final Uri fhirBase;
+  AuthData? _authData;
+
+  bool get isSignedIn => _authData != null;
 
   static OpenHealthManager fromConfig(Map<String,dynamic> config) {
     if (!config.containsKey("fhirBase")) {
@@ -48,39 +88,40 @@ class OpenHealthManager {
     }
   }
 
-  // Attempts to sign in. Throws exception on failure.
-  signIn(String email, String password) async {
-    final url = fhirBase.resolve("Patient").replace(queryParameters: {
+  // Attempts to sign in. Returns null if the sign in attempt was rejected. Raises an exception on communication failure.
+  Future<AuthData?> signIn(String email, String password) async {
+    final jsonData = await getJsonObjectFromResource('Patient', {
       "identifier": "urn:mitre:healthmanager:account:username|$email"
     });
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      // Must parse, as the response will indicate if it worked
-      final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-      // In the decoded response, see if the user exists
-      if (decodedResponse["resourceType"] != "Bundle") {
-        throw InternalException("Invalid response from server");
-      }
-      if (decodedResponse["total"] is num) {
-        if (decodedResponse["total"] == 0) {
-          throw NoUserException("No such user $email");
-        } else if (decodedResponse["total"] >= 1) {
-          // Got a user
-          return;
-        }
-      }
-      throw InternalException("Unable to parse response from server.");
-    } else {
-      throw InternalException("Unexpected response from server: ${response.statusCode} ${response.reasonPhrase}");
+    final bundle = Bundle.fromJson(jsonData);
+    // Pull out the entries (mostly so the compiler can confirm we throw on null)
+    final entries = bundle.entry;
+    if (entries == null) {
+      throw const InvalidResponseException('Server response did not include an entries');
     }
+    if (entries.isEmpty) {
+      // Empty means no matching user means "login" failed
+      return null;
+    }
+    final patientResource = entries.first.resource;
+    if (patientResource == null) {
+      // This is invalid
+      throw const InvalidResponseException('Server bundle did not include a resource');
+    }
+    final patientId = patientResource.id;
+    if (patientId == null) {
+      throw const InvalidResponseException('Patient returned has no associated ID');
+    }
+    final auth = AuthData(patientId);
+    _authData = auth;
+    notifyListeners();
+    return _authData;
   }
 
-  // Attempts to create an account. Throws an exception on error.
-  createAccount(String fullName, String email) async {
-    final url = fhirBase.resolve("Patient");
-    final response = await http.post(url, headers: {
-      "Content-type": "application/json"
-    }, body: jsonEncode({
+  // Attempts to create an account. Throws an exception on error. Returns the associated AuthData for the newly created
+  // account on success.
+  Future<AuthData> createAccount(String fullName, String email) async {
+    final response = await postJsonObjectToResource("Patient", {
       "resourceType": "Patient",
       "identifier": [
         {
@@ -91,15 +132,53 @@ class OpenHealthManager {
       "name": [
         { "text": fullName }
       ]
-    }));
-    // See if we can understand the response.
-    if (response.statusCode == 201) {
-      // TODO: Parse the response and ensure it's OK
-      final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-      print("Received response:");
-      print(decodedResponse);
-    } else {
-      throw InternalException("Unexpected response from server: ${response.statusCode} ${response.reasonPhrase}");
+    });
+    // Try and parse the response
+    final patient = Patient.fromJson(response);
+    // Make sure we have an ID
+    final id = patient.id;
+    if (id == null) {
+      throw const InvalidResponseException('Returned response has no patient ID');
     }
+    final auth = AuthData(id);
+    _authData = auth;
+    notifyListeners();
+    return auth;
+  }
+
+  Map<String, dynamic> _parseJsonResponse(http.Response response) {
+    if (response.statusCode >= 200 && response.statusCode < 299) {
+      final parsed = json.decode(response.body);
+      if (parsed is Map<String, dynamic>) {
+        return parsed;
+      } else {
+        throw const InvalidResponseException('Expected a JSON object response.');
+      }
+    } else {
+      throw ServerErrorException.fromResponse(response, 'Server returned an error');
+    }
+  }
+
+  Future<Map<String, dynamic>> getJsonObjectFromResource(String resource, [Map<String, dynamic>? queryParameters]) {
+    Uri uri = fhirBase.resolve(resource);
+    if (queryParameters != null) {
+      uri = uri.replace(queryParameters: queryParameters);
+    }
+    return getJsonObject(uri);
+  }
+
+  // Helper method designed to ensure the result from the server was a JSON object.
+  Future<Map<String, dynamic>> getJsonObject(Uri uri) async {
+    return _parseJsonResponse(await http.get(uri));
+  }
+
+  Future<Map<String, dynamic>> postJsonObjectToResource(String resource, Map<String, dynamic> object) {
+    return postJsonObject(fhirBase.resolve(resource), object);
+  }
+
+  Future<Map<String, dynamic>> postJsonObject(Uri url, Map<String, dynamic> object) async {
+    return _parseJsonResponse(await http.post(url, headers: {
+      "Content-type": "application/json; charset=utf-8"
+    }, body: json.encode(object)));
   }
 }
