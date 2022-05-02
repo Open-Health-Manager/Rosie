@@ -66,7 +66,7 @@ flutter:
     - assets/data_use_agreement/
     - assets/rosie/
     - assets/pdm_comic_avatar.png
-    - assets/config/config.json
+    - assets/config/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

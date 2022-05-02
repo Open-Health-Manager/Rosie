@@ -1,5 +1,6 @@
 # Rosie
 
+![Rosie, the Rosie mascot](assets/pdm_comic_avatar.png)
 Rosie health manager app for the Open Health Manager.
 
 ## Getting Started

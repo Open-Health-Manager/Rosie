@@ -1,3 +1,17 @@
+// Copyright 2022 The MITRE Corporation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -96,11 +110,8 @@ class OpenHealthManager with ChangeNotifier {
     final bundle = Bundle.fromJson(jsonData);
     // Pull out the entries (mostly so the compiler can confirm we throw on null)
     final entries = bundle.entry;
-    if (entries == null) {
-      throw const InvalidResponseException('Server response did not include an entries');
-    }
-    if (entries.isEmpty) {
-      // Empty means no matching user means "login" failed
+    if (entries == null || entries.isEmpty) {
+      // Empty or missing means no matching user means "login" failed
       return null;
     }
     final patientResource = entries.first.resource;
