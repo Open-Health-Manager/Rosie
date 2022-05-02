@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'open_health_manager/open_health_manager.dart';
+import 'open_health_manager/patient_data.dart';
 import 'rosie_theme.dart';
 import 'home.dart';
 import 'onboarding/onboarding.dart';
@@ -77,6 +77,18 @@ class _RosieHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<OpenHealthManager>();
-    return model.isSignedIn ? const HomeScreen() : const Onboarding();
+    if (model.isSignedIn) {
+      return ChangeNotifierProvider<PatientData>(
+        create: (_) {
+          final data = PatientData(model);
+          // For now, initialize blood pressure to a known value
+          data.bloodPressure = BloodPressureSample(118, 76, DateTime(2017, 10, 17, 10, 32));
+          return data;
+        },
+        child: const HomeScreen()
+      );
+    } else {
+      return const Onboarding();
+    }
   }
 }
