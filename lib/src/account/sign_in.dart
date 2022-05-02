@@ -68,10 +68,9 @@ class _SignInState extends State<SignIn> {
       onSubmit: () async {
         if (email != null && password != null) {
           final auth = await context.read<OpenHealthManager>().signIn(email!, password!);
-          return auth != null;
+          return auth == null ? "Login failed (check your username and password)" : null;
         } else {
-          // Show a dialog?
-          return false;
+          return "Username and password are required";
         }
       },
     );

@@ -67,10 +67,9 @@ class _SignUpState extends State<SignUp> {
       onSubmit: () async {
         if (fullName != null && email != null) {
           await context.read<OpenHealthManager>().createAccount(fullName!, email!);
-          return true;
+          return null;
         } else {
-          // Show a dialog?
-          return false;
+          return "Please provide a name and email address";
         }
       }
     );

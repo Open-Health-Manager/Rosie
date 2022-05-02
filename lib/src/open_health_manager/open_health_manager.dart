@@ -110,11 +110,8 @@ class OpenHealthManager with ChangeNotifier {
     final bundle = Bundle.fromJson(jsonData);
     // Pull out the entries (mostly so the compiler can confirm we throw on null)
     final entries = bundle.entry;
-    if (entries == null) {
-      throw const InvalidResponseException('Server response did not include an entries');
-    }
-    if (entries.isEmpty) {
-      // Empty means no matching user means "login" failed
+    if (entries == null || entries.isEmpty) {
+      // Empty or missing means no matching user means "login" failed
       return null;
     }
     final patientResource = entries.first.resource;
