@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../rosie_text_balloon.dart';
 import '../../rosie_theme.dart';
 import '../../open_health_manager/patient_data.dart';
+import 'blood_pressure_entry.dart';
 
 class BloodPressureScale {
   const BloodPressureScale(this.systolicRange, this.diastolicRange);
@@ -56,10 +57,57 @@ class BloodPressureVisualizationScreen extends StatelessWidget {
 
   final BloodPressureScale scale;
 
+  Widget _createUpdateAction(String label, BuildContext context, PatientData patientData, BloodPressureSample? bloodPressure) {
+    return ElevatedButton(
+      child: Text(label),
+      onPressed: () async {
+        final updatedSample = await showDialog<BloodPressureSample>(
+          context: context,
+          builder: (context) {
+            return SimpleDialog(children: [
+              BloodPressureEntry(
+                initialSystolic: bloodPressure?.systolic,
+                initialDiastolic: bloodPressure?.diastolic,
+              )
+            ]);
+          }
+        );
+        if (updatedSample != null) {
+          patientData.bloodPressure = updatedSample;
+        }
+      }
+    );
+  }
+
+  Widget _createRosieBubble(BuildContext context, PatientData patientData, BloodPressureSample? bloodPressure, _BPUrgency urgency) {
+    var text = "Update your blood pressure here.";
+    var updateLabel = "Update";
+    var expression = RosieExpression.neutral;
+    if (urgency.index >= 3) {
+      text = "Update your blood pressure now!";
+      updateLabel = "Update now";
+      expression = RosieExpression.surprised;
+    } else {
+      if (urgency.outdated) {
+        text = "Make sure to get your blood pressure checked, then update it here.";
+      }
+    }
+    return RosieTextBalloon.text(text,
+      action: _createUpdateAction(updateLabel, context, patientData, bloodPressure),
+      actionPosition: RosieActionPosition.after,
+      expression: expression
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Grab the current blood pressure from the patient data store
-    final bloodPressure = context.watch<PatientData>().bloodPressure;
+    final patientData = context.watch<PatientData>();
+    final bloodPressure = patientData.bloodPressure;
+    final urgency = _BPUrgency(
+      bloodPressure == null ? -1 : scale.activeSlice(bloodPressure.systolic, bloodPressure.diastolic),
+      outdated: bloodPressure?.isOutdated() ?? true
+    );
     return Padding(
       padding: const EdgeInsets.all(4),
       child: Column(children: [
@@ -71,13 +119,14 @@ class BloodPressureVisualizationScreen extends StatelessWidget {
                   bloodPressure: bloodPressure,
                   typeLabelStyle: RosieTheme.comicFont(color: Colors.white, fontSize: 16),
                   numericLabelStyle: RosieTheme.comicFont(color: Colors.white, fontSize: 20, height: 1.0),
-                  scale: scale
+                  scale: scale,
+                  urgency: urgency
                 )
               )
             )
           ),
           const SizedBox(height: 2),
-          RosieTextBalloon.text("Make sure to get your blood pressure checked, then update it here.")
+          _createRosieBubble(context, patientData, bloodPressure, urgency)
         ]
       )
     );
@@ -200,6 +249,7 @@ class _BloodPressureChart extends StatelessWidget {
     required this.bloodPressure,
     required this.typeLabelStyle,
     required this.numericLabelStyle,
+    required this.urgency,
     required this.scale
   }) : super(key: key);
 
@@ -207,6 +257,7 @@ class _BloodPressureChart extends StatelessWidget {
   final TextStyle typeLabelStyle;
   final TextStyle numericLabelStyle;
   final BloodPressureScale scale;
+  final _BPUrgency urgency;
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +265,7 @@ class _BloodPressureChart extends StatelessWidget {
     final diastolicPositions = scale.diastolicPercentStops;
     // Make local so compiler believes it won't be null
     final bp = bloodPressure;
-    final activeSlice = bp == null ? -1 : scale.activeSlice(bp.systolic, bp.diastolic);
+    final activeSlice = urgency.index;
     var children = <Widget>[
       // Base box fills the entire thing
       Container(
@@ -282,7 +333,7 @@ class _BloodPressureChart extends StatelessWidget {
       // If bp exists, add it
       children.add(_BloodPressureValue(
         bloodPressure: bp,
-        urgency: _BPUrgency(activeSlice, outdated: bp.isOutdated()),
+        urgency: urgency,
         maxSystolic: scale.systolicRange.last,
         maxDiastolic: scale.diastolicRange.last,
         highlightColor: RosieTheme.urgencyPalette[activeSlice],
@@ -340,7 +391,7 @@ class _BloodPressureValue extends StatelessWidget {
   Widget build(BuildContext context) {
     // This handles positioning the actual callout box
     final x = math.min(bloodPressure.diastolic / maxDiastolic.toDouble(), 1.0);
-    final y = math.min(bloodPressure.systolic / maxSystolic.toDouble(), 1.0);
+    final y = 1.0 - math.min(bloodPressure.systolic / maxSystolic.toDouble(), 1.0);
     return CustomSingleChildLayout(
       delegate: _BloodPressureCalloutLayout(x, y),
       child: _BloodPressureCallout(
