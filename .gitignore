@@ -1,3 +1,6 @@
+# Rosie-specific configuration files
+/assets/config/config.local.json
+
 # Miscellaneous
 *.class
 *.log

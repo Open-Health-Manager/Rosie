@@ -1,17 +1,29 @@
+// Copyright 2022 The MITRE Corporation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 // This provides the sign in process
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'account_screen.dart';
-import '../auth.dart';
+import '../open_health_manager/open_health_manager.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SignUpState();
-}
-
-class SignUpData {
 }
 
 class _SignUpState extends State<SignUp> {
@@ -54,11 +66,10 @@ class _SignUpState extends State<SignUp> {
       submitLabel: "Sign Up",
       onSubmit: () async {
         if (fullName != null && email != null) {
-          await OpenHealthManagerAuthScope.of(context).createAccount(fullName!, email!);
-          return true;
+          await context.read<OpenHealthManager>().createAccount(fullName!, email!);
+          return null;
         } else {
-          // Show a dialog?
-          return false;
+          return "Please provide a name and email address";
         }
       }
     );
