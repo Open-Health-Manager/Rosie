@@ -24,6 +24,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSHealthClinicalHealthRecordsShareUsageDescription</key>
+	<string>Your clinical health records are used to help determine your overall health and determine actions that may improve your health.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Your health data are used to help determine your overall health and determine actions that may improve your health.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>This permission should not be requested.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
