@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:rosie/src/care_plan/blood_pressure/blood_pressure_vis_screen.dart';
 import 'rosie_theme.dart';
 import 'get_started/get_started.dart';
 
@@ -50,6 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (_selectedIndex) {
       case 2:
         return _addRosieBackground(const Center(child: GetStarted()));
+      case 3:
+        return _addRosieBackground(const BloodPressureVisualizationScreen());
       default:
         return _addRosieBackground(const Center(child: Text("Not Implemented")));
     }
@@ -66,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.download),
-            label: 'PDM',
+            label: 'Data Manager',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.mail),
@@ -79,10 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.share),
             label: 'Community'
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.folder),
-            label: 'Settings'
           )
         ],
         currentIndex: _selectedIndex,
