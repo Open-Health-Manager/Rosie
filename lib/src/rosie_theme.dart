@@ -17,10 +17,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 
 class RosieTheme {
+  static const Color accent = Color(0xFF6750A4);
   static const Color primary = Color.fromARGB(255, 109, 211, 233);
   static const Color shadow = Color.fromARGB(255, 49, 181, 206);
   static const Color blush = Color.fromARGB(255, 242, 109, 178);
-  static const Color buttonColor = Color.fromARGB(255, 103, 80, 164);
+  static const Color buttonColor = accent;
   static const Color onButtonColor = Colors.white;
   static const Color belowOptimal = Color.fromARGB(255, 60, 126, 205);
   static const Color optimal = Color.fromARGB(255, 97, 78, 222);
@@ -31,7 +32,9 @@ class RosieTheme {
   static const Color inactiveConcern = Color.fromARGB(255, 84, 39, 85);
   static const Color inactiveUrgent = Color.fromARGB(255, 68, 8, 44);
   static const Color backgroundTop = Colors.white;
-  static const Color backgroundBottom = Color.fromARGB(255, 0x42, 0x8C, 0xE3);
+  static const Color backgroundBottom = Color(0xFF428CE3);
+  static const Color inputBackground = Color(0xFFE7E0EC);
+  static const Color dialogBackground = Color(0xFFE1E3E9);
   static const Gradient backgroundGradient = LinearGradient(
     colors: [backgroundTop, backgroundBottom],
     begin: Alignment.topCenter,
@@ -135,8 +138,9 @@ ColorScheme createRosieColorScheme({required Brightness brightness}) {
 }
 
 ThemeData createRosieTheme({brightness = Brightness.light}) {
+  // Intentionally ignore the given brightness for now and ALWAYS do light mode
   return ThemeData(
-    colorScheme: createRosieColorScheme(brightness: brightness),
+    colorScheme: createRosieColorScheme(brightness: Brightness.light),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
@@ -146,11 +150,31 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
         )
       )
     ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+        foregroundColor: MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
+        side: MaterialStateProperty.all<BorderSide>(const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
+        shape: MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder())
+      )),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: Color.fromARGB(255, 231, 224, 236),
       selectedItemColor: Color.fromARGB(255, 29, 25, 43),
       unselectedItemColor: Color.fromARGB(255, 31, 31, 31)
-    )
+    ),
+    inputDecorationTheme: const InputDecorationTheme(
+      filled: true,
+      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: RosieTheme.accent, width: 2)),
+      focusColor: RosieTheme.accent,
+      hoverColor: Color(0x141C1B1F),
+      fillColor: RosieTheme.inputBackground,
+      labelStyle: TextStyle(color: RosieTheme.accent)
+    ),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: RosieTheme.accent,
+      selectionColor: RosieTheme.accent.withAlpha(128),
+      selectionHandleColor: RosieTheme.accent
+    ),
   );
 }
 

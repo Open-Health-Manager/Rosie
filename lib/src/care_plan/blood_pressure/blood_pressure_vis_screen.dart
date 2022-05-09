@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../rosie_dialog.dart';
 import '../../rosie_text_balloon.dart';
 import '../../rosie_theme.dart';
 import '../../open_health_manager/patient_data.dart';
@@ -64,7 +65,7 @@ class BloodPressureVisualizationScreen extends StatelessWidget {
         final updatedSample = await showDialog<BloodPressureSample>(
           context: context,
           builder: (context) {
-            return SimpleDialog(children: [
+            return RosieDialog(children: [
               BloodPressureEntry(
                 initialSystolic: bloodPressure?.systolic,
                 initialDiastolic: bloodPressure?.diastolic,

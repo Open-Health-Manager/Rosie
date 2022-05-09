@@ -13,7 +13,13 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:rosie/src/rosie_text_balloon.dart';
 import '../../open_health_manager/patient_data.dart';
+import '../../rosie_dialog.dart';
+import '../../rosie_theme.dart';
+import 'blood_pressure_help.dart';
 
 class BloodPressureEntry extends StatefulWidget {
   const BloodPressureEntry({Key? key, required this.initialSystolic, required this.initialDiastolic}) : super(key: key);
@@ -28,6 +34,7 @@ class BloodPressureEntry extends StatefulWidget {
 class _BloodPressureEntryState extends State<BloodPressureEntry> {
   final _systolicController = TextEditingController();
   final _diastolicController = TextEditingController();
+  var _entryDate = DateTime.now();
 
   @override
   initState() {
@@ -41,35 +48,84 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
       controller: controller,
       decoration: InputDecoration(labelText: label),
       keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly
+      ],
     );
+  }
+
+  Widget _createEntryFields(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            SizedBox(child: _createTextField("Systolic", _systolicController), width: 88),
+            const Text("/", style: TextStyle(fontSize: 48)),
+            SizedBox(child: _createTextField("Diastolic", _diastolicController), width: 85)
+          ]
+        ),
+        InkWell(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Text("on ${DateFormat.yMd().format(_entryDate)}",
+              style: RosieTheme.comicFont(color: RosieTheme.accent)),
+              const Icon(Icons.edit_outlined, size: 14)
+            ],
+          ),
+          onTap: () async {
+            final pickedDate = await showDatePicker(
+              context: context,
+              initialDate: _entryDate,
+              firstDate: DateTime(1970),
+              lastDate: DateTime.now()
+            );
+            if (pickedDate != null) {
+              setState(() {
+                _entryDate = pickedDate;
+              });
+            }
+          }
+        )
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        const Text("Enter your blood pressure"),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Text("Enter your blood pressure", style: RosieTheme.font(fontSize: 20)),
+        _createEntryFields(context),
+        ButtonBar(
           children: <Widget>[
-            SizedBox(child: _createTextField("Systolic", _systolicController), width: 88),
-            const Text("/", style: TextStyle(fontSize: 50)),
-            SizedBox(child: _createTextField("Diastolic", _diastolicController), width: 85)
-          ]
-        ),
-        const Align(alignment: AlignmentDirectional.centerEnd, child: Text("on Unspecified Date")),
-        Row(mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            ElevatedButton(
+            OutlinedButton(
               child: const Text("Help"),
               onPressed: () {
-                // TODO: Show dialog
+                showDialog<void>(
+                  context: context,
+                  builder: (context) {
+                    return const RosieDialog(
+                      expression: RosieExpression.surprised,
+                      children: [
+                        BloodPressureHelp()
+                      ]
+                    );
+                  }
+                );
               },
             ),
             ElevatedButton(
               child: const Text("Update"),
               onPressed: () {
-                Navigator.of(context).pop(BloodPressureSample(double.tryParse(_systolicController.text) ?? 0, double.tryParse(_diastolicController.text) ?? 0));
+                Navigator.of(context).pop(
+                  BloodPressureSample(
+                    double.tryParse(_systolicController.text) ?? 0,
+                    double.tryParse(_diastolicController.text) ?? 0,
+                    _entryDate
+                  ));
               }
             )
           ]

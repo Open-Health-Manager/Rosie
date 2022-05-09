@@ -14,14 +14,17 @@
 
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
+import 'home.dart';
 import 'open_health_manager/open_health_manager.dart';
 import 'open_health_manager/patient_data.dart';
 import 'rosie_theme.dart';
-import 'home.dart';
 import 'onboarding/onboarding.dart';
 
 const defaultFhirBase = "http://localhost:8080/fhir/";
@@ -56,6 +59,18 @@ Future<OpenHealthManager> _createOpenHealthManager(AssetBundle bundle) async {
   final config = <String, dynamic>{};
   // First, attempt to load the root
   config.addEntries((await _loadConfig(bundle, 'assets/config/config.json', logMissing: true)).entries);
+  if (kIsWeb) {
+    // Override with web config if possible
+    config.addEntries((await _loadConfig(bundle, 'assets/config/web/config.json')).entries);
+  } else {
+    if (Platform.isAndroid) {
+      // Override with Android config if possible
+      config.addEntries((await _loadConfig(bundle, 'assets/config/android/config.json')).entries);
+    } else if (Platform.isIOS) {
+      // Override with iOS config if possible
+      config.addEntries((await _loadConfig(bundle, 'assets/config/ios/config.json')).entries);
+    }
+  }
   // Then, attempt to load any overrides that may exist
   config.addEntries((await _loadConfig(bundle, 'assets/config/config.local.json')).entries);
   // Next, attempt to use this configuration
@@ -135,6 +150,10 @@ class _RosieHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<OpenHealthManager>();
-    return model.isSignedIn ? const HomeScreen() : const Onboarding();
+    if (model.isSignedIn) {
+      return const HomeScreen();
+    } else {
+      return const Onboarding();
+    }
   }
 }
