@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:rosie/src/rosie_text_balloon.dart';
-import '../../open_health_manager/patient_data.dart';
+import '../../open_health_manager/blood_pressure.dart';
 import '../../rosie_dialog.dart';
 import '../../rosie_theme.dart';
 import 'blood_pressure_help.dart';
@@ -121,7 +121,7 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
               child: const Text("Update"),
               onPressed: () {
                 Navigator.of(context).pop(
-                  BloodPressureSample(
+                  BloodPressureObservation(
                     double.tryParse(_systolicController.text) ?? 0,
                     double.tryParse(_diastolicController.text) ?? 0,
                     _entryDate

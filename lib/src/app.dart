@@ -104,8 +104,6 @@ class _RosieAppState extends State<RosieApp> {
       setState(() {
         _healthManager = manager;
         final patientData = PatientData(manager);
-        // For now, initialize blood pressure to a known value
-        patientData.bloodPressure = BloodPressureSample(118, 76, DateTime(2017, 10, 17, 10, 32));
         _patientData = patientData;
       });
     });

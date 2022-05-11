@@ -27,7 +27,7 @@ class InternalException implements Exception {
   }
 }
 
-// Indicates the server raised an error.
+/// Indicates the server raised an error.
 class ServerErrorException implements Exception {
   const ServerErrorException(this.statusCode, this.reasonPhrase, this.message);
   ServerErrorException.fromResponse(http.Response response, String message) : this(response.statusCode, response.reasonPhrase, message);
@@ -52,7 +52,7 @@ class ServerErrorException implements Exception {
   }
 }
 
-// Thrown when the server indicates a success, but the response could not be handled.
+/// Thrown when the server indicates a success, but the response could not be handled.
 class InvalidResponseException implements Exception {
   const InvalidResponseException(this.message);
   final String message;
@@ -63,6 +63,30 @@ class InvalidResponseException implements Exception {
   }
 }
 
+/// Thrown when an otherwise valid resource (that is, one that successfully parsed as JSON and is otherwise valid FHIR)
+/// has parts that are either missing or otherwise invalid such that it cannot be used.
+class InvalidResourceException implements Exception {
+  const InvalidResourceException(this.message);
+  final String message;
+
+  @override
+  String toString() {
+    return message;
+  }
+}
+
+/// Thrown when an attempt is made to execute a method that requires an authenticated session.
+class NotAuthenticatedError extends Error {
+  NotAuthenticatedError(this.message) : super();
+  final String message;
+
+  @override
+  String toString() {
+    return message;
+  }
+}
+
+/// Thrown when the configuration information given in the config object is invalid.
 class InvalidConfigError extends Error {
   InvalidConfigError(this.message) : super();
   final String message;
@@ -73,18 +97,21 @@ class InvalidConfigError extends Error {
   }
 }
 
-// Mostly a place-holder class, this represents the authentication information. At present, this just contains the
-// patient ID.
+/// Mostly a place-holder class, this represents the authentication information. At present, this just contains the
+/// patient ID.
 class AuthData {
   const AuthData(this.id);
   final Id id;
 }
 
-// Provides APIs for accessing parts of Open Health Manager.
-// This also holds on to the authentication information.
+/// Provides APIs for accessing parts of Open Health Manager.
+/// This also holds on to the authentication information.
 class OpenHealthManager with ChangeNotifier {
   OpenHealthManager({required this.fhirBase});
 
+  /// The base URI for FHIR requests.
+  ///
+  /// Resolved URIs are created via [fhirBase.resolve].
   final Uri fhirBase;
   AuthData? _authData;
 
@@ -102,7 +129,7 @@ class OpenHealthManager with ChangeNotifier {
     }
   }
 
-  // Attempts to sign in. Returns null if the sign in attempt was rejected. Raises an exception on communication failure.
+  /// Attempts to sign in. Returns null if the sign in attempt was rejected. Raises an exception on communication failure.
   Future<AuthData?> signIn(String email, String password) async {
     final jsonData = await getJsonObjectFromResource('Patient', {
       "identifier": "urn:mitre:healthmanager:account:username|$email"
@@ -129,8 +156,8 @@ class OpenHealthManager with ChangeNotifier {
     return _authData;
   }
 
-  // Attempts to create an account. Throws an exception on error. Returns the associated AuthData for the newly created
-  // account on success.
+  /// Attempts to create an account. Throws an exception on error. Returns the associated AuthData for the newly created
+  /// account on success.
   Future<AuthData> createAccount(String fullName, String email) async {
     final response = await postJsonObjectToResource("Patient", {
       "resourceType": "Patient",
@@ -157,6 +184,27 @@ class OpenHealthManager with ChangeNotifier {
     return auth;
   }
 
+  /// Attempts to query a given resource.
+  ///
+  /// This method will raise a [NotAuthenticatedError] if invoked when [isSignedIn] is false. For a list of valid query
+  /// parameters, see the [FHIR documentation](https://hl7.org/fhir/R4/search.html).
+  Future<Bundle> queryResource(String name, [Map<String, dynamic>? query]) async {
+    final patientId = _authData?.id.toString();
+    if (patientId == null) {
+      throw NotAuthenticatedError("No current session");
+    }
+    var uri = fhirBase.resolve(name);
+    final queryParameters = <String, dynamic>{"patient": patientId};
+    if (query != null) {
+      queryParameters.addAll(query);
+    }
+    uri = uri.replace(queryParameters: queryParameters);
+    final jsonObject = await getJsonObject(uri);
+    return Bundle.fromJson(jsonObject);
+  }
+
+  /// Parse a response as a JSON object, throwing an [InvalidResponseException] if the JSON response isn't a JSON object.
+  /// Throws a [FormatException] if the given data cannot be parsed as JSON.
   Map<String, dynamic> _parseJsonResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 299) {
       final parsed = json.decode(response.body);
@@ -170,6 +218,9 @@ class OpenHealthManager with ChangeNotifier {
     }
   }
 
+  /// Sends a GET query to a specific FHIR resource and retrieve a parsed JSON object.
+  ///
+  /// This does not attempt to compartmentalize to a given patient.
   Future<Map<String, dynamic>> getJsonObjectFromResource(String resource, [Map<String, dynamic>? queryParameters]) {
     Uri uri = fhirBase.resolve(resource);
     if (queryParameters != null) {
@@ -178,15 +229,21 @@ class OpenHealthManager with ChangeNotifier {
     return getJsonObject(uri);
   }
 
-  // Helper method designed to ensure the result from the server was a JSON object.
+  /// Helper method designed to ensure the result from the server was a JSON object.
+  ///
+  /// If the response cannot be parsed as JSON, this will throw a [FormatException]. If the response can be parsed as
+  /// JSON but is otherwise invalid, throws a [InvalidResponseException].
   Future<Map<String, dynamic>> getJsonObject(Uri uri) async {
     return _parseJsonResponse(await http.get(uri));
   }
 
+  /// Helper method for posting a JSON object to a specific FHIR resource on the server, and receiving a JSON object as
+  /// a response.
   Future<Map<String, dynamic>> postJsonObjectToResource(String resource, Map<String, dynamic> object) {
     return postJsonObject(fhirBase.resolve(resource), object);
   }
 
+  /// Helper method for posting a JSON object to the server and receiving a JSON object as a response.
   Future<Map<String, dynamic>> postJsonObject(Uri url, Map<String, dynamic> object) async {
     return _parseJsonResponse(await http.post(url, headers: {
       "Content-type": "application/json; charset=utf-8"

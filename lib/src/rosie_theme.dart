@@ -35,6 +35,7 @@ class RosieTheme {
   static const Color backgroundBottom = Color(0xFF428CE3);
   static const Color inputBackground = Color(0xFFE7E0EC);
   static const Color dialogBackground = Color(0xFFE1E3E9);
+  static const Color error = Color(0xFF880000);
   static const Gradient backgroundGradient = LinearGradient(
     colors: [backgroundTop, backgroundBottom],
     begin: Alignment.topCenter,
