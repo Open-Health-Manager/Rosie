@@ -16,6 +16,7 @@
 // NOT a FHIR record, it is instead data stored in such a way as to make it
 // useful as a Flutter model.
 
+import 'package:fhir/r4.dart';
 import 'package:flutter/foundation.dart';
 import 'open_health_manager.dart';
 import 'blood_pressure.dart';
@@ -110,8 +111,18 @@ class PatientData extends ChangeNotifier {
     return await healthManager.queryBloodPressure();
   });
 
-  /// This is a stub method for an eventual API that might deal with actually setting the data.
-  void addBloodPressureObservation(BloodPressureObservation obs) {
+  /// Assuming the user is logged in, creates a reference to their patient data.
+  Reference? createSubjectReference() {
+    final patientId = healthManager.authData?.id;
+    if (patientId == null) {
+      return null;
+    }
+    return Reference(reference: "Patient/${patientId.value}");
+  }
+
+  /// Adds the blood pressure observation to the current data (even if it hasn't been loaded yet) and then attempts to
+  /// write it to the backend.
+  Future<void> addBloodPressureObservation(BloodPressureObservation obs) async {
     final List<BloodPressureObservation>? bps = bloodPressure.value;
     if (bps == null) {
       // Set a single value list
@@ -119,5 +130,7 @@ class PatientData extends ChangeNotifier {
     } else {
       bps.add(obs);
     }
+    // And then do this:
+    await healthManager.postBloodPressure(obs);
   }
 }
