@@ -29,15 +29,18 @@ import 'onboarding/onboarding.dart';
 
 const defaultFhirBase = "http://localhost:8080/fhir/";
 
-OpenHealthManager _createDefaultHealthManager() => OpenHealthManager(fhirBase: Uri.parse(defaultFhirBase));
+OpenHealthManager _createDefaultHealthManager() =>
+    OpenHealthManager(fhirBase: Uri.parse(defaultFhirBase));
 
-Future<Map<String, dynamic>> _loadConfig(AssetBundle bundle, String path, { logMissing = false }) async {
+Future<Map<String, dynamic>> _loadConfig(AssetBundle bundle, String path,
+    {logMissing = false}) async {
   final String configString;
   try {
     configString = await bundle.loadString(path);
   } catch (error, stackTrace) {
     if (logMissing) {
-      log("Unable to load config file $path", error: error, stackTrace: stackTrace, level: 900);
+      log("Unable to load config file $path",
+          error: error, stackTrace: stackTrace, level: 900);
     }
     return const <String, dynamic>{};
   }
@@ -46,11 +49,13 @@ Future<Map<String, dynamic>> _loadConfig(AssetBundle bundle, String path, { logM
     if (config is Map<String, dynamic>) {
       return config;
     } else {
-      log("Invalid JSON object $config parsed from $path, ignoring", level: 900);
+      log("Invalid JSON object $config parsed from $path, ignoring",
+          level: 900);
       return const <String, dynamic>{};
     }
   } catch (error, stackTrace) {
-    log("Unable to parse config file $path", error: error, stackTrace: stackTrace, level: 900);
+    log("Unable to parse config file $path",
+        error: error, stackTrace: stackTrace, level: 900);
     return const <String, dynamic>{};
   }
 }
@@ -58,31 +63,40 @@ Future<Map<String, dynamic>> _loadConfig(AssetBundle bundle, String path, { logM
 Future<OpenHealthManager> _createOpenHealthManager(AssetBundle bundle) async {
   final config = <String, dynamic>{};
   // First, attempt to load the root
-  config.addEntries((await _loadConfig(bundle, 'assets/config/config.json', logMissing: true)).entries);
+  config.addEntries(
+      (await _loadConfig(bundle, 'assets/config/config.json', logMissing: true))
+          .entries);
   if (kIsWeb) {
     // Override with web config if possible
-    config.addEntries((await _loadConfig(bundle, 'assets/config/web/config.json')).entries);
+    config.addEntries(
+        (await _loadConfig(bundle, 'assets/config/web/config.json')).entries);
   } else {
     if (Platform.isAndroid) {
       // Override with Android config if possible
-      config.addEntries((await _loadConfig(bundle, 'assets/config/android/config.json')).entries);
+      config.addEntries(
+          (await _loadConfig(bundle, 'assets/config/android/config.json'))
+              .entries);
     } else if (Platform.isIOS) {
       // Override with iOS config if possible
-      config.addEntries((await _loadConfig(bundle, 'assets/config/ios/config.json')).entries);
+      config.addEntries(
+          (await _loadConfig(bundle, 'assets/config/ios/config.json')).entries);
     }
   }
   // Then, attempt to load any overrides that may exist
-  config.addEntries((await _loadConfig(bundle, 'assets/config/config.local.json')).entries);
+  config.addEntries(
+      (await _loadConfig(bundle, 'assets/config/config.local.json')).entries);
   // Next, attempt to use this configuration
   try {
     final healthManager = OpenHealthManager.fromConfig(config);
     log("Successfully loaded configuration, end point is ${healthManager.fhirBase}");
     return healthManager;
   } catch (error, stackTrace) {
-    log("Invalid JSON configuration, defaulting to $defaultFhirBase", error: error, stackTrace: stackTrace, level: 900);
+    log("Invalid JSON configuration, defaulting to $defaultFhirBase",
+        error: error, stackTrace: stackTrace, level: 900);
   }
   return _createDefaultHealthManager();
 }
+
 class RosieApp extends StatefulWidget {
   const RosieApp({Key? key}) : super(key: key);
 
@@ -118,26 +132,21 @@ class _RosieAppState extends State<RosieApp> {
       // Otherwise, we have what we need to create providers, which need to be above the MaterialApp to ensure they're
       // accessible on all routes.
       return ChangeNotifierProvider<OpenHealthManager>.value(
-        value: manager,
-        child: ChangeNotifierProvider<PatientData>.value(
-          value: patientData,
-          child: MaterialApp(
-            title: 'Rosie',
-            theme: createRosieTheme(),
-            darkTheme: createRosieTheme(brightness: Brightness.dark),
-            home: const _RosieHome()
-          )
-        )
-      );
+          value: manager,
+          child: ChangeNotifierProvider<PatientData>.value(
+              value: patientData,
+              child: MaterialApp(
+                  title: 'Rosie',
+                  theme: createRosieTheme(),
+                  darkTheme: createRosieTheme(brightness: Brightness.dark),
+                  home: const _RosieHome())));
     } else {
       // While still loading our config, present a simplified loading screen
       return Container(
-        color: Colors.white,
-        child: const Directionality(
-          textDirection: TextDirection.ltr,
-          child: Center(child: Text("Rosie"))
-        )
-      );
+          color: Colors.white,
+          child: const Directionality(
+              textDirection: TextDirection.ltr,
+              child: Center(child: Text("Rosie"))));
     }
   }
 }

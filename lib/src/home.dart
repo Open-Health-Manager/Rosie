@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rosie/src/care_plan/blood_pressure/blood_pressure_vis_screen.dart';
+import 'package:rosie/src/care_plan/care_plan_home.dart';
 import 'rosie_theme.dart';
 import 'get_started/get_started.dart';
 
@@ -49,6 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSelectedPage() {
     switch (_selectedIndex) {
+      case 1:
+        return _addRosieBackground(const Center(child: CarePlanHome()));
       case 2:
         return _addRosieBackground(const Center(child: GetStarted()));
       case 3:
