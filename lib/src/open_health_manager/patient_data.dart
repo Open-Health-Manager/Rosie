@@ -20,20 +20,15 @@ import 'package:fhir/r4.dart';
 import 'package:flutter/foundation.dart';
 import 'open_health_manager.dart';
 import 'blood_pressure.dart';
-import 'smoking_status.dart';
-import 'patient_demographics.dart';
 
 /// The load state of a piece of data
 enum LoadState {
   /// No data has been loaded
   unloaded,
-
   /// Data is presently being loaded
   loading,
-
   /// Loading has finished successfully
   done,
-
   /// Loading has finished but with an error that prevented a value from being loaded
   error
 }
@@ -54,7 +49,6 @@ class CachedData<T> {
 
   /// The current loading state.
   LoadState get state => _state;
-
   /// Gets the current value, or null if it isn't loaded. This will never trigger a load. Use get() to do that.
   T? get value => _value;
 
@@ -62,29 +56,29 @@ class CachedData<T> {
   /// returns a Future that completes immediately (via [Future.value] or [Future.error]). If loading, returns the
   Future<T> get() {
     switch (_state) {
-      case LoadState.unloaded:
-        // Start the load:
-        final future = fetch();
-        // Assign our handlers
-        future.then((value) {
-          _value = value;
-          _state = LoadState.done;
-          _future = null;
-        }).catchError((error) {
-          _error = error;
-          _state = LoadState.error;
-          _future = null;
-        });
-        _future = future;
-        return future;
-      case LoadState.loading:
-        // Return the existing future:
-        // (It not existing in this case is an error)
-        return _future!;
-      case LoadState.done:
-        return Future.value(_value);
-      case LoadState.error:
-        return Future.error(_error);
+    case LoadState.unloaded:
+      // Start the load:
+      final future = fetch();
+      // Assign our handlers
+      future.then((value) {
+        _value = value;
+        _state = LoadState.done;
+        _future = null;
+      }).catchError((error) {
+        _error = error;
+        _state = LoadState.error;
+        _future = null;
+      });
+      _future = future;
+      return future;
+    case LoadState.loading:
+      // Return the existing future:
+      // (It not existing in this case is an error)
+      return _future!;
+    case LoadState.done:
+      return Future.value(_value);
+    case LoadState.error:
+      return Future.error(_error);
     }
   }
 
@@ -113,16 +107,8 @@ class PatientData extends ChangeNotifier {
 
   final OpenHealthManager healthManager;
 
-  late final patientDemographics = CachedData<PatientDemographics?>(() async {
-    return await healthManager.queryPatientDemographics();
-  });
-  late final bloodPressure =
-      CachedData<List<BloodPressureObservation>>(() async {
+  late final bloodPressure = CachedData<List<BloodPressureObservation>>(() async {
     return await healthManager.queryBloodPressure();
-  });
-  late final smokingStatus =
-      CachedData<List<SmokingStatusObservation>>(() async {
-    return await healthManager.querySmokingStatus();
   });
 
   /// Assuming the user is logged in, creates a reference to their patient data.
