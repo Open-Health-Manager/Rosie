@@ -14,12 +14,17 @@
 
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'open_health_manager/open_health_manager.dart';
-import 'rosie_theme.dart';
+
 import 'home.dart';
+import 'open_health_manager/open_health_manager.dart';
+import 'open_health_manager/patient_data.dart';
+import 'rosie_theme.dart';
 import 'onboarding/onboarding.dart';
 
 const defaultFhirBase = "http://localhost:8080/fhir/";
@@ -50,11 +55,22 @@ Future<Map<String, dynamic>> _loadConfig(AssetBundle bundle, String path, { logM
   }
 }
 
-Future<OpenHealthManager> _createOpenHealthManager(BuildContext context) async {
-  final bundle = DefaultAssetBundle.of(context);
+Future<OpenHealthManager> _createOpenHealthManager(AssetBundle bundle) async {
   final config = <String, dynamic>{};
   // First, attempt to load the root
   config.addEntries((await _loadConfig(bundle, 'assets/config/config.json', logMissing: true)).entries);
+  if (kIsWeb) {
+    // Override with web config if possible
+    config.addEntries((await _loadConfig(bundle, 'assets/config/web/config.json')).entries);
+  } else {
+    if (Platform.isAndroid) {
+      // Override with Android config if possible
+      config.addEntries((await _loadConfig(bundle, 'assets/config/android/config.json')).entries);
+    } else if (Platform.isIOS) {
+      // Override with iOS config if possible
+      config.addEntries((await _loadConfig(bundle, 'assets/config/ios/config.json')).entries);
+    }
+  }
   // Then, attempt to load any overrides that may exist
   config.addEntries((await _loadConfig(bundle, 'assets/config/config.local.json')).entries);
   // Next, attempt to use this configuration
@@ -67,36 +83,61 @@ Future<OpenHealthManager> _createOpenHealthManager(BuildContext context) async {
   }
   return _createDefaultHealthManager();
 }
-class RosieApp extends StatelessWidget {
+class RosieApp extends StatefulWidget {
   const RosieApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Rosie',
-      theme: createRosieTheme(),
-      darkTheme: createRosieTheme(brightness: Brightness.dark),
-      home: FutureProvider<OpenHealthManager?>(
-        create: _createOpenHealthManager,
-        initialData: null,
-        child: const _RosieLoadingScreen()
-      )
-    );
-  }
+  State createState() => _RosieAppState();
 }
 
-class _RosieLoadingScreen extends StatelessWidget {
-  const _RosieLoadingScreen({Key? key}) : super(key: key);
+class _RosieAppState extends State<RosieApp> {
+  // The health manager - provides API access.
+  OpenHealthManager? _healthManager;
+  // Patient data manager.
+  PatientData? _patientData;
+
+  @override
+  initState() {
+    super.initState();
+    // Start loading our configuration.
+    _createOpenHealthManager(rootBundle).then((manager) {
+      setState(() {
+        _healthManager = manager;
+        final patientData = PatientData(manager);
+        _patientData = patientData;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final model = context.watch<OpenHealthManager?>();
-    if (model == null) {
-      return const Scaffold(
-        body: Center(child: Text("Rosie"))
+    // This is so the compiler knows it won't change during the build
+    final manager = _healthManager;
+    final patientData = _patientData;
+    if (manager != null && patientData != null) {
+      // Otherwise, we have what we need to create providers, which need to be above the MaterialApp to ensure they're
+      // accessible on all routes.
+      return ChangeNotifierProvider<OpenHealthManager>.value(
+        value: manager,
+        child: ChangeNotifierProvider<PatientData>.value(
+          value: patientData,
+          child: MaterialApp(
+            title: 'Rosie',
+            theme: createRosieTheme(),
+            darkTheme: createRosieTheme(brightness: Brightness.dark),
+            home: const _RosieHome()
+          )
+        )
       );
     } else {
-      return ChangeNotifierProvider<OpenHealthManager>.value(value: model, child: const _RosieHome());
+      // While still loading our config, present a simplified loading screen
+      return Container(
+        color: Colors.white,
+        child: const Directionality(
+          textDirection: TextDirection.ltr,
+          child: Center(child: Text("Rosie"))
+        )
+      );
     }
   }
 }
@@ -107,6 +148,10 @@ class _RosieHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.watch<OpenHealthManager>();
-    return model.isSignedIn ? const HomeScreen() : const Onboarding();
+    if (model.isSignedIn) {
+      return const HomeScreen();
+    } else {
+      return const Onboarding();
+    }
   }
 }

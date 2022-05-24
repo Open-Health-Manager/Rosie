@@ -15,6 +15,11 @@
 import 'package:flutter/material.dart';
 import 'rosie_theme.dart';
 
+enum RosieActionPosition {
+  below,
+  after
+}
+
 class RosieExpression {
   const RosieExpression(this.assetPath);
 
@@ -22,6 +27,9 @@ class RosieExpression {
 
   // Neutral expression. (Currently the only one technically supported.)
   static const neutral = RosieExpression("assets/rosie/neutral.png");
+  static const surprised = RosieExpression("assets/rosie/surprised.png");
+  static const cheeksNeutral = RosieExpression("assets/rosie/cheeks-neutral.png");
+  static const cheeksSurprised = RosieExpression("assets/rosie/cheeks-surprised.png");
 
   Widget build() {
     return Image(image: AssetImage(assetPath));
@@ -40,27 +48,38 @@ class RosieTextBalloon extends StatelessWidget {
   // The widget to use for Rosie
   final Widget rosieImage;
 
-  static Widget _createBody(Widget message, Widget? action) {
+  static Widget _createBody(Widget message, Widget? action, RosieActionPosition position) {
     if (action == null) {
       return message;
     }
-    return Column(crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        message,
-        Align(alignment: AlignmentDirectional.bottomEnd, child: action)
-      ]
-    );
+    switch (position) {
+    case RosieActionPosition.below:
+      return Column(crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          message,
+          Align(alignment: AlignmentDirectional.bottomEnd, child: action)
+        ]
+      );
+    case RosieActionPosition.after:
+      return Row(
+        children: <Widget>[
+          Flexible(child: message),
+          Align(alignment: AlignmentDirectional.centerEnd, child: action)
+        ]
+      );
+    }
   }
 
   // Creates a Rosie text balloon with the default Rosie text balloon styled text.
   factory RosieTextBalloon.text(String message, {
     Key? key,
     Widget? action,
+    RosieActionPosition actionPosition = RosieActionPosition.below,
     RosieExpression expression = RosieExpression.neutral
   }) {
     return RosieTextBalloon(
       key: key,
-      body: _createBody(Text(message, style: defaultTextStyle, softWrap: true), action),
+      body: _createBody(Text(message, style: defaultTextStyle, softWrap: true), action, actionPosition),
       rosieImage: expression.build()
     );
   }
@@ -69,11 +88,12 @@ class RosieTextBalloon extends StatelessWidget {
   factory RosieTextBalloon.rich(InlineSpan message, {
     Key? key,
     Widget? action,
+    RosieActionPosition actionPosition = RosieActionPosition.below,
     RosieExpression expression = RosieExpression.neutral
   }) {
     return RosieTextBalloon(
       key: key,
-      body: _createBody(Text.rich(message, style: defaultTextStyle), action),
+      body: _createBody(Text.rich(message, style: defaultTextStyle), action, actionPosition),
       rosieImage: expression.build()
     );
   }
