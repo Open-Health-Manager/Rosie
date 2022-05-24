@@ -50,7 +50,7 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                     break;
                   case ConnectionState.waiting:
                     // When loading, show that
-                    cards.add(const CarePlanCards(
+                    /*cards.add(const CarePlanCards(
                       title: 'Calling API',
                       heading: 'Calling API',
                       subheading: '',
@@ -61,8 +61,13 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                       dataServicesSubHeading: 'Preventative Task Force',
                       imageReferenceText:
                           'assets/care_plan/lung-cancer-screening.png',
-                    ));
-                    break;
+                    ));*/
+                    return Row(children: const [
+                      CircularProgressIndicator(),
+                      SizedBox(width: 8),
+                      Flexible(child: Text("Loading..."), flex: 1)
+                    ]);
+                  // break;
                   case ConnectionState.active:
                   case ConnectionState.done:
                     if (snapshot.data != null) {
@@ -77,10 +82,8 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                                 title: 'Blood Pressure',
                                 heading: 'Blood Pressure Screening',
                                 subheading: 'Annual',
-                                screeningText:
-                                    'Based on your last blood pressure ',
-                                patientInfoText:
-                                    'more than a year ago and your age (42 years old), ',
+                                screeningText: 'Based on your ',
+                                patientInfoText: 'current info ',
                                 recommendationText:
                                     'you should get your blood pressure checked at least once a year.',
                                 dataServicesHeading: 'US Preventative Services',

@@ -50,7 +50,7 @@ class CarePlanCards extends StatelessWidget {
             ),
             SizedBox(
               height: 170.0,
-              child: Ink.image(
+              child: Image(
                 image: AssetImage(imageReferenceText),
                 fit: BoxFit.cover,
               ),
