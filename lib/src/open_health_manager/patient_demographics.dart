@@ -1,13 +1,15 @@
 import 'dart:developer';
-import 'package:fhir/r4.dart' show Patient, PatientGender;
+import 'package:fhir/r4.dart'
+    show Date, FhirDateTime, Patient, PatientGender, Resource;
 import 'open_health_manager.dart';
 
-/// An observation of a Smoking Status.
+/// internal representation of FHIR Patient Resource
 class PatientDemographics {
-  final DateTime? dateOfBirth;
-  final String? gender;
+  Patient? _rawFHIR;
+  DateTime? dateOfBirth;
+  String? gender;
 
-  const PatientDemographics(this.dateOfBirth, this.gender);
+  PatientDemographics(this.dateOfBirth, this.gender, this._rawFHIR);
 
   /// Attempts to parse a Smoking Status observation from a given FHIR observation.
   ///
@@ -25,8 +27,41 @@ class PatientDemographics {
     } else if (patient.gender == PatientGender.unknown) {
       ptGender = "Unknown";
     }
+    Patient cleanFHIR = patient.copyWith(text: null, meta: null);
 
-    return PatientDemographics(ptBirthDate, ptGender);
+    return PatientDemographics(ptBirthDate, ptGender, cleanFHIR);
+  }
+
+  Patient? getFHIRRepresentation() {
+    return _rawFHIR;
+  }
+
+  void updateDateOfBirth(DateTime? ptBirthDate) {
+    dateOfBirth = ptBirthDate;
+    if (_rawFHIR != null) {
+      _rawFHIR = _rawFHIR!.copyWith(
+          birthDate:
+              (ptBirthDate == null) ? null : Date.fromDateTime(ptBirthDate));
+    }
+  }
+
+  void updateGender(String? ptGender) {
+    gender = ptGender;
+    PatientGender? genderEnumValue;
+    if (ptGender == "Male") {
+      genderEnumValue = PatientGender.male;
+    } else if (ptGender == "Female") {
+      genderEnumValue = PatientGender.female;
+    } else if (ptGender == "Other") {
+      genderEnumValue = PatientGender.other;
+    } else if (ptGender == "Unknown") {
+      genderEnumValue = PatientGender.unknown;
+    } else {
+      genderEnumValue = null;
+    }
+    if (_rawFHIR != null) {
+      _rawFHIR = _rawFHIR!.copyWith(gender: genderEnumValue);
+    }
   }
 }
 
@@ -43,6 +78,14 @@ extension PatientDemographicsQuerying on OpenHealthManager {
       log('Unable to parse Patient to get patient demographics',
           level: 500, error: error);
       return null;
+    }
+  }
+
+  /// Attempts to put the current FHIR rep of the patient demographics to the backend
+  Future<void> putPatientDemographics(PatientDemographics patient) async {
+    Resource? theResource = patient.getFHIRRepresentation();
+    if (theResource != null) {
+      putResource(theResource);
     }
   }
 }

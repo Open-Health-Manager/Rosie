@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -39,6 +41,9 @@ class PatientInfoState extends State<PatientInfo> {
   //final _weightController = TextEditingController();
   //final _systolicController = TextEditingController();
   //final _diastolicController = TextEditingController();
+
+  bool _dateOfBirthDirty = false;
+  bool _genderDirty = false;
 
   late final Future<List<SmokingStatusObservation>> _smokingStatusFuture;
   late final Future<PatientDemographics?> _patientDemographicsFuture;
@@ -160,6 +165,17 @@ class PatientInfoState extends State<PatientInfo> {
         },
         onSaved: (value) {
           //Provider.of<PatientData>(context, listen: false).dob = value!;
+          if (_dateOfBirthDirty) {
+            Provider.of<PatientData>(context, listen: false)
+                .patientDemographics
+                .value
+                ?.updateDateOfBirth((value == null)
+                    ? null
+                    : DateFormat('MM/dd/yy').parse(value));
+          }
+        },
+        onChanged: (value) {
+          _dateOfBirthDirty = true;
         },
       ),
     );
@@ -193,9 +209,16 @@ class PatientInfoState extends State<PatientInfo> {
           },
           onSaved: (value) {
             //Provider.of<PatientData>(context, listen: false).gender = value!;
+            if (_genderDirty) {
+              Provider.of<PatientData>(context, listen: false)
+                  .patientDemographics
+                  .value
+                  ?.updateGender(value);
+            }
           },
           onChanged: (value) {
             //Provider.of<PatientData>(context, listen: false).gender = value!;
+            _genderDirty = true;
           }),
     );
   }
@@ -553,6 +576,10 @@ class PatientInfoState extends State<PatientInfo> {
                                 shape: const StadiumBorder()),
                             onPressed: () {
                               _formKey.currentState!.save();
+                              if (_dateOfBirthDirty || _genderDirty) {
+                                Provider.of<PatientData>(context, listen: false)
+                                    .updatePatientDemographics();
+                              }
                               Navigator.pop(
                                 context,
                                 MaterialPageRoute(

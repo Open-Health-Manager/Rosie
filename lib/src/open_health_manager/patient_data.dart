@@ -147,4 +147,14 @@ class PatientData extends ChangeNotifier {
     // And then do this:
     await healthManager.postBloodPressure(obs);
   }
+
+  /// writes the current patient demographics to the backend (if loaded)
+  Future<void> updatePatientDemographics() async {
+    if (patientDemographics._state == LoadState.done) {
+      PatientDemographics? currentDemographics = patientDemographics.value;
+      if (currentDemographics != null) {
+        await healthManager.putPatientDemographics(currentDemographics);
+      }
+    }
+  }
 }

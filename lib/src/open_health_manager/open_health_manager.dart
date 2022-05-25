@@ -276,9 +276,29 @@ class OpenHealthManager with ChangeNotifier {
   Future<Map<String, dynamic>> postResource(Resource resource) {
     final resourceType = resource.resourceTypeString;
     if (resourceType == null) {
-      throw const InvalidResourceException("Cannot post resources without a type (they are invalid)");
+      throw const InvalidResourceException(
+          "Cannot post resources without a type (they are invalid)");
     }
     return postJsonObjectToResource(resourceType, resource.toJson());
+  }
+
+  /// Wrapper around putJsonObjectToResource to post a given resource.
+  ///
+  /// The resource **must** have a defined [resource.resourceType] or this will
+  /// raise an [InvalidResourceException].
+  Future<Map<String, dynamic>> putResource(Resource resource) {
+    final resourceType = resource.resourceTypeString;
+    if (resourceType == null) {
+      throw const InvalidResourceException(
+          "Cannot post resources without a type (they are invalid)");
+    }
+    final resourceId = resource.id?.value;
+    if (resourceId == null) {
+      throw const InvalidResourceException(
+          "Cannot post resources without an id");
+    }
+    return putJsonObjectToResourceId(
+        resourceType, resourceId, resource.toJson());
   }
 
   /// Helper method for posting a JSON object to a specific FHIR resource on the server, and receiving a JSON object as
