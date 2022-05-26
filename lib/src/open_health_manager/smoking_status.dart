@@ -130,8 +130,9 @@ extension SmokingStatusQuerying on OpenHealthManager {
   /// Any exceptions during loading are thrown, and any exceptions during parsing are logged to the FINE (500) log level
   /// but otherwise eaten and simply left out of the result.
   Future<List<SmokingStatusObservation>> querySmokingStatus() async {
+    // return most recent ones first
     final bundle = await queryResource(
-        "Observation", {"code": "http://loinc.org|72166-2"});
+        "Observation", {"code": "http://loinc.org|72166-2", "_sort": "-date"});
     final results = <SmokingStatusObservation>[];
     final entries = bundle.entry;
     if (entries == null) {
@@ -141,7 +142,8 @@ extension SmokingStatusQuerying on OpenHealthManager {
       final resource = entry.resource;
       if (resource != null && resource is Observation) {
         try {
-          results.add(SmokingStatusObservation.fromObservation(resource));
+          // add to front so that most recent entries are last in the list
+          results.insert(0, SmokingStatusObservation.fromObservation(resource));
         } on InvalidResourceException catch (error) {
           log('Unable to parse Observation for a Smoking Status',
               level: 500, error: error);

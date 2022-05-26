@@ -314,7 +314,8 @@ class OpenHealthManager with ChangeNotifier {
   /// If the response cannot be parsed as JSON, this will throw a [FormatException]. If the response can be parsed as
   /// JSON but is otherwise invalid, throws a [InvalidResponseException].
   Future<Map<String, dynamic>> getJsonObject(Uri uri) async {
-    return _parseJsonResponse(await http.get(uri));
+    return _parseJsonResponse(
+        await http.get(uri, headers: {"Cache-Control": "no-cache"}));
   }
 
   /// Wrapper around postJsonObjectToResource to post a given resource.

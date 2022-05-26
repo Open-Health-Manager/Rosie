@@ -148,8 +148,9 @@ extension BloodPressureQuerying on OpenHealthManager {
   /// Any exceptions during loading are thrown, and any exceptions during parsing are logged to the FINE (500) log level
   /// but otherwise eaten and simply left out of the result.
   Future<List<BloodPressureObservation>> queryBloodPressure() async {
+    // return most recent ones first
     final bundle = await queryResource(
-        "Observation", {"code": "http://loinc.org|55284-4"});
+        "Observation", {"code": "http://loinc.org|55284-4", "_sort": "-date"});
     final results = <BloodPressureObservation>[];
     final entries = bundle.entry;
     if (entries == null) {
@@ -159,7 +160,8 @@ extension BloodPressureQuerying on OpenHealthManager {
       final resource = entry.resource;
       if (resource != null && resource is Observation) {
         try {
-          results.add(BloodPressureObservation.fromObservation(resource));
+          // add to front so that most recent entries are last in the list
+          results.insert(0, BloodPressureObservation.fromObservation(resource));
         } on InvalidResourceException catch (error) {
           log('Unable to parse Observation into blood pressure',
               level: 500, error: error);
