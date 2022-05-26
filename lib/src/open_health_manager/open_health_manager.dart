@@ -102,8 +102,10 @@ class InvalidConfigError extends Error {
 /// Mostly a place-holder class, this represents the authentication information. At present, this just contains the
 /// patient ID.
 class AuthData {
-  const AuthData(this.id);
+  AuthData(this.id, this.dataConnected);
   final Id id;
+  // true if logged in, false if created. should not ultimately live here.
+  bool dataConnected;
 }
 
 class TransactionManager {
@@ -200,7 +202,7 @@ class OpenHealthManager with ChangeNotifier {
       throw const InvalidResponseException(
           'Patient returned has no associated ID');
     }
-    final auth = AuthData(patientId);
+    final auth = AuthData(patientId, true);
     _authData = auth;
     notifyListeners();
     return _authData;
@@ -226,7 +228,7 @@ class OpenHealthManager with ChangeNotifier {
       throw const InvalidResponseException(
           'Returned response has no patient ID');
     }
-    final auth = AuthData(id);
+    final auth = AuthData(id, false);
     _authData = auth;
     notifyListeners();
     return auth;

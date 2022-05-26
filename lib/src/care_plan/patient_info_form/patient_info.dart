@@ -1,9 +1,6 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:rosie/src/care_plan/care_plan_home.dart';
 import '../../open_health_manager/patient_data.dart';
 import '../../open_health_manager/smoking_status.dart';
 import '../../open_health_manager/patient_demographics.dart';

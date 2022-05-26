@@ -16,8 +16,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:rosie/src/care_plan/blood_pressure/blood_pressure_vis_screen.dart';
+import 'package:provider/provider.dart';
 import 'package:rosie/src/care_plan/care_plan_home.dart';
+import 'package:rosie/src/open_health_manager/open_health_manager.dart';
 import 'rosie_theme.dart';
 import 'get_started/get_started.dart';
 
@@ -30,7 +31,17 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // Selected tab
-  int _selectedIndex = 2;
+  late int _selectedIndex;
+
+  @override
+  initState() {
+    super.initState();
+    _selectedIndex = (Provider.of<OpenHealthManager>(context, listen: false)
+            .authData!
+            .dataConnected)
+        ? 1
+        : 2;
+  }
 
   _onItemTapped(int index) {
     setState(() {
