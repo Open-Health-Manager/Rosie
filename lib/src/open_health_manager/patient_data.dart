@@ -136,7 +136,8 @@ class PatientData extends ChangeNotifier {
 
   /// Adds the blood pressure observation to the current data (even if it hasn't been loaded yet) and then attempts to
   /// write it to the backend.
-  Future<void> addBloodPressureObservation(BloodPressureObservation obs) async {
+  Future<void> addBloodPressureObservation(BloodPressureObservation obs,
+      {bool inBatch = false}) async {
     final List<BloodPressureObservation>? bps = bloodPressure.value;
     if (bps == null) {
       // Set a single value list
@@ -145,16 +146,37 @@ class PatientData extends ChangeNotifier {
       bps.add(obs);
     }
     // And then do this:
-    await healthManager.postBloodPressure(obs);
+    await healthManager.postBloodPressure(obs, addToBatch: inBatch);
+  }
+
+  /// Adds the blood pressure observation to the current data (even if it hasn't been loaded yet) and then attempts to
+  /// write it to the backend.
+  Future<void> addSmokingStatusObservation(SmokingStatusObservation obs,
+      {bool inBatch = false}) async {
+    final List<SmokingStatusObservation>? statusObsList = smokingStatus.value;
+    if (statusObsList == null) {
+      // Set a single value list
+      smokingStatus.set(<SmokingStatusObservation>[obs]);
+    } else {
+      statusObsList.add(obs);
+    }
+    // And then do this:
+    await healthManager.postSmokingStatus(obs, addToBatch: inBatch);
   }
 
   /// writes the current patient demographics to the backend (if loaded)
-  Future<void> updatePatientDemographics() async {
+  Future<void> updatePatientDemographics({bool inBatch = false}) async {
     if (patientDemographics._state == LoadState.done) {
       PatientDemographics? currentDemographics = patientDemographics.value;
       if (currentDemographics != null) {
-        await healthManager.putPatientDemographics(currentDemographics);
+        await healthManager.putPatientDemographics(currentDemographics,
+            addToBatch: inBatch);
       }
     }
+  }
+
+  Future<void> postCurrentTransaction() async {
+    await healthManager.transactionManager
+        .postCurrentUpdateBatch(healthManager);
   }
 }

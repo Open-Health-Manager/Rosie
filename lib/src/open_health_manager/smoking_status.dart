@@ -1,11 +1,53 @@
 import 'dart:developer';
-import 'package:fhir/r4.dart' show Observation;
+import 'package:fhir/r4.dart'
+    show
+        Code,
+        CodeableConcept,
+        Coding,
+        Decimal,
+        FhirDateTime,
+        FhirUri,
+        Instant,
+        Observation,
+        ObservationComponent,
+        ObservationStatus,
+        Quantity,
+        Reference;
 import 'open_health_manager.dart';
 import 'util.dart';
 
+enum SmokingStatus { unknown, neverSmoked, formerSmoker, currentSmoker }
+
+extension ToSnomed on SmokingStatus {
+  Coding toSnomedCoding() {
+    switch (this) {
+      case SmokingStatus.unknown:
+        return Coding(
+            system: FhirUri(Systems.sct),
+            code: Code('266927001'),
+            display: "Tobacco smoking consumption unknown (finding)");
+      case SmokingStatus.neverSmoked:
+        return Coding(
+            system: FhirUri(Systems.sct),
+            code: Code('266919005'),
+            display: "Never smoked tobacco (finding)");
+      case SmokingStatus.formerSmoker:
+        return Coding(
+            system: FhirUri(Systems.sct),
+            code: Code('8517006'),
+            display: "Ex-smoker (finding)");
+      case SmokingStatus.currentSmoker:
+        return Coding(
+            system: FhirUri(Systems.sct),
+            code: Code('77176002'),
+            display: "Smoker (finding)");
+    }
+  }
+}
+
 /// An observation of a Smoking Status.
 class SmokingStatusObservation {
-  final bool smokingStatus;
+  final SmokingStatus smokingStatus;
 
   const SmokingStatusObservation(this.smokingStatus);
 
@@ -19,41 +61,66 @@ class SmokingStatusObservation {
       throw const InvalidResourceException(
           "No valueCodes in smoking status observation.");
     }
-    bool? smokingStatus;
+    SmokingStatus smokingStatus = SmokingStatus.unknown;
     for (final aValueCode in valueCodes) {
       final theCode = aValueCode.code?.value;
       if (theCode == "266919005") {
         // Never smoked tobacco (finding)
-        smokingStatus = false;
+        smokingStatus = SmokingStatus.neverSmoked;
       } else if (theCode == "266927001") {
         // Tobacco smoking consumption unknown (finding)
-        smokingStatus = false;
+        smokingStatus = SmokingStatus.unknown;
       } else if (theCode == "428041000124106") {
         // Occasional tobacco smoker (finding)
-        smokingStatus = true;
+        smokingStatus = SmokingStatus.currentSmoker;
       } else if (theCode == "428061000124105") {
         // Light tobacco smoker (finding)
-        smokingStatus = true;
+        smokingStatus = SmokingStatus.currentSmoker;
       } else if (theCode == "428071000124103") {
         // Heavy tobacco smoker (finding)
-        smokingStatus = true;
+        smokingStatus = SmokingStatus.currentSmoker;
       } else if (theCode == "449868002") {
         // Smokes tobacco daily (finding)
-        smokingStatus = true;
+        smokingStatus = SmokingStatus.currentSmoker;
       } else if (theCode == "77176002") {
         // Smoker (finding)
-        smokingStatus = true;
+        smokingStatus = SmokingStatus.currentSmoker;
       } else if (theCode == "8517006") {
         // Ex-smoker (finding)
-        smokingStatus = false;
+        smokingStatus = SmokingStatus.formerSmoker;
       }
     }
-    if (smokingStatus != null) {
-      return SmokingStatusObservation(smokingStatus);
-    } else {
-      throw const InvalidResourceException(
-          "Could not locate a valid Smoking Status within given Observation");
-    }
+
+    return SmokingStatusObservation(smokingStatus);
+  }
+
+  /// Generates a FHIR Observation record for this smoking status record.
+  Observation generateObservation(Reference? subject) {
+    final effectiveDateTime = DateTime.now();
+
+    return Observation(
+        code: CodeableConcept(coding: <Coding>[
+          Coding(
+              system: FhirUri(Systems.loinc),
+              code: Code('72166-2'),
+              display: "Tobacco smoking status")
+        ]),
+        effectiveDateTime: (effectiveDateTime == null)
+            ? null
+            : FhirDateTime.fromDateTime(effectiveDateTime),
+        valueCodeableConcept:
+            CodeableConcept(coding: <Coding>[smokingStatus.toSnomedCoding()]),
+        subject: subject,
+        status: ObservationStatus.final_,
+        category: [
+          CodeableConcept(coding: <Coding>[
+            Coding(
+                system: FhirUri(
+                    "http://terminology.hl7.org/CodeSystem/observation-category"),
+                code: Code('social-history'),
+                display: "Social History")
+          ])
+        ]);
   }
 }
 
@@ -82,5 +149,17 @@ extension SmokingStatusQuerying on OpenHealthManager {
       }
     }
     return results;
+  }
+
+  /// Attempts to post the given smoking status observation back to the Open Health Manager.
+  Future<void> postSmokingStatus(SmokingStatusObservation observation,
+      {bool addToBatch = false}) async {
+    Observation fhirResource =
+        observation.generateObservation(createPatientReference());
+    if (addToBatch) {
+      transactionManager.addEntryToUpdateBatch(fhirResource);
+    } else {
+      postResource(fhirResource);
+    }
   }
 }

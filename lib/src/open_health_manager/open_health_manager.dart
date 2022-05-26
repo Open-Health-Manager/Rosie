@@ -106,6 +106,51 @@ class AuthData {
   final Id id;
 }
 
+class TransactionManager {
+  Bundle? _updateBatch;
+
+  bool activeBatch() {
+    return (_updateBatch != null);
+  }
+
+  createUpdateBatch() {
+    if (_updateBatch != null) {}
+    _updateBatch = Bundle(type: BundleType.transaction);
+  }
+
+  postCurrentUpdateBatch(OpenHealthManager manager) async {
+    if (_updateBatch != null) {
+      await manager.postTransaction(_updateBatch!);
+      _updateBatch = null;
+    }
+  }
+
+  addEntryToUpdateBatch(Resource theResource) {
+    if (_updateBatch == null) {
+      createUpdateBatch();
+    }
+    BundleEntry theEntry = BundleEntry(
+      resource: theResource,
+      request: BundleRequest(
+          method: (theResource.id == null)
+              ? BundleRequestMethod.post
+              : BundleRequestMethod.put,
+          url: FhirUri(theResource.resourceTypeString! +
+              ((theResource.id == null || theResource.id!.value == null)
+                  ? ""
+                  : "/" + theResource.id!.value!))),
+    );
+    List<BundleEntry>? updatedEntryList = _updateBatch!.entry;
+    if (updatedEntryList == null) {
+      updatedEntryList = <BundleEntry>[theEntry];
+    } else {
+      updatedEntryList.add(theEntry);
+    }
+
+    _updateBatch = _updateBatch!.copyWith(entry: updatedEntryList);
+  }
+}
+
 /// Provides APIs for accessing parts of Open Health Manager.
 /// This also holds on to the authentication information.
 class OpenHealthManager with ChangeNotifier {
@@ -116,6 +161,7 @@ class OpenHealthManager with ChangeNotifier {
   /// Resolved URIs are created via [fhirBase.resolve].
   final Uri fhirBase;
   AuthData? _authData;
+  final TransactionManager transactionManager = TransactionManager();
 
   AuthData? get authData => _authData;
   bool get isSignedIn => _authData != null;
@@ -280,6 +326,11 @@ class OpenHealthManager with ChangeNotifier {
           "Cannot post resources without a type (they are invalid)");
     }
     return postJsonObjectToResource(resourceType, resource.toJson());
+  }
+
+  /// Wrapper around postJsonObject to post a transaction.
+  Future<Map<String, dynamic>> postTransaction(Bundle transaction) {
+    return postJsonObject(fhirBase, transaction.toJson());
   }
 
   /// Wrapper around putJsonObjectToResource to post a given resource.

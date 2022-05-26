@@ -82,10 +82,15 @@ extension PatientDemographicsQuerying on OpenHealthManager {
   }
 
   /// Attempts to put the current FHIR rep of the patient demographics to the backend
-  Future<void> putPatientDemographics(PatientDemographics patient) async {
+  Future<void> putPatientDemographics(PatientDemographics patient,
+      {bool addToBatch = false}) async {
     Resource? theResource = patient.getFHIRRepresentation();
     if (theResource != null) {
-      putResource(theResource);
+      if (addToBatch) {
+        transactionManager.addEntryToUpdateBatch(theResource);
+      } else {
+        postResource(theResource);
+      }
     }
   }
 }

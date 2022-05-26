@@ -19,6 +19,34 @@ class PatientInfo extends StatefulWidget {
   }
 }
 
+extension ToFromPatientInfoString on SmokingStatus {
+  static fromPatientInfoString(String input) {
+    switch (input) {
+      case '':
+        return SmokingStatus.unknown;
+      case 'Never Smoked':
+        return SmokingStatus.neverSmoked;
+      case 'Former Smoker':
+        return SmokingStatus.formerSmoker;
+      case 'Current Smoker':
+        return SmokingStatus.currentSmoker;
+    }
+  }
+
+  String toPatientInfoString() {
+    switch (this) {
+      case SmokingStatus.unknown:
+        return '';
+      case SmokingStatus.neverSmoked:
+        return 'Never Smoked';
+      case SmokingStatus.formerSmoker:
+        return 'Former Smoker';
+      case SmokingStatus.currentSmoker:
+        return 'Current Smoker';
+    }
+  }
+}
+
 class PatientInfoState extends State<PatientInfo> {
   final _formKey = GlobalKey<FormState>();
 
@@ -32,7 +60,12 @@ class PatientInfoState extends State<PatientInfo> {
   List<String> sexAtBirthOptions = ['', 'Male', 'Female', 'Other', 'Unknown'];
   List<String> pregnancyOptions = ['', 'Yes', 'No'];
   List<String> sexualActivityOptions = ['', 'Yes', 'No'];
-  List<String> tobaccoOptions = ['', 'Yes', 'No'];
+  List<String> tobaccoOptions = [
+    '',
+    'Current Smoker',
+    'Former Smoker',
+    'Never Smoked'
+  ];
 
   String _initialPregnancyStatus = "";
   String _initialTobaccoUsageStatus = "";
@@ -44,6 +77,10 @@ class PatientInfoState extends State<PatientInfo> {
 
   bool _dateOfBirthDirty = false;
   bool _genderDirty = false;
+  bool _smokingStatusDirty = false;
+  bool _formIsdirty() {
+    return _dateOfBirthDirty || _genderDirty || _smokingStatusDirty;
+  }
 
   late final Future<List<SmokingStatusObservation>> _smokingStatusFuture;
   late final Future<PatientDemographics?> _patientDemographicsFuture;
@@ -111,16 +148,19 @@ class PatientInfoState extends State<PatientInfo> {
   }
 
   _selectDOBDate(BuildContext context, DateTime? dobValue) async {
-    var initialDateOfBirth =
-        (dobValue != null) ? dobValue : DateFormat('MM/dd/yy').parse("");
+    var initialDateOfBirth = (dobValue != null) ? dobValue : DateTime.now();
     final DateTime? picked = await showDatePicker(
         context: context,
         initialDate: initialDateOfBirth,
         firstDate: DateTime(1930, 8),
         lastDate: DateTime(2100));
     if (picked != null) {
-      _dateofBirthController.text =
+      String dateText =
           "${picked.toLocal().month}/${picked.toLocal().day}/${picked.toLocal().year}";
+      if (dateText != _dateofBirthController.text) {
+        _dateofBirthController.text = dateText;
+        _dateOfBirthDirty = true;
+      }
     }
   }
 /*
@@ -144,6 +184,8 @@ class PatientInfoState extends State<PatientInfo> {
   */
 
   Widget _builDOBField(DateTime? dobValue) {
+    // TODO: this is problematic because it is updating state during the build
+    // however, it works despite Flutter's complaint (exception) so keeping it for now
     _dateofBirthController.text = (dobValue != null)
         ? "${dobValue.toLocal().month}/${dobValue.toLocal().day}/${dobValue.toLocal().year}"
         : '';
@@ -392,20 +434,20 @@ class PatientInfoState extends State<PatientInfo> {
           },
           onSaved: (value) {
             //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
-            value!;
+            //value!;
           },
           onChanged: (value) {
             //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
-            value!;
+            //value!;
           }),
     );
   }
 
-  Widget _buildTobaccoUsageField(displayValue) {
+  Widget _buildTobaccoUsageField(SmokingStatus displayValue) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
       child: DropdownButtonFormField<String>(
-          value: displayValue,
+          value: displayValue.toPatientInfoString(),
           items: tobaccoOptions.map((String val) {
             return DropdownMenuItem(
               value: val,
@@ -428,12 +470,31 @@ class PatientInfoState extends State<PatientInfo> {
             return null;
           },
           onSaved: (value) {
-            //Provider.of<PatientData>(context, listen: false).tobaccoUsage =
-            value!;
+            if (_smokingStatusDirty) {
+              SmokingStatus theStatus = SmokingStatus.unknown;
+              switch (value) {
+                case '':
+                  theStatus = SmokingStatus.unknown;
+                  break;
+                case 'Never Smoked':
+                  theStatus = SmokingStatus.neverSmoked;
+                  break;
+                case 'Former Smoker':
+                  theStatus = SmokingStatus.formerSmoker;
+                  break;
+                case 'Current Smoker':
+                  theStatus = SmokingStatus.currentSmoker;
+                  break;
+              }
+
+              final obs = SmokingStatusObservation(theStatus);
+
+              Provider.of<PatientData>(context, listen: false)
+                  .addSmokingStatusObservation(obs, inBatch: true);
+            }
           },
           onChanged: (value) {
-            //Provider.of<PatientData>(context, listen: false).tobaccoUsage =
-            value!;
+            _smokingStatusDirty = true;
           }),
     );
   }
@@ -540,7 +601,8 @@ class PatientInfoState extends State<PatientInfo> {
                   _buildPregnancyField(),
                   FutureBuilder<List<SmokingStatusObservation>>(
                       builder: (context, snapshot) {
-                        String smokingStatusValue = '';
+                        SmokingStatus smokingStatusValue =
+                            SmokingStatus.unknown;
                         switch (snapshot.connectionState) {
                           case ConnectionState.none:
                             break;
@@ -551,9 +613,7 @@ class PatientInfoState extends State<PatientInfo> {
                             if (snapshot.data != null) {
                               if (snapshot.data!.isNotEmpty) {
                                 smokingStatusValue =
-                                    snapshot.data![0].smokingStatus
-                                        ? "Yes"
-                                        : "No";
+                                    snapshot.data!.last.smokingStatus;
                               }
                             }
                         }
@@ -576,9 +636,14 @@ class PatientInfoState extends State<PatientInfo> {
                                 shape: const StadiumBorder()),
                             onPressed: () {
                               _formKey.currentState!.save();
+                              PatientData ptData = Provider.of<PatientData>(
+                                  context,
+                                  listen: false);
                               if (_dateOfBirthDirty || _genderDirty) {
-                                Provider.of<PatientData>(context, listen: false)
-                                    .updatePatientDemographics();
+                                ptData.updatePatientDemographics(inBatch: true);
+                              }
+                              if (_formIsdirty()) {
+                                ptData.postCurrentTransaction();
                               }
                               Navigator.pop(
                                 context,

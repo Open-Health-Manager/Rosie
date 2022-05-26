@@ -170,7 +170,14 @@ extension BloodPressureQuerying on OpenHealthManager {
   }
 
   /// Attempts to post the given blood pressure observation back to the Open Health Manager.
-  Future<void> postBloodPressure(BloodPressureObservation observation) async {
-    postResource(observation.generateObservation(createPatientReference()));
+  Future<void> postBloodPressure(BloodPressureObservation observation,
+      {bool addToBatch = false}) async {
+    Observation fhirResource =
+        observation.generateObservation(createPatientReference());
+    if (addToBatch) {
+      transactionManager.addEntryToUpdateBatch(fhirResource);
+    } else {
+      postResource(fhirResource);
+    }
   }
 }

@@ -20,8 +20,12 @@ import 'package:fhir/r4.dart' show CodeableConcept, Coding, Quantity;
 class Systems {
   /// LOINC
   static const loinc = "http://loinc.org";
+
   /// Units of Measure
   static const unitsOfMeasure = "http://unitsofmeasure.org";
+
+  /// SNOMED-CT
+  static const sct = "http://snomed.info/sct";
 }
 
 bool Function(Coding) matchesCodes(Map<String, List<String>> systems) {
@@ -53,7 +57,8 @@ Coding? findCoding(List<Coding>? codings, bool Function(Coding) matcher) {
   return null;
 }
 
-Coding? findCodingInConcept(CodeableConcept? concept, bool Function(Coding) matcher) {
+Coding? findCodingInConcept(
+    CodeableConcept? concept, bool Function(Coding) matcher) {
   if (concept == null) {
     return null;
   }
@@ -61,7 +66,7 @@ Coding? findCodingInConcept(CodeableConcept? concept, bool Function(Coding) matc
 }
 
 class Unit {
-  const Unit(this.code, { this.system = Systems.unitsOfMeasure });
+  const Unit(this.code, {this.system = Systems.unitsOfMeasure});
   final String system;
   final String code;
 }
@@ -69,7 +74,8 @@ class Unit {
 /// Attempts to convert a quantity to a given unit. Note: Does **not** actually function at this point, just makes
 /// sure the unit matches and returns it!
 double? convertToUnit(Quantity quantity, Unit unit) {
-  if (quantity.system.toString() == unit.system && quantity.code?.value == unit.code) {
+  if (quantity.system.toString() == unit.system &&
+      quantity.code?.value == unit.code) {
     return quantity.value?.value;
   } else {
     return null;

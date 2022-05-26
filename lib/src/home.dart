@@ -41,11 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _addRosieBackground(Widget child) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
         child: Container(
-          decoration: createRosieScreenBoxDecoration(),
-          child: child
-        ),
-        value: SystemUiOverlayStyle.dark
-      );
+            decoration: createRosieScreenBoxDecoration(), child: child),
+        value: SystemUiOverlayStyle.dark);
   }
 
   Widget _buildSelectedPage() {
@@ -54,10 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
         return _addRosieBackground(const Center(child: CarePlanHome()));
       case 2:
         return _addRosieBackground(const Center(child: GetStarted()));
-      case 3:
-        return _addRosieBackground(const BloodPressureVisualizationScreen());
       default:
-        return _addRosieBackground(const Center(child: Text("Not Implemented")));
+        return _addRosieBackground(
+            const Center(child: Text("Not Implemented")));
     }
   }
 
@@ -65,31 +61,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AnnotatedRegion<SystemUiOverlayStyle>(
-        child: _buildSelectedPage(),
-        value: SystemUiOverlayStyle.dark
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.download),
-            label: 'Data Manager',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.mail),
-            label: 'Care Plan'
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.arrow_upward),
-            label: 'Home'
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.share),
-            label: 'Community'
-          )
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped
-      ),
+          child: _buildSelectedPage(), value: SystemUiOverlayStyle.dark),
+      bottomNavigationBar:
+          BottomNavigationBar(items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.download),
+          label: 'Data Manager',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.mail), label: 'Care Plan'),
+        BottomNavigationBarItem(icon: Icon(Icons.arrow_upward), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.share), label: 'Community')
+      ], currentIndex: _selectedIndex, onTap: _onItemTapped),
     );
   }
 }

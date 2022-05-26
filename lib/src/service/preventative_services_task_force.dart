@@ -77,6 +77,21 @@ class InvalidConfigError extends Error {
   }
 }
 
+extension ToSnomed on SmokingStatus {
+  String? toTaskForceAPIParam() {
+    switch (this) {
+      case SmokingStatus.unknown:
+        return null;
+      case SmokingStatus.neverSmoked:
+        return "N";
+      case SmokingStatus.formerSmoker:
+        return "N";
+      case SmokingStatus.currentSmoker:
+        return "Y";
+    }
+  }
+}
+
 /// Provides APIs for accessing parts of Open Health Manager.
 /// This also holds on to the authentication information.
 class PreventativeServicesTaskForce with ChangeNotifier {
@@ -117,11 +132,11 @@ class PreventativeServicesTaskForce with ChangeNotifier {
         : null;
 
     return await getRecommendedServices(
-        age, gender, null, smokingStatusValue, null);
+        age, gender, null, smokingStatusValue?.toTaskForceAPIParam(), null);
   }
 
   Future<Map<String, dynamic>> getRecommendedServices(int? age, String? sex,
-      bool? pregnant, bool? tobaccoUser, bool? sexuallyActive) {
+      bool? pregnant, String? tobaccoUser, bool? sexuallyActive) {
     final queryParameters = <String, dynamic>{};
     if (age != null) {
       queryParameters.addAll(<String, dynamic>{"age": age.toString()});
@@ -134,8 +149,7 @@ class PreventativeServicesTaskForce with ChangeNotifier {
           .addAll(<String, dynamic>{"pregnant": pregnant ? "Y" : "N"});
     }
     if (tobaccoUser != null) {
-      queryParameters
-          .addAll(<String, dynamic>{"tobaccoUser": tobaccoUser ? "Y" : "N"});
+      queryParameters.addAll(<String, dynamic>{"tobaccoUser": tobaccoUser});
     }
     if (sexuallyActive != null) {
       queryParameters.addAll(
