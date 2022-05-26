@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rosie/src/care_plan/care_plan_cards.dart';
+import 'package:rosie/src/care_plan/patient_info_form/patient_info.dart';
 import 'package:rosie/src/service/preventative_services_task_force.dart';
 import 'package:rosie/src/open_health_manager/patient_data.dart';
 import 'package:provider/provider.dart';
@@ -14,9 +15,7 @@ class CarePlanHome extends StatefulWidget {
 class _CarePlanHomeState extends State<CarePlanHome> {
   late Future<Map<String, dynamic>?>? _taskforceAPIFuture;
 
-  @override
-  void initState() {
-    super.initState();
+  void triggerAPICall() {
     _taskforceAPIFuture = PreventativeServicesTaskForce(
             apiKey: "a49dac2626acf9ab1aef69b961e40dd2")
         .getRecommendedServicesForPatient(
@@ -24,7 +23,14 @@ class _CarePlanHomeState extends State<CarePlanHome> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    triggerAPICall();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    context.watch<PatientData>();
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
@@ -34,12 +40,20 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                 final List<CarePlanCards> cards = <CarePlanCards>[];
                 switch (snapshot.connectionState) {
                   case ConnectionState.none:
-                    cards.add(const CarePlanCards(
+                    cards.add(CarePlanCards(
                       title: 'Blood Pressure',
                       heading: 'Blood Pressure Screening',
                       subheading: 'Annual',
                       screeningText: 'Based on your ',
                       patientInfoText: 'current info ',
+                      patientInfoOnTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const PatientInfo()),
+                        );
+                        triggerAPICall();
+                      },
                       recommendationText:
                           'you should get your blood pressure checked at least once a year.',
                       dataServicesHeading: 'US Preventative Services',
@@ -78,12 +92,21 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                           // put hypertension first if present
                           cards.insert(
                               0,
-                              const CarePlanCards(
+                              CarePlanCards(
                                 title: 'Blood Pressure',
                                 heading: 'Blood Pressure Screening',
                                 subheading: 'Annual',
                                 screeningText: 'Based on your ',
                                 patientInfoText: 'current info ',
+                                patientInfoOnTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const PatientInfo()),
+                                  );
+                                  setState(() => triggerAPICall());
+                                },
                                 recommendationText:
                                     'you should get your blood pressure checked at least once a year.',
                                 dataServicesHeading: 'US Preventative Services',
@@ -100,6 +123,7 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                             screeningText:
                                 (rec["text"] ?? "").replaceAll("<br>", ""),
                             patientInfoText: "",
+                            patientInfoOnTap: null,
                             recommendationText: "",
                             dataServicesHeading: 'US Preventative Services',
                             dataServicesSubHeading: 'Preventative Task Force',

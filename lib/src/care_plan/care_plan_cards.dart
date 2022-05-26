@@ -2,7 +2,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:rosie/src/care_plan/blood_pressure/blood_pressure_vis_screen.dart';
 import 'package:rosie/src/care_plan/patient_info_form/patient_info.dart';
-import 'package:flutter/services.dart';
 
 class CarePlanCards extends StatelessWidget {
   final String title;
@@ -13,6 +12,7 @@ class CarePlanCards extends StatelessWidget {
   final String dataServicesHeading;
   final String dataServicesSubHeading;
   final String patientInfoText;
+  final Function()? patientInfoOnTap;
   final String recommendationText;
 
   const CarePlanCards(
@@ -24,6 +24,7 @@ class CarePlanCards extends StatelessWidget {
       required this.dataServicesSubHeading,
       required this.imageReferenceText,
       required this.patientInfoText,
+      required this.patientInfoOnTap,
       required this.recommendationText,
       required this.title})
       : super(key: key);
@@ -80,13 +81,7 @@ class CarePlanCards extends StatelessWidget {
                               color: Color(0xFF6750A4),
                               fontWeight: FontWeight.bold),
                           recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const PatientInfo()),
-                              );
-                            }),
+                            ..onTap = patientInfoOnTap),
                       TextSpan(text: recommendationText),
                     ]),
               ),

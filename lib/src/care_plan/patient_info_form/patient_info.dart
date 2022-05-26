@@ -92,6 +92,12 @@ class PatientInfoState extends State<PatientInfo> {
     super.initState();
     _smokingStatusFuture = patientData.smokingStatus.get();
     _patientDemographicsFuture = patientData.patientDemographics.get();
+    _patientDemographicsFuture.then((theDemographics) {
+      DateTime? dobValue = theDemographics?.dateOfBirth;
+      _dateofBirthController.text = (dobValue != null)
+          ? "${dobValue.toLocal().month}/${dobValue.toLocal().day}/${dobValue.toLocal().year}"
+          : '';
+    });
     /*_heightController.text = patientData.height;
     _dateofBirthController.text = patientData.dob;
     _initialGender = patientData.gender;
@@ -184,11 +190,6 @@ class PatientInfoState extends State<PatientInfo> {
   */
 
   Widget _builDOBField(DateTime? dobValue) {
-    // TODO: this is problematic because it is updating state during the build
-    // however, it works despite Flutter's complaint (exception) so keeping it for now
-    _dateofBirthController.text = (dobValue != null)
-        ? "${dobValue.toLocal().month}/${dobValue.toLocal().day}/${dobValue.toLocal().year}"
-        : '';
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 10, 20, 0),
       child: TextFormField(
@@ -645,12 +646,7 @@ class PatientInfoState extends State<PatientInfo> {
                               if (_formIsdirty()) {
                                 ptData.postCurrentTransaction();
                               }
-                              Navigator.pop(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const CarePlanHome(),
-                                ),
-                              );
+                              Navigator.pop(context);
                             }),
                       ],
                     ),
