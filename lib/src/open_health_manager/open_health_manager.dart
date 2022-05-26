@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:fhir/r4.dart';
@@ -100,8 +101,22 @@ class InvalidConfigError extends Error {
 /// Mostly a place-holder class, this represents the authentication information. At present, this just contains the
 /// patient ID.
 class AuthData {
-  const AuthData(this.id);
+  const AuthData(this.id, this.username);
   final Id id;
+  final String username;
+
+  MessageHeader createHeader({String? endpoint}) {
+    return MessageHeader(
+      // TODO: Id
+      eventUri: FhirUri("urn:mitre:healthmanager:pdr"),
+      source: MessageHeaderSource(endpoint: FhirUrl(endpoint ?? "urn:mitre:rosie")),
+      extension_: <FhirExtension>[
+        FhirExtension(
+          url: FhirUri("https://github.com/Open-Health-Manager/patient-data-receipt-ig/StructureDefinition/AccountExtension"),
+          valueString: username)
+      ]
+    );
+  }
 }
 
 /// Provides APIs for accessing parts of Open Health Manager.
@@ -150,7 +165,7 @@ class OpenHealthManager with ChangeNotifier {
     if (patientId == null) {
       throw const InvalidResponseException('Patient returned has no associated ID');
     }
-    final auth = AuthData(patientId);
+    final auth = AuthData(patientId, email);
     _authData = auth;
     notifyListeners();
     return _authData;
@@ -178,7 +193,7 @@ class OpenHealthManager with ChangeNotifier {
     if (id == null) {
       throw const InvalidResponseException('Returned response has no patient ID');
     }
-    final auth = AuthData(id);
+    final auth = AuthData(id, email);
     _authData = auth;
     notifyListeners();
     return auth;
@@ -235,6 +250,38 @@ class OpenHealthManager with ChangeNotifier {
   /// JSON but is otherwise invalid, throws a [InvalidResponseException].
   Future<Map<String, dynamic>> getJsonObject(Uri uri) async {
     return _parseJsonResponse(await http.get(uri));
+  }
+
+  /// Sends a process message with the given set of resources.
+  Future<Map<String, dynamic>> sendProcessMessage(Iterable<Map<String, dynamic>> resources, {String? fhirVersion, String? endpoint}) {
+    final authData = _authData;
+    if (authData == null) {
+      throw NotAuthenticatedError("Cannot post message when not authenticated");
+    }
+    // Build a bundle based on that
+    final bundle = <String, dynamic>{
+      "resourceType": "Bundle",
+      "type": "message",
+      "entry": <Map<String, dynamic>> [
+        <String, dynamic>{
+          "resource": authData.createHeader(endpoint: endpoint).toJson()
+        },
+        ...resources.map<Map<String, dynamic>>((resource) {
+          // Create an individual entry
+          return <String, dynamic>{
+            "resource": resource
+          };
+        })
+      ]
+    };
+    var uri = fhirBase.resolve("\$process-message");
+    log('Sending process message: ${json.encode(bundle)}', level: 800);
+    if (fhirVersion != null) {
+      uri = uri.replace(queryParameters: {
+        "fhir_version": fhirVersion
+      });
+    }
+    return postJsonObject(uri, bundle);
   }
 
   /// Helper method for posting a JSON object to a specific FHIR resource on the server, and receiving a JSON object as

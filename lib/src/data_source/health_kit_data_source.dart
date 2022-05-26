@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 
 import "data_source.dart";
 import 'health_kit/health_kit.dart';
+import 'health_kit/send_health_kit_screen.dart';
 
 class HealthKitDataSource extends DataSource {
   HealthKitDataSource() : super("Apple HealthKit", description: "Health data and clinical records stored within your local HealthKit profile.");
@@ -88,11 +89,7 @@ class _HealthKitConnectionScreenState extends State<_HealthKitConnectionScreen> 
             // (== true because it could also == null, and nullable expressions
             // cannot be used as a condition)
             if (snapshot.data == true) {
-              return _buildScreen(
-                context,
-                "HealthKit connection established",
-                "HealthKit conneciton was successfully established."
-              );
+              return const SendHealthKitScreen();
             } else {
               if (snapshot.hasError) {
                 return _buildScreen(
