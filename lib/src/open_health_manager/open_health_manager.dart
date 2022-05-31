@@ -130,6 +130,7 @@ class OpenHealthManager with ChangeNotifier {
   final Uri fhirBase;
   AuthData? _authData;
 
+  AuthData? get authData => _authData;
   bool get isSignedIn => _authData != null;
 
   static OpenHealthManager fromConfig(Map<String,dynamic> config) {
@@ -197,6 +198,17 @@ class OpenHealthManager with ChangeNotifier {
     _authData = auth;
     notifyListeners();
     return auth;
+  }
+
+  /// Assuming the user is logged in, attempts to create a reference to their patient record.
+  ///
+  /// It's possible this method may need to be refactored elsewhere in the
+  /// future, but since this class currently maintains "authentication" data and
+  /// therefore "who the user is," it's likely that generating a reference to
+  /// the subject will remain here as well.
+  Reference? createPatientReference() {
+    final id = authData?.id;
+    return id == null ? null : Reference(reference: "Patient/${id.value}");
   }
 
   /// Attempts to query a given resource.
@@ -282,6 +294,18 @@ class OpenHealthManager with ChangeNotifier {
       });
     }
     return postJsonObject(uri, bundle);
+  }
+
+  /// Wrapper around postJsonObjectToResource to post a given resource.
+  ///
+  /// The resource **must** have a defined [resource.resourceType] or this will
+  /// raise an [InvalidResourceException].
+  Future<Map<String, dynamic>> postResource(Resource resource) {
+    final resourceType = resource.resourceTypeString;
+    if (resourceType == null) {
+      throw const InvalidResourceException("Cannot post resources without a type (they are invalid)");
+    }
+    return postJsonObjectToResource(resourceType, resource.toJson());
   }
 
   /// Helper method for posting a JSON object to a specific FHIR resource on the server, and receiving a JSON object as
