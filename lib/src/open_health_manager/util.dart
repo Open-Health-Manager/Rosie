@@ -20,8 +20,12 @@ import 'package:fhir/r4.dart' show CodeableConcept, Coding, Quantity;
 class Systems {
   /// LOINC
   static const loinc = "http://loinc.org";
+
   /// Units of Measure
   static const unitsOfMeasure = "http://unitsofmeasure.org";
+
+  /// SNOMED-CT
+  static const sct = "http://snomed.info/sct";
 }
 
 bool Function(Coding) matchesCodes(Map<String, List<String>> systems) {

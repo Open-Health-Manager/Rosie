@@ -101,7 +101,7 @@ class InvalidConfigError extends Error {
 /// Mostly a place-holder class, this represents the authentication information. At present, this just contains the
 /// patient ID.
 class AuthData {
-  const AuthData(this.id, this.username);
+  AuthData(this.id, this.username, this.dataConnected);
   final Id id;
   final String username;
 
@@ -117,6 +117,54 @@ class AuthData {
       ]
     );
   }
+
+  // true if logged in, false if created. should not ultimately live here.
+  bool dataConnected;
+}
+
+class TransactionManager {
+  Bundle? _updateBatch;
+
+  bool activeBatch() {
+    return (_updateBatch != null);
+  }
+
+  createUpdateBatch() {
+    if (_updateBatch != null) {}
+    _updateBatch = Bundle(type: BundleType.transaction);
+  }
+
+  postCurrentUpdateBatch(OpenHealthManager manager) async {
+    if (_updateBatch != null) {
+      await manager.postTransaction(_updateBatch!);
+      _updateBatch = null;
+    }
+  }
+
+  addEntryToUpdateBatch(Resource theResource) {
+    if (_updateBatch == null) {
+      createUpdateBatch();
+    }
+    BundleEntry theEntry = BundleEntry(
+      resource: theResource,
+      request: BundleRequest(
+          method: (theResource.id == null)
+              ? BundleRequestMethod.post
+              : BundleRequestMethod.put,
+          url: FhirUri(theResource.resourceTypeString! +
+              ((theResource.id == null || theResource.id!.value == null)
+                  ? ""
+                  : "/" + theResource.id!.value!))),
+    );
+    List<BundleEntry>? updatedEntryList = _updateBatch!.entry;
+    if (updatedEntryList == null) {
+      updatedEntryList = <BundleEntry>[theEntry];
+    } else {
+      updatedEntryList.add(theEntry);
+    }
+
+    _updateBatch = _updateBatch!.copyWith(entry: updatedEntryList);
+  }
 }
 
 /// Provides APIs for accessing parts of Open Health Manager.
@@ -128,12 +176,13 @@ class OpenHealthManager with ChangeNotifier {
   ///
   /// Resolved URIs are created via [fhirBase.resolve].
   final Uri fhirBase;
+  final TransactionManager transactionManager = TransactionManager();
   AuthData? _authData;
 
   AuthData? get authData => _authData;
   bool get isSignedIn => _authData != null;
 
-  static OpenHealthManager fromConfig(Map<String,dynamic> config) {
+  static OpenHealthManager fromConfig(Map<String, dynamic> config) {
     if (!config.containsKey("fhirBase")) {
       throw InvalidConfigError('Missing required key "fhirBase"');
     }
@@ -166,7 +215,7 @@ class OpenHealthManager with ChangeNotifier {
     if (patientId == null) {
       throw const InvalidResponseException('Patient returned has no associated ID');
     }
-    final auth = AuthData(patientId, email);
+    final auth = AuthData(patientId, email, true);
     _authData = auth;
     notifyListeners();
     return _authData;
@@ -194,7 +243,7 @@ class OpenHealthManager with ChangeNotifier {
     if (id == null) {
       throw const InvalidResponseException('Returned response has no patient ID');
     }
-    final auth = AuthData(id, email);
+    final auth = AuthData(id, email, false);
     _authData = auth;
     notifyListeners();
     return auth;
@@ -209,6 +258,21 @@ class OpenHealthManager with ChangeNotifier {
   Reference? createPatientReference() {
     final id = authData?.id;
     return id == null ? null : Reference(reference: "Patient/${id.value}");
+  }
+
+  /// Attempts to pull the Patient resource for this patient.
+  ///
+  /// This method will raise a [NotAuthenticatedError] if invoked when [isSignedIn] is false. For a list of valid query
+  /// parameters, see the [FHIR documentation](https://hl7.org/fhir/R4/search.html).
+  Future<Patient> queryPatient() async {
+    final patientId = _authData?.id.toString();
+    if (patientId == null) {
+      throw NotAuthenticatedError("No current session");
+    }
+    final uri = fhirBase.resolve("Patient/$patientId");
+    log("targetURI: " + uri.toString());
+    final jsonObject = await getJsonObject(uri);
+    return Patient.fromJson(jsonObject);
   }
 
   /// Attempts to query a given resource.
@@ -261,7 +325,7 @@ class OpenHealthManager with ChangeNotifier {
   /// If the response cannot be parsed as JSON, this will throw a [FormatException]. If the response can be parsed as
   /// JSON but is otherwise invalid, throws a [InvalidResponseException].
   Future<Map<String, dynamic>> getJsonObject(Uri uri) async {
-    return _parseJsonResponse(await http.get(uri));
+    return _parseJsonResponse(await http.get(uri, headers: {"Cache-Control": "no-cache"}));
   }
 
   /// Sends a process message with the given set of resources.
@@ -308,10 +372,40 @@ class OpenHealthManager with ChangeNotifier {
     return postJsonObjectToResource(resourceType, resource.toJson());
   }
 
+  /// Wrapper around postJsonObject to post a transaction.
+  Future<Map<String, dynamic>> postTransaction(Bundle transaction) {
+    return postJsonObject(fhirBase, transaction.toJson());
+  }
+
+  /// Wrapper around putJsonObjectToResource to PUT a given resource.
+  ///
+  /// The resource **must** have a defined [resource.resourceType] or this will
+  /// raise an [InvalidResourceException].
+  Future<Map<String, dynamic>> putResource(Resource resource) {
+    final resourceType = resource.resourceTypeString;
+    if (resourceType == null) {
+      throw const InvalidResourceException(
+          "Cannot post resources without a type (they are invalid)");
+    }
+    final resourceId = resource.id?.value;
+    if (resourceId == null) {
+      throw const InvalidResourceException(
+          "Cannot post resources without an id");
+    }
+    return putJsonObjectToResourceId(
+        resourceType, resourceId, resource.toJson());
+  }
   /// Helper method for posting a JSON object to a specific FHIR resource on the server, and receiving a JSON object as
   /// a response.
   Future<Map<String, dynamic>> postJsonObjectToResource(String resource, Map<String, dynamic> object) {
     return postJsonObject(fhirBase.resolve(resource), object);
+  }
+
+  /// Helper method for putting a JSON object to a specific FHIR resource on the server, and receiving a JSON object as
+  /// a response.
+  Future<Map<String, dynamic>> putJsonObjectToResourceId(
+      String resource, String id, Map<String, dynamic> object) {
+    return putJsonObject(fhirBase.resolve("$resource/$id"), object);
   }
 
   /// Helper method for posting a JSON object to the server and receiving a JSON object as a response.
@@ -319,5 +413,13 @@ class OpenHealthManager with ChangeNotifier {
     return _parseJsonResponse(await http.post(url, headers: {
       "Content-type": "application/json; charset=utf-8"
     }, body: json.encode(object)));
+  }
+
+  /// Helper method for posting a JSON object to the server and receiving a JSON object as a response.
+  Future<Map<String, dynamic>> putJsonObject(
+      Uri url, Map<String, dynamic> object) async {
+    return _parseJsonResponse(await http.put(url,
+        headers: {"Content-type": "application/json; charset=utf-8"},
+        body: json.encode(object)));
   }
 }

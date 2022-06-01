@@ -147,7 +147,8 @@ extension BloodPressureQuerying on OpenHealthManager {
   /// but otherwise eaten and simply left out of the result.
   Future<List<BloodPressureObservation>> queryBloodPressure() async {
     final bundle = await queryResource("Observation", {
-      "code": "http://loinc.org|55284-4"
+      "code": "http://loinc.org|55284-4",
+      "_sort": "-date"
     });
     final results = <BloodPressureObservation>[];
     final entries = bundle.entry;
@@ -168,7 +169,15 @@ extension BloodPressureQuerying on OpenHealthManager {
   }
 
   /// Attempts to post the given blood pressure observation back to the Open Health Manager.
-  Future<void> postBloodPressure(BloodPressureObservation observation) async {
-    postResource(observation.generateObservation(createPatientReference()));
+  Future<void> postBloodPressure(BloodPressureObservation observation,
+    {bool addToBatch=false}
+  ) async {
+    Observation fhirResource =
+        observation.generateObservation(createPatientReference());
+    if (addToBatch) {
+      transactionManager.addEntryToUpdateBatch(fhirResource);
+    } else {
+      postResource(fhirResource);
+    }
   }
 }
