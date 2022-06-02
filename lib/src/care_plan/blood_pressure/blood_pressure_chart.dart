@@ -14,8 +14,10 @@
 
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../rosie_dialog.dart';
 import '../../rosie_theme.dart';
 import '../../open_health_manager/blood_pressure.dart';
+import 'blood_pressure_help.dart';
 import 'blood_pressure_vis_screen.dart';
 
 /// The urgency of the BP reading. For now this is basically just an index from
@@ -24,6 +26,9 @@ class BPChartUrgency {
   const BPChartUrgency(this.index, {required this.outdated});
   final int index;
   final bool outdated;
+
+  /// Determines if this is considered an "emergency" and causes extra UI elements to display
+  bool get emergency => index >= 3;
 }
 
 enum _ScaleId {
@@ -333,7 +338,32 @@ class _BloodPressureCallout extends StatelessWidget {
         text.add(const TextSpan(text: "."));
       }
     }
-    return Text.rich(TextSpan(children: text), style: RosieTheme.comicFont(), softWrap: true);
+    final textWidget = Text.rich(TextSpan(children: text), style: RosieTheme.comicFont(), softWrap: true);
+    if (urgency.emergency) {
+      // Slightly different
+      return Column(
+        children: <Widget>[
+          textWidget,
+          ElevatedButton(
+            child: const Text("Get Help!"),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return const RosieDialog(
+                    children: [
+                      BloodPressureHelp(emergency: true)
+                    ]
+                  );
+                }
+              );
+            },
+          )
+        ],
+      );
+    } else {
+      return textWidget;
+    }
   }
 
   @override

@@ -112,7 +112,10 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
                     return const RosieDialog(
                       expression: RosieExpression.surprised,
                       children: [
-                        BloodPressureHelp()
+                        // For right now, this is never an "emergency" when
+                        // showing the help, that's only ever accessed via the
+                        // main page
+                        BloodPressureHelp(emergency: false)
                       ]
                     );
                   }
