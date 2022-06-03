@@ -18,14 +18,10 @@ import 'package:fhir/r4.dart'
         Code,
         CodeableConcept,
         Coding,
-        Decimal,
         FhirDateTime,
         FhirUri,
-        Instant,
         Observation,
-        ObservationComponent,
         ObservationStatus,
-        Quantity,
         Reference;
 import 'open_health_manager.dart';
 import 'util.dart';

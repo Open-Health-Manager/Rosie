@@ -16,8 +16,8 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:rosie/src/open_health_manager/patient_data.dart';
-import 'package:rosie/src/open_health_manager/smoking_status.dart';
+import '../open_health_manager/patient_data.dart';
+import '../open_health_manager/smoking_status.dart';
 
 class InternalException implements Exception {
   const InternalException(this.message);
