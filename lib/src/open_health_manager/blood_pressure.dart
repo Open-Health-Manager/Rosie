@@ -13,7 +13,8 @@
 // limitations under the License.
 
 import 'dart:developer';
-import 'package:fhir/r4.dart' show Observation;
+import 'package:fhir/r4.dart' show Code, CodeableConcept, Coding, Decimal,
+  FhirUri, Instant, Observation, ObservationComponent, Quantity, Reference;
 import 'open_health_manager.dart';
 import 'util.dart';
 
@@ -85,6 +86,58 @@ class BloodPressureObservation {
     compareTo = compareTo.subtract(const Duration(days: 365));
     return takenAt.isBefore(compareTo);
   }
+
+  /// Generates a FHIR Observation record for this blood pressure record.
+  Observation generateObservation(Reference? subject) {
+    final issued = taken;
+    return Observation(
+      code: CodeableConcept(
+        coding: <Coding>[
+          Coding(system: FhirUri(Systems.loinc), code: Code('55284-4'))
+        ]
+      ),
+      issued: issued == null ? null : Instant.fromDateTime(issued),
+      component: <ObservationComponent>[
+        ObservationComponent(
+          code: CodeableConcept(
+            text: 'Systolic blood pressure',
+            coding: <Coding>[
+              Coding(
+                display: 'Systolic blood pressure',
+                system: FhirUri(Systems.loinc),
+                code: Code("8480-6")
+              )
+            ]
+          ),
+          valueQuantity: Quantity(
+            system: FhirUri(Systems.unitsOfMeasure),
+            code: Code('mm[Hg]'),
+            unit: 'mm[Hg]',
+            value: Decimal(systolic)
+          )
+        ),
+        ObservationComponent(
+          code: CodeableConcept(
+            text: 'Diastolic blood pressure',
+            coding: <Coding>[
+              Coding(
+                display: 'Diastolic blood pressure',
+                system: FhirUri(Systems.loinc),
+                code: Code("8462-4")
+              )
+            ]
+          ),
+          valueQuantity: Quantity(
+            system: FhirUri(Systems.unitsOfMeasure),
+            code: Code('mm[Hg]'),
+            unit: 'mm[Hg]',
+            value: Decimal(diastolic)
+          )
+        )
+      ],
+      subject: subject
+    );
+  }
 }
 
 extension BloodPressureQuerying on OpenHealthManager {
@@ -94,7 +147,8 @@ extension BloodPressureQuerying on OpenHealthManager {
   /// but otherwise eaten and simply left out of the result.
   Future<List<BloodPressureObservation>> queryBloodPressure() async {
     final bundle = await queryResource("Observation", {
-      "code": "http://loinc.org|55284-4"
+      "code": "http://loinc.org|55284-4",
+      "_sort": "-date"
     });
     final results = <BloodPressureObservation>[];
     final entries = bundle.entry;
@@ -112,5 +166,18 @@ extension BloodPressureQuerying on OpenHealthManager {
       }
     }
     return results;
+  }
+
+  /// Attempts to post the given blood pressure observation back to the Open Health Manager.
+  Future<void> postBloodPressure(BloodPressureObservation observation,
+    {bool addToBatch=false}
+  ) async {
+    Observation fhirResource =
+        observation.generateObservation(createPatientReference());
+    if (addToBatch) {
+      transactionManager.addEntryToUpdateBatch(fhirResource);
+    } else {
+      postResource(fhirResource);
+    }
   }
 }

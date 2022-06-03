@@ -16,9 +16,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:rosie/src/care_plan/blood_pressure/blood_pressure_vis_screen.dart';
-import 'rosie_theme.dart';
+import 'package:provider/provider.dart';
+import 'care_plan/care_plan_home.dart';
 import 'get_started/get_started.dart';
+import 'open_health_manager/open_health_manager.dart';
+import 'app_config.dart';
+import 'rosie_theme.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -29,7 +32,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // Selected tab
-  int _selectedIndex = 2;
+  late int _selectedIndex;
+  String? _uspstfApiKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = context.read<OpenHealthManager>().authData?.dataConnected == true ? 1 : 2;
+    // Grab the API key if possible
+    _uspstfApiKey = context.read<AppConfig>().getString("uspstfApi.key");
+  }
 
   _onItemTapped(int index) {
     setState(() {
@@ -49,10 +61,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSelectedPage() {
     switch (_selectedIndex) {
+      case 1:
+        return _addRosieBackground(Center(
+          child: _uspstfApiKey == null ?
+            const Text("Not configured (API key missing)") :
+            CarePlanHome(apiKey: _uspstfApiKey!)
+          ));
       case 2:
         return _addRosieBackground(const Center(child: GetStarted()));
-      case 3:
-        return _addRosieBackground(const BloodPressureVisualizationScreen());
       default:
         return _addRosieBackground(const Center(child: Text("Not Implemented")));
     }

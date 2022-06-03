@@ -19,6 +19,8 @@
 import 'package:flutter/foundation.dart';
 import 'open_health_manager.dart';
 import 'blood_pressure.dart';
+import 'smoking_status.dart';
+import 'patient_demographics.dart';
 
 /// The load state of a piece of data
 enum LoadState {
@@ -48,6 +50,7 @@ class CachedData<T> {
 
   /// The current loading state.
   LoadState get state => _state;
+
   /// Gets the current value, or null if it isn't loaded. This will never trigger a load. Use get() to do that.
   T? get value => _value;
 
@@ -106,12 +109,20 @@ class PatientData extends ChangeNotifier {
 
   final OpenHealthManager healthManager;
 
+  late final patientDemographics = CachedData<PatientDemographics?>(() async {
+    return await healthManager.queryPatientDemographics();
+  });
   late final bloodPressure = CachedData<List<BloodPressureObservation>>(() async {
     return await healthManager.queryBloodPressure();
   });
+  late final smokingStatus =
+      CachedData<List<SmokingStatusObservation>>(() async {
+    return await healthManager.querySmokingStatus();
+  });
 
-  /// This is a stub method for an eventual API that might deal with actually setting the data.
-  void addBloodPressureObservation(BloodPressureObservation obs) {
+  /// Adds a blood pressure observation to the current data (even if it hasn't been loaded yet) and then attempts to
+  /// write it to the backend.
+  Future<void> addBloodPressureObservation(BloodPressureObservation obs, {bool inBatch = false}) async {
     final List<BloodPressureObservation>? bps = bloodPressure.value;
     if (bps == null) {
       // Set a single value list
@@ -119,5 +130,38 @@ class PatientData extends ChangeNotifier {
     } else {
       bps.add(obs);
     }
+    // And then do this:
+    await healthManager.postBloodPressure(obs, addToBatch: inBatch);
+  }
+
+  /// Adds a smoking status observation to the current data (even if it hasn't been loaded yet) and then attempts to
+  /// write it to the backend.
+  Future<void> addSmokingStatusObservation(SmokingStatusObservation obs,
+      {bool inBatch = false}) async {
+    final List<SmokingStatusObservation>? statusObsList = smokingStatus.value;
+    if (statusObsList == null) {
+      // Set a single value list
+      smokingStatus.set(<SmokingStatusObservation>[obs]);
+    } else {
+      statusObsList.add(obs);
+    }
+    // And then do this:
+    await healthManager.postSmokingStatus(obs, addToBatch: inBatch);
+  }
+
+  /// writes the current patient demographics to the backend (if loaded)
+  Future<void> updatePatientDemographics({bool inBatch = false}) async {
+    if (patientDemographics._state == LoadState.done) {
+      PatientDemographics? currentDemographics = patientDemographics.value;
+      if (currentDemographics != null) {
+        await healthManager.putPatientDemographics(currentDemographics,
+            addToBatch: inBatch);
+      }
+    }
+  }
+
+  Future<void> postCurrentTransaction() async {
+    await healthManager.transactionManager
+        .postCurrentUpdateBatch(healthManager);
   }
 }

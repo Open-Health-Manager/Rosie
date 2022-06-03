@@ -15,9 +15,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:rosie/src/rosie_text_balloon.dart';
+import 'package:provider/provider.dart';
 import '../../open_health_manager/blood_pressure.dart';
+import '../../open_health_manager/patient_data.dart';
 import '../../rosie_dialog.dart';
+import '../../rosie_text_balloon.dart';
 import '../../rosie_theme.dart';
 import 'blood_pressure_help.dart';
 
@@ -110,7 +112,10 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
                     return const RosieDialog(
                       expression: RosieExpression.surprised,
                       children: [
-                        BloodPressureHelp()
+                        // For right now, this is never an "emergency" when
+                        // showing the help, that's only ever accessed via the
+                        // main page
+                        BloodPressureHelp(emergency: false)
                       ]
                     );
                   }
@@ -119,13 +124,30 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
             ),
             ElevatedButton(
               child: const Text("Update"),
-              onPressed: () {
-                Navigator.of(context).pop(
-                  BloodPressureObservation(
-                    double.tryParse(_systolicController.text) ?? 0,
-                    double.tryParse(_diastolicController.text) ?? 0,
-                    _entryDate
-                  ));
+              onPressed: () async {
+                // When the button is pressed, try and store the new value in
+                // the backend
+                final obs = BloodPressureObservation(
+                  double.tryParse(_systolicController.text) ?? 0,
+                  double.tryParse(_diastolicController.text) ?? 0,
+                  _entryDate
+                );
+                final patientData = context.read<PatientData>();
+                // Push on a dialog state, not awaiting the future
+                Navigator.of(context).push(DialogRoute(context: context,
+                  builder: (BuildContext context) {
+                    return const RosieDialog(title: "Updating Health Record...",
+                      children: <Widget>[
+                        CircularProgressIndicator(),
+                      ]
+                    );
+                  })
+                );
+                await patientData.addBloodPressureObservation(obs);
+                // Pop off our loading modal
+                Navigator.of(context).pop();
+                // And the observation we just created
+                Navigator.of(context).pop(obs);
               }
             )
           ]

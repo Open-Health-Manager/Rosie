@@ -1,3 +1,6 @@
 {
-  "fhirBase": "http://localhost:8080/fhir/"
+  "fhirBase": "http://localhost:8080/fhir/",
+  "uspstfApi" : {
+    "key": null
+  }
 }

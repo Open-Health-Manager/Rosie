@@ -16,15 +16,33 @@ import 'package:flutter/material.dart';
 import '../../rosie_theme.dart';
 
 class BloodPressureHelp extends StatelessWidget {
-  const BloodPressureHelp({Key? key}) : super(key: key);
+  const BloodPressureHelp({Key? key, required this.emergency}) : super(key: key);
+
+  final bool emergency;
 
   @override
   Widget build(BuildContext context) {
-    final textStyle = RosieTheme.font(fontSize: 14);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Text("How can I help?", style: RosieTheme.font(fontSize: 24)),
+        Text(emergency ? "How can I help?" : "Let's get some help!", style: RosieTheme.font(fontSize: 24)),
+        ..._createActionButtons(context),
+        const SizedBox(height: 15),
+        _createButtonBar(context)
+      ]
+    );
+  }
+
+  List<Widget> _createActionButtons(BuildContext context) {
+    if (emergency) {
+      return <Widget>[
+        ElevatedButton(child: const Text("Find an emergency room near you"), onPressed: () { }),
+        ElevatedButton(child: const Text("Call your emegency contact"), onPressed: () { }),
+        ElevatedButton(child: const Text("Call 911"), onPressed: () { })
+      ];
+    } else {
+      final textStyle = RosieTheme.font(fontSize: 14);
+      return <Widget>[
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -45,16 +63,33 @@ class BloodPressureHelp extends StatelessWidget {
             Expanded(child: Text("Learn how to check it", style: textStyle)),
             ElevatedButton(child: const Text("Check It"), onPressed: () { })
           ]
-        ),
-        const SizedBox(height: 15),
-        Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: OutlinedButton(
-            child: const Text("Go Back"),
-            onPressed: () { Navigator.of(context).pop(); },
-          )
         )
-      ]
+      ];
+    }
+  }
+
+  Widget _createButtonBar(BuildContext context) {
+    // Go back button is always the same
+    final goBack = OutlinedButton(
+      child: const Text("Go Back"),
+      onPressed: () { Navigator.of(context).pop(); },
     );
+    if (emergency) {
+      return Wrap(
+        crossAxisAlignment: WrapCrossAlignment.end,
+        children: <Widget>[
+          OutlinedButton(
+            child: const Text("Why is this an emergency?"),
+            onPressed: () { }
+          ),
+          goBack
+        ]
+      );
+    } else {
+      return Align(
+        alignment: AlignmentDirectional.centerEnd,
+        child: goBack
+      );
+    }
   }
 }

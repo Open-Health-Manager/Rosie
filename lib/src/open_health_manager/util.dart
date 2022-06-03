@@ -16,6 +16,18 @@
 
 import 'package:fhir/r4.dart' show CodeableConcept, Coding, Quantity;
 
+/// Well known FHIR system URIs.
+class Systems {
+  /// LOINC
+  static const loinc = "http://loinc.org";
+
+  /// Units of Measure
+  static const unitsOfMeasure = "http://unitsofmeasure.org";
+
+  /// SNOMED-CT
+  static const sct = "http://snomed.info/sct";
+}
+
 bool Function(Coding) matchesCodes(Map<String, List<String>> systems) {
   return (Coding coding) {
     final system = coding.system;
@@ -53,7 +65,7 @@ Coding? findCodingInConcept(CodeableConcept? concept, bool Function(Coding) matc
 }
 
 class Unit {
-  const Unit(this.code, { this.system = 'http://unitsofmeasure.org' });
+  const Unit(this.code, { this.system = Systems.unitsOfMeasure });
   final String system;
   final String code;
 }
