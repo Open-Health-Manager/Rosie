@@ -18,13 +18,13 @@ import 'package:fhir/r4.dart' show Code, CodeableConcept, Coding, Decimal,
 import 'open_health_manager.dart';
 import 'util.dart';
 
-// Known systolic codes by system.
+/// Known systolic codes by system.
 const systolicCoding = <String, List<String>>{
   "http://loinc.org": [
     "8480-6"
   ]
 };
-// Known diastolic codes by system.
+/// Known diastolic codes by system.
 const diastolicCoding = <String, List<String>>{
   "http://loinc.org": [
     "8462-4"
@@ -73,9 +73,9 @@ class BloodPressureObservation {
   final double diastolic;
   final DateTime? taken;
 
-  // Determine if this sample is "outdated" - currently defined to be "more than
-  // a year out of date." If the taken time is unknown, this is always assumed
-  // to be out of date.
+  /// Determine if this sample is "outdated" - currently defined to be "more than
+  /// a year out of date." If the taken time is unknown, this is always assumed
+  /// to be out of date.
   bool isOutdated([DateTime? now]) {
     final DateTime? takenAt = taken;
     if (takenAt == null) {

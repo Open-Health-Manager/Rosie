@@ -16,7 +16,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../rosie_dialog.dart';
 import '../../rosie_theme.dart';
-import '../../open_health_manager/blood_pressure.dart';
+import '../../../open_health_manager/blood_pressure.dart';
 import 'blood_pressure_help.dart';
 import 'blood_pressure_vis_screen.dart';
 
@@ -52,7 +52,7 @@ class _ScalePosition {
   final bool baselineAlign;
 }
 
-// The layout delegate.
+/// The layout delegate for placing labels on the chart.
 class _BloodPressureScaleLayout extends MultiChildLayoutDelegate {
   static const positionsById = [
     _ScalePosition(-1, -1),
@@ -66,8 +66,8 @@ class _BloodPressureScaleLayout extends MultiChildLayoutDelegate {
 
   _BloodPressureScaleLayout(this.padding, this.systolicTicks, this.diastolicTicks);
 
-  // Padding simply specifies the amount to push the text off their anchor point. It is currently always implemented
-  // symetrically.
+  /// Padding simply specifies the amount to push the text off their anchor point. It is currently always implemented
+  /// symetrically.
   final EdgeInsets padding;
   final List<double> systolicTicks;
   final List<double> diastolicTicks;

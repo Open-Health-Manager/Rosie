@@ -15,9 +15,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../open_health_manager/patient_data.dart';
-import '../../open_health_manager/smoking_status.dart';
-import '../../open_health_manager/patient_demographics.dart';
+import '../../../open_health_manager/patient_data.dart';
+import '../../../open_health_manager/smoking_status.dart';
+import '../../../open_health_manager/patient_demographics.dart';
 
 import '../../rosie_theme.dart';
 

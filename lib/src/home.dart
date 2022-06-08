@@ -19,7 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'care_plan/care_plan_home.dart';
 import 'get_started/get_started.dart';
-import 'open_health_manager/open_health_manager.dart';
+import '../open_health_manager/open_health_manager.dart';
 import 'app_config.dart';
 import 'rosie_theme.dart';
 

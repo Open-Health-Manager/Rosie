@@ -17,7 +17,7 @@ import 'package:provider/provider.dart';
 import 'care_plan_cards.dart';
 import 'patient_info_form/patient_info.dart';
 import '../service/preventative_services_task_force.dart';
-import '../open_health_manager/patient_data.dart';
+import '../../open_health_manager/patient_data.dart';
 
 class CarePlanHome extends StatefulWidget {
   const CarePlanHome({Key? key, required this.apiKey}) : super(key: key);

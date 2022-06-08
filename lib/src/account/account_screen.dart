@@ -17,8 +17,8 @@
 import 'package:flutter/material.dart';
 import 'account_theme.dart';
 
-// This provides the basic framework for the two otherwise identical sign-in
-// screens.
+/// This provides the basic framework for the two otherwise identical sign-in
+/// screens.
 class AccountScreen extends StatefulWidget {
   const AccountScreen({Key? key, required this.title, required this.fields, required this.submitLabel, required this.onSubmit, this.loadingLabel="Loading..."}) : super(key: key);
 
@@ -36,7 +36,7 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  // This is the future that indicates if a login/account creation is in process
+  /// This is the future that indicates if a login/account creation is in process
   Future<String?>? _submitFuture;
 
   @override

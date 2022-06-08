@@ -17,8 +17,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'account_screen.dart';
-import '../open_health_manager/open_health_manager.dart';
+import '../../open_health_manager/open_health_manager.dart';
 
+/// Sign-in page.
 class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
 

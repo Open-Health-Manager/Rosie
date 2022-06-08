@@ -18,8 +18,8 @@ import 'package:provider/provider.dart';
 import '../../rosie_dialog.dart';
 import '../../rosie_text_balloon.dart';
 import '../../rosie_theme.dart';
-import '../../open_health_manager/patient_data.dart';
-import '../../open_health_manager/blood_pressure.dart';
+import '../../../open_health_manager/patient_data.dart';
+import '../../../open_health_manager/blood_pressure.dart';
 import 'blood_pressure_entry.dart';
 import 'blood_pressure_chart.dart';
 

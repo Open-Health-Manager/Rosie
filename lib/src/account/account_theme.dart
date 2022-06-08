@@ -14,12 +14,14 @@
 
 import 'package:flutter/material.dart';
 
+/// Colors used for the account pages.
 class AccountThemePalette {
   static const Color darkGrey = Color.fromARGB(255, 0x28, 0x28, 0x28);
   static const Color background = Color.fromARGB(255, 66, 140, 227);
   static const Color textColor = Colors.white;
 }
 
+/// Create a new theme for the account pages
 ThemeData createAccountTheme() {
   return ThemeData(
     brightness: Brightness.dark,

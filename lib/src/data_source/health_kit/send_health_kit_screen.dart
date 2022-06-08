@@ -15,7 +15,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'health_kit.dart';
-import '../../open_health_manager/open_health_manager.dart';
+import '../../../open_health_manager/open_health_manager.dart';
 
 class SendHealthKitScreen extends StatefulWidget {
   const SendHealthKitScreen({Key? key}) : super(key: key);

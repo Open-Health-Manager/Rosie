@@ -14,7 +14,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fhir/r4.dart';
-import 'package:rosie/src/open_health_manager/blood_pressure.dart';
+import 'package:rosie/open_health_manager/blood_pressure.dart';
 
 
 void main() {

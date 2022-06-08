@@ -20,8 +20,8 @@ import 'package:provider/provider.dart';
 
 import 'app_config.dart';
 import 'home.dart';
-import 'open_health_manager/open_health_manager.dart';
-import 'open_health_manager/patient_data.dart';
+import '../open_health_manager/open_health_manager.dart';
+import '../open_health_manager/patient_data.dart';
 import 'rosie_theme.dart';
 import 'onboarding/onboarding.dart';
 
