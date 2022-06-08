@@ -17,6 +17,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:fhir/r4.dart';
+import 'transaction_manager.dart';
 
 class InternalException implements Exception {
   const InternalException(this.message);
@@ -122,51 +123,6 @@ class AuthData {
   bool dataConnected;
 }
 
-class TransactionManager {
-  Bundle? _updateBatch;
-
-  bool activeBatch() {
-    return (_updateBatch != null);
-  }
-
-  createUpdateBatch() {
-    if (_updateBatch != null) {}
-    _updateBatch = Bundle(type: BundleType.transaction);
-  }
-
-  postCurrentUpdateBatch(OpenHealthManager manager) async {
-    if (_updateBatch != null) {
-      await manager.postTransaction(_updateBatch!);
-      _updateBatch = null;
-    }
-  }
-
-  addEntryToUpdateBatch(Resource theResource) {
-    if (_updateBatch == null) {
-      createUpdateBatch();
-    }
-    BundleEntry theEntry = BundleEntry(
-      resource: theResource,
-      request: BundleRequest(
-          method: (theResource.id == null)
-              ? BundleRequestMethod.post
-              : BundleRequestMethod.put,
-          url: FhirUri(theResource.resourceTypeString! +
-              ((theResource.id == null || theResource.id!.value == null)
-                  ? ""
-                  : "/" + theResource.id!.value!))),
-    );
-    List<BundleEntry>? updatedEntryList = _updateBatch!.entry;
-    if (updatedEntryList == null) {
-      updatedEntryList = <BundleEntry>[theEntry];
-    } else {
-      updatedEntryList.add(theEntry);
-    }
-
-    _updateBatch = _updateBatch!.copyWith(entry: updatedEntryList);
-  }
-}
-
 /// Provides APIs for accessing parts of Open Health Manager.
 /// This also holds on to the authentication information.
 class OpenHealthManager with ChangeNotifier {
@@ -176,7 +132,10 @@ class OpenHealthManager with ChangeNotifier {
   ///
   /// Resolved URIs are created via [fhirBase.resolve].
   final Uri fhirBase;
-  final TransactionManager transactionManager = TransactionManager();
+  final transactionManager = TransactionManager();
+
+  /// Internal client used for all requests.
+  final client = http.Client();
   AuthData? _authData;
 
   AuthData? get authData => _authData;
@@ -194,7 +153,7 @@ class OpenHealthManager with ChangeNotifier {
     }
   }
 
-  /// Attempts to sign in. Returns null if the sign in attempt was rejected. Raises an exception on communication failure.
+  /// Attempts to sign in. Returns `null` if the sign in attempt failed. Raises an exception on communication failure.
   Future<AuthData?> signIn(String email, String password) async {
     final jsonData = await getJsonObjectFromResource('Patient', {
       "identifier": "urn:mitre:healthmanager:account:username|$email"
@@ -294,9 +253,22 @@ class OpenHealthManager with ChangeNotifier {
     return Bundle.fromJson(jsonObject);
   }
 
-  /// Parse a response as a JSON object, throwing an [InvalidResponseException] if the JSON response isn't a JSON object.
-  /// Throws a [FormatException] if the given data cannot be parsed as JSON.
-  Map<String, dynamic> _parseJsonResponse(http.Response response) {
+  /// Core method for sending HTTP requests. This will add any necessary authentication headers to the request before
+  /// sending it. See [http.Client.send] for details about the underlying method used. If an error prevents the request
+  /// from being sent, an [http.ClientException] may be raised.
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    // Currently this does nothing. In the future it will set the Bearer token.
+    return client.send(request);
+  }
+
+  /// Sends a request, parsing the response as a JSON object and returning that JSON object.
+  ///
+  /// This wraps [send] and therefore may throw [http.ClientException]. If the response cannot be parsed as JSON, this
+  /// will throw a [FormatException]. IF it can be parsed but does not contain a JSON object, it will throw a
+  /// [InvalidResponseException]. If the server response is an error, this will throw a [ServerErrorException].
+  Future<Map<String, dynamic>> sendJsonRequest(http.BaseRequest request) async {
+    final streamedResponse = await send(request);
+    final response = await http.Response.fromStream(streamedResponse);
     if (response.statusCode >= 200 && response.statusCode < 299) {
       final parsed = json.decode(response.body);
       if (parsed is Map<String, dynamic>) {
@@ -307,6 +279,15 @@ class OpenHealthManager with ChangeNotifier {
     } else {
       throw ServerErrorException.fromResponse(response, 'Server returned an error');
     }
+  }
+
+  /// Send a JSON object and receive a JSON object in response. This wraps [sendJsonRequest] and generates a
+  /// [http.Request] containing the given object as the HTTP body.
+  Future<Map<String, dynamic>> sendJsonObject(String method, Uri uri, Map<String, dynamic> object) {
+    final request = http.Request(method, uri);
+    request.headers['Content-Type'] = 'application/json; charset=utf8';
+    request.body = json.encode(object);
+    return sendJsonRequest(request);
   }
 
   /// Sends a GET query to a specific FHIR resource and retrieve a parsed JSON object.
@@ -324,8 +305,23 @@ class OpenHealthManager with ChangeNotifier {
   ///
   /// If the response cannot be parsed as JSON, this will throw a [FormatException]. If the response can be parsed as
   /// JSON but is otherwise invalid, throws a [InvalidResponseException].
-  Future<Map<String, dynamic>> getJsonObject(Uri uri) async {
-    return _parseJsonResponse(await http.get(uri, headers: {"Cache-Control": "no-cache"}));
+  Future<Map<String, dynamic>> getJsonObject(Uri uri) {
+    final request = http.Request("GET", uri);
+    // TODO: Make this a parameter or something?
+    request.headers["Cache-Control"] = "no-cache";
+    return sendJsonRequest(request);
+  }
+
+  /// Helper method for POSTing a JSON object to the server and receiving a JSON object as a response. This wraps
+  /// [sendJsonRequest] and can throw exceptions it can.
+  Future<Map<String, dynamic>> postJsonObject(Uri url, Map<String, dynamic> object) {
+    return sendJsonObject('POST', url, object);
+  }
+
+  /// Helper method for PUTting a JSON object to the server and receiving a JSON object as a response. This wraps
+  /// [sendJsonRequest] and can throw exceptions it can.
+  Future<Map<String, dynamic>> putJsonObject(Uri url, Map<String, dynamic> object) {
+    return sendJsonObject('PUT', url, object);
   }
 
   /// Sends a process message with the given set of resources.
@@ -406,20 +402,5 @@ class OpenHealthManager with ChangeNotifier {
   Future<Map<String, dynamic>> putJsonObjectToResourceId(
       String resource, String id, Map<String, dynamic> object) {
     return putJsonObject(fhirBase.resolve("$resource/$id"), object);
-  }
-
-  /// Helper method for posting a JSON object to the server and receiving a JSON object as a response.
-  Future<Map<String, dynamic>> postJsonObject(Uri url, Map<String, dynamic> object) async {
-    return _parseJsonResponse(await http.post(url, headers: {
-      "Content-type": "application/json; charset=utf-8"
-    }, body: json.encode(object)));
-  }
-
-  /// Helper method for posting a JSON object to the server and receiving a JSON object as a response.
-  Future<Map<String, dynamic>> putJsonObject(
-      Uri url, Map<String, dynamic> object) async {
-    return _parseJsonResponse(await http.put(url,
-        headers: {"Content-type": "application/json; charset=utf-8"},
-        body: json.encode(object)));
   }
 }
