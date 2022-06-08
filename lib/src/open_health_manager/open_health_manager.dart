@@ -102,9 +102,10 @@ class InvalidConfigError extends Error {
 /// Mostly a place-holder class, this represents the authentication information. At present, this just contains the
 /// patient ID.
 class AuthData {
-  AuthData(this.id, this.username, this.dataConnected);
+  AuthData(this.id, this.username, this.bearerToken, this.dataConnected);
   final Id id;
   final String username;
+  final String bearerToken;
 
   MessageHeader createHeader({String? endpoint}) {
     return MessageHeader(
@@ -126,9 +127,17 @@ class AuthData {
 /// Provides APIs for accessing parts of Open Health Manager.
 /// This also holds on to the authentication information.
 class OpenHealthManager with ChangeNotifier {
-  OpenHealthManager({required this.fhirBase});
+  /// Create a new OpenHealthManager instance with the given configuration options.
+  OpenHealthManager({required this.serverUrl, required this.fhirBase});
 
-  /// The base URI for FHIR requests.
+  /// Creates the OpenHealthManager for a single server.
+  OpenHealthManager.forServerURL(this.serverUrl) : fhirBase = serverUrl.resolve('fhir/');
+
+  /// The base URI for the backend server.
+  final Uri serverUrl;
+
+  /// The base URI for FHIR requests. This is generally just [serverUrl] with
+  /// the path `fhir/` added to the end.
   ///
   /// Resolved URIs are created via [fhirBase.resolve].
   final Uri fhirBase;
@@ -141,40 +150,46 @@ class OpenHealthManager with ChangeNotifier {
   AuthData? get authData => _authData;
   bool get isSignedIn => _authData != null;
 
+  /// Creates an OpenHealthManager with the given configuration. Currently this looks for a single key in the given
+  /// object, `"openHealthManager"`, which is a string that's used to populate [serverUrl]. In the future this may
+  /// accept an object with more settings.
+  ///
+  /// If the value is missing or invalid, this throws [InvalidConfigError].
   static OpenHealthManager fromConfig(Map<String, dynamic> config) {
-    if (!config.containsKey("fhirBase")) {
-      throw InvalidConfigError('Missing required key "fhirBase"');
+    if (!config.containsKey("openHealthManager")) {
+      throw InvalidConfigError('Missing required key "openHealthManager"');
     }
-    var fhirBase = config["fhirBase"];
-    if (fhirBase is String) {
-      return OpenHealthManager(fhirBase: Uri.parse(fhirBase));
+    var ohmConfig = config["openHealthManager"];
+    if (ohmConfig is String) {
+      final Uri serverUrl;
+      try {
+        serverUrl = Uri.parse(ohmConfig);
+      } on FormatException catch(_) {
+        throw InvalidConfigError('Could not parse URL "$ohmConfig" as a valid URI');
+      }
+      return OpenHealthManager.forServerURL(serverUrl);
     } else {
-      throw InvalidConfigError('Invalid value for key "fhirBase": $fhirBase');
+      // In the future this may also accept a map of more specific values
+      throw InvalidConfigError('Invalid value for key "openHealthManager": $ohmConfig');
     }
   }
 
   /// Attempts to sign in. Returns `null` if the sign in attempt failed. Raises an exception on communication failure.
   Future<AuthData?> signIn(String email, String password) async {
-    final jsonData = await getJsonObjectFromResource('Patient', {
-      "identifier": "urn:mitre:healthmanager:account:username|$email"
+    final jsonData = await postJsonObject(serverUrl.resolve("api/authenticate"), <String, dynamic>{
+      "username": email,
+      "password": password,
+      // Currently always false, unclear if it matters
+      "rememberMe": false
     });
-    final bundle = Bundle.fromJson(jsonData);
-    // Pull out the entries (mostly so the compiler can confirm we throw on null)
-    final entries = bundle.entry;
-    if (entries == null || entries.isEmpty) {
-      // Empty or missing means no matching user means "login" failed
-      return null;
+    // JSON response will only contain the bearer token
+    final token = jsonData["id_token"];
+    if (token is! String) {
+      // Missing or otherwise invalid
+      throw const InvalidResponseException('Missing or invalid "token_id" from server');
     }
-    final patientResource = entries.first.resource;
-    if (patientResource == null) {
-      // This is invalid
-      throw const InvalidResponseException('Server bundle did not include a resource');
-    }
-    final patientId = patientResource.id;
-    if (patientId == null) {
-      throw const InvalidResponseException('Patient returned has no associated ID');
-    }
-    final auth = AuthData(patientId, email, true);
+    // For now, ignore the patient ID
+    final auth = AuthData(Id("1"), email, token, true);
     _authData = auth;
     notifyListeners();
     return _authData;
@@ -183,6 +198,8 @@ class OpenHealthManager with ChangeNotifier {
   /// Attempts to create an account. Throws an exception on error. Returns the associated AuthData for the newly created
   /// account on success.
   Future<AuthData> createAccount(String fullName, String email) async {
+    // FIXME: None of this process will work at present
+    throw UnimplementedError("Creating a new account via JHipster is not currently implemented.");
     final response = await postJsonObjectToResource("Patient", {
       "resourceType": "Patient",
       "identifier": [
@@ -202,7 +219,7 @@ class OpenHealthManager with ChangeNotifier {
     if (id == null) {
       throw const InvalidResponseException('Returned response has no patient ID');
     }
-    final auth = AuthData(id, email, false);
+    final auth = AuthData(id, email, "", false);
     _authData = auth;
     notifyListeners();
     return auth;
@@ -285,7 +302,7 @@ class OpenHealthManager with ChangeNotifier {
   /// [http.Request] containing the given object as the HTTP body.
   Future<Map<String, dynamic>> sendJsonObject(String method, Uri uri, Map<String, dynamic> object) {
     final request = http.Request(method, uri);
-    request.headers['Content-Type'] = 'application/json; charset=utf8';
+    request.headers['Content-Type'] = 'application/json; charset=UTF-8';
     request.body = json.encode(object);
     return sendJsonRequest(request);
   }

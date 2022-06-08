@@ -25,9 +25,9 @@ import 'open_health_manager/patient_data.dart';
 import 'rosie_theme.dart';
 import 'onboarding/onboarding.dart';
 
-const defaultFhirBase = "http://localhost:8080/fhir/";
+const defaultServerUrl = "http://localhost:8080/";
 
-OpenHealthManager _createDefaultHealthManager() => OpenHealthManager(fhirBase: Uri.parse(defaultFhirBase));
+OpenHealthManager _createDefaultHealthManager() => OpenHealthManager.forServerURL(Uri.parse(defaultServerUrl));
 
 OpenHealthManager _createOpenHealthManager(AppConfig config) {
   try {
