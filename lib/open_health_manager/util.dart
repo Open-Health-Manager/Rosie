@@ -44,6 +44,8 @@ bool Function(Coding) matchesCodes(Map<String, List<String>> systems) {
   };
 }
 
+/// Attempts to find a Coding that matches the given matcher within the list of codings. The first coding that matches
+/// is returned. If none matches, returns null. If the codings list itself is null, this returns null.
 Coding? findCoding(List<Coding>? codings, bool Function(Coding) matcher) {
   // To make this API somewhat more forgiving, allow nulls for the input as otherwise they'd always need to be checked.
   if (codings == null) {
@@ -57,6 +59,8 @@ Coding? findCoding(List<Coding>? codings, bool Function(Coding) matcher) {
   return null;
 }
 
+/// Attempts to find a coding within a given CodeableConcept. The first coding that matches is returned. If none can be
+/// found, returns null. If the CodeableConcept is null, this returns null.
 Coding? findCodingInConcept(CodeableConcept? concept, bool Function(Coding) matcher) {
   if (concept == null) {
     return null;
@@ -64,6 +68,10 @@ Coding? findCodingInConcept(CodeableConcept? concept, bool Function(Coding) matc
   return findCoding(concept.coding, matcher);
 }
 
+/// A unit within FHIR. This is the combination of a system (which is almost always [Systems.unitsOfMeasure]) and a
+/// code that describes a unit within that system.
+///
+/// This class is merely a descriptor of a unit, it does not include any translations between units.
 class Unit {
   const Unit(this.code, { this.system = Systems.unitsOfMeasure });
   final String system;

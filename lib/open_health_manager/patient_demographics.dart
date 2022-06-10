@@ -17,18 +17,16 @@ import 'package:fhir/r4.dart'
     show Date, Patient, PatientGender, Resource;
 import 'open_health_manager.dart';
 
-/// internal representation of FHIR Patient Resource
+/// Data pulled out of a Patient resource.
 class PatientDemographics {
-  Patient? _rawFHIR;
-  DateTime? dateOfBirth;
+  /// Raw FHIR resource
+  Patient _rawFHIR;
+  DateTime? _dateOfBirth;
   String? gender;
 
-  PatientDemographics(this.dateOfBirth, this.gender, this._rawFHIR);
+  PatientDemographics(this._dateOfBirth, this.gender, this._rawFHIR);
 
-  /// Attempts to parse a Smoking Status observation from a given FHIR observation.
-  ///
-  /// The coding in the observation itself is **ignored**. This will assume it's a valid coding, and will look for the
-  /// smoking status value
+  /// Attempts to find patient demographic information within a FHIR resource.
   factory PatientDemographics.fromPatient(Patient patient) {
     final ptBirthDate = patient.birthDate?.valueDateTime;
     String? ptGender;
@@ -50,13 +48,16 @@ class PatientDemographics {
     return _rawFHIR;
   }
 
-  void updateDateOfBirth(DateTime? ptBirthDate) {
-    dateOfBirth = ptBirthDate;
-    if (_rawFHIR != null) {
-      _rawFHIR = _rawFHIR!.copyWith(
-          birthDate:
-              (ptBirthDate == null) ? null : Date.fromDateTime(ptBirthDate));
-    }
+  /// Get the date of birth of this patient resource.
+  DateTime? get dateOfBirth => _dateOfBirth;
+
+  /// Sets the data of birth to the given DateTime, assuming only the date
+  /// portion is valid.
+  set dateOfBirth(DateTime? newValue) {
+    dateOfBirth = newValue;
+    _rawFHIR = _rawFHIR.copyWith(
+        birthDate:
+            (newValue == null) ? null : Date.fromDateTime(newValue));
   }
 
   void updateGender(String? ptGender) {
@@ -73,9 +74,7 @@ class PatientDemographics {
     } else {
       genderEnumValue = null;
     }
-    if (_rawFHIR != null) {
-      _rawFHIR = _rawFHIR!.copyWith(gender: genderEnumValue);
-    }
+    _rawFHIR = _rawFHIR.copyWith(gender: genderEnumValue);
   }
 }
 

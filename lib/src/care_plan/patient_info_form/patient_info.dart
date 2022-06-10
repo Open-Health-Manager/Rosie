@@ -221,11 +221,10 @@ class PatientInfoState extends State<PatientInfo> {
           //Provider.of<PatientData>(context, listen: false).dob = value!;
           if (_dateOfBirthDirty) {
             Provider.of<PatientData>(context, listen: false)
-                .patientDemographics
-                .value
-                ?.updateDateOfBirth((value == null)
-                    ? null
-                    : DateFormat('MM/dd/yy').parse(value));
+                    .patientDemographics
+                    .value
+                    ?.dateOfBirth =
+                (value == null) ? null : DateFormat('MM/dd/yy').parse(value);
           }
         },
         onChanged: (value) {
