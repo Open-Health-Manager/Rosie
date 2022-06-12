@@ -99,13 +99,23 @@ class InvalidConfigError extends Error {
   }
 }
 
-/// Mostly a place-holder class, this represents the authentication information. At present, this just contains the
-/// patient ID.
+/// Ensures that the given bearer token begins with `'Bearer '`. If the given string starts with `'Bearer '` (that exact
+/// text, including the space), returns the token unmodified. Otherwise, returns the token with `'Bearer '` prepended to
+/// it.
+String _sanitizeBearerToken(String token) {
+  return token.startsWith('Bearer ') ? token : 'Bearer ' +  token;
+}
+
+/// Authentication information. This contains the JWT token used for authenticating requests with the server.
 class AuthData {
-  AuthData(this.id, this.username, this.bearerToken, this.dataConnected);
+  AuthData(this.id, this.username, String token, this.dataConnected) : bearerToken = _sanitizeBearerToken(token);
   final Id id;
   final String username;
+  /// The bearer token. This always starts with the text "Bearer ".
   final String bearerToken;
+
+  /// Gets the token minus the text "Bearer ".
+  String get token => bearerToken.substring(7);
 
   MessageHeader createHeader({String? endpoint}) {
     return MessageHeader(
@@ -128,10 +138,13 @@ class AuthData {
 /// This also holds on to the authentication information.
 class OpenHealthManager with ChangeNotifier {
   /// Create a new OpenHealthManager instance with the given configuration options.
-  OpenHealthManager({required this.serverUrl, required this.fhirBase});
+  OpenHealthManager({required this.serverUrl, required this.fhirBase, http.Client? client}) :
+    client = client ?? http.Client();
 
   /// Creates the OpenHealthManager for a single server.
-  OpenHealthManager.forServerURL(this.serverUrl) : fhirBase = serverUrl.resolve('fhir/');
+  OpenHealthManager.forServerURL(this.serverUrl, {http.Client? client}) :
+    fhirBase = serverUrl.resolve('fhir/'),
+    client = client ?? http.Client();
 
   /// The base URI for the backend server.
   final Uri serverUrl;
@@ -144,10 +157,20 @@ class OpenHealthManager with ChangeNotifier {
   final transactionManager = TransactionManager();
 
   /// Internal client used for all requests.
-  final client = http.Client();
+  final http.Client client;
   AuthData? _authData;
 
+  /// The current authentication data.
   AuthData? get authData => _authData;
+
+  /// Sets new authentication data and notifies listeners that it has been changed. This can be used to restore an
+  /// existing set of authentication data that was persisted without requiring the user log in again. It can also be
+  /// used to "log out" by setting back to null without actually logging out of the server.
+  set authData(AuthData? newValue) {
+    _authData = newValue;
+    notifyListeners();
+  }
+
   bool get isSignedIn => _authData != null;
 
   /// Creates an OpenHealthManager with the given configuration. Currently this looks for a single key in the given
@@ -186,13 +209,12 @@ class OpenHealthManager with ChangeNotifier {
     final token = jsonData["id_token"];
     if (token is! String) {
       // Missing or otherwise invalid
-      throw const InvalidResponseException('Missing or invalid "token_id" from server');
+      throw const InvalidResponseException('Missing or invalid "id_token" from server');
     }
     // For now, ignore the patient ID
     final auth = AuthData(Id("1"), email, token, true);
-    _authData = auth;
-    notifyListeners();
-    return _authData;
+    authData = auth;
+    return auth;
   }
 
   /// Attempts to create an account. Throws an exception on error. Returns the associated AuthData for the newly created
@@ -274,7 +296,11 @@ class OpenHealthManager with ChangeNotifier {
   /// sending it. See [http.Client.send] for details about the underlying method used. If an error prevents the request
   /// from being sent, an [http.ClientException] may be raised.
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    // Currently this does nothing. In the future it will set the Bearer token.
+    // If we have a bearer token, set it
+    final authData = _authData;
+    if (authData != null) {
+      request.headers['Authorization'] = authData.bearerToken;
+    }
     return client.send(request);
   }
 
