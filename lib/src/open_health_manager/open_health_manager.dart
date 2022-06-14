@@ -17,6 +17,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:fhir/r4.dart';
+import 'jwt_token.dart' as jwt;
 import 'transaction_manager.dart';
 
 class InternalException implements Exception {
@@ -211,8 +212,17 @@ class OpenHealthManager with ChangeNotifier {
       // Missing or otherwise invalid
       throw const InvalidResponseException('Missing or invalid "id_token" from server');
     }
-    // For now, ignore the patient ID
-    final auth = AuthData(Id("1"), email, token, true);
+    final AuthData auth;
+    try {
+      final parsedToken = jwt.Token.parse(token);
+      final id = parsedToken.payload['patient'];
+      if (id is! String) {
+        throw const InvalidResponseException('Missing or invalid "patient" in JWT payload');
+      }
+      auth = AuthData(Id(id), email, token, true);
+    } on FormatException catch(error) {
+      throw InvalidResponseException('Invalid JWT from server: ' + error.message);
+    }
     authData = auth;
     return auth;
   }

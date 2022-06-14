@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:convert';
 import 'package:fhir/r4.dart' show Id;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:rosie/src/open_health_manager/jwt_token.dart';
 import 'package:rosie/src/open_health_manager/open_health_manager.dart';
 import 'open_health_manager.mocks.dart';
 
@@ -70,7 +72,16 @@ void main() {
   group('account login', () {
     test('fetches bearer token', () async {
       final client = MockClient();
-      final response = http.StreamedResponse(Stream.value('{"id_token":"example_token"}'.codeUnits), 200);
+      // The response needs to contain a valid JWT token
+      final token = Token({"alg":"none"}, {"patient": "42"}).encoded();
+      final response = http.StreamedResponse(
+        Stream.value(
+          utf8.encode(
+            json.encode({
+              "id_token": token
+            })
+          )
+        ), 200);
       when(
         client.send(
           argThat(
@@ -88,7 +99,8 @@ void main() {
       expect(authData, isNotNull);
       // Now repeat that Dart knows it isn't null locally
       if (authData != null) {
-        expect(authData.bearerToken, equals('Bearer example_token'));
+        expect(authData.bearerToken, equals('Bearer ' + token));
+        expect(authData.id, equals(Id("42")));
       }
     });
 
