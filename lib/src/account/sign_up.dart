@@ -34,35 +34,44 @@ class _SignUpState extends State<SignUp> {
   Widget build(BuildContext context) {
     return AccountScreen(
       title: "Sign Up",
-      fields: [
-        TextFormField(
-          autocorrect: false,
-          decoration: const InputDecoration(hintText: "Full Name", prefixIcon: Icon(Icons.account_circle)),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Full name is required";
-            }
-            return null;
-          },
-          onChanged: (value) {
-            fullName = value;
-          }
-        ),
-        TextFormField(
-          autocorrect: false,
-          autofillHints: const [AutofillHints.email],
-          decoration: const InputDecoration(hintText: "Email", prefixIcon: Icon(Icons.email)),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Email is required";
-            }
-            return null;
-          },
-          onChanged: (value) {
-            email = value;
-          }
-        )
-      ],
+      builder: (BuildContext context) {
+        return Column(children: [
+          TextFormField(
+            autocorrect: false,
+            autofocus: true,
+            decoration: const InputDecoration(hintText: "Full Name", prefixIcon: Icon(Icons.account_circle)),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Full name is required";
+              }
+              return null;
+            },
+            onChanged: (value) {
+              fullName = value;
+            },
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 15.0),
+          TextFormField(
+            autocorrect: false,
+            autofillHints: const [AutofillHints.email],
+            decoration: const InputDecoration(hintText: "Email", prefixIcon: Icon(Icons.email)),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Email is required";
+              }
+              return null;
+            },
+            onChanged: (value) {
+              email = value;
+            },
+            onEditingComplete: () {
+              Actions.invoke(context, const SubmitIntent());
+            },
+            textInputAction: TextInputAction.done,
+          )
+        ]);
+      },
       submitLabel: "Sign Up",
       onSubmit: () async {
         if (fullName != null && email != null) {

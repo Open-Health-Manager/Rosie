@@ -34,36 +34,47 @@ class _SignInState extends State<SignIn> {
   Widget build(BuildContext context) {
     return AccountScreen(
       title: "Sign In",
-      fields: [
-        TextFormField(
-          autocorrect: false,
-          decoration: const InputDecoration(hintText: "Email", prefixIcon: Icon(Icons.email)),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Email is required";
-            }
-            return null;
-          },
-          onChanged: (value) {
-            email = value;
-          },
-          autofillHints: const [AutofillHints.email],
-        ),
-        TextFormField(
-          autocorrect: false,
-          decoration: const InputDecoration(hintText: "Password", prefixIcon: Icon(Icons.lock)),
-          obscureText: true,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Password cannot be blank";
-            }
-            return null;
-          },
-          onChanged: (value) {
-            password = value;
-          }
-        ),
-      ],
+      builder: (BuildContext context) {
+        return Column(
+          children: [
+            TextFormField(
+              autocorrect: false,
+              autofocus: true,
+              decoration: const InputDecoration(hintText: "Email", prefixIcon: Icon(Icons.email)),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Email is required";
+                }
+                return null;
+              },
+              onChanged: (value) {
+                email = value;
+              },
+              autofillHints: const [AutofillHints.email],
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 15.0),
+            TextFormField(
+              autocorrect: false,
+              decoration: const InputDecoration(hintText: "Password", prefixIcon: Icon(Icons.lock)),
+              obscureText: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Password cannot be blank";
+                }
+                return null;
+              },
+              onChanged: (value) {
+                password = value;
+              },
+              onEditingComplete: () {
+                Actions.invoke(context, const SubmitIntent());
+              },
+              textInputAction: TextInputAction.done,
+            ),
+          ],
+        );
+      },
       submitLabel: "Sign In",
       onSubmit: () async {
         if (email != null && password != null) {
