@@ -78,10 +78,14 @@ class InvalidResourceException implements Exception {
   }
 }
 
-/// Thrown when an attempt is made to execute a method that requires an authenticated session.
-class NotAuthenticatedError extends Error {
-  NotAuthenticatedError(this.message) : super();
+/// Thrown when an attempt is made to execute a method that requires the authentication state to be different than what
+/// it currently is.
+class AuthenticationStateError extends Error {
+  AuthenticationStateError(this.message, {this.loginRequired=true}) : super();
   final String message;
+  /// Indicates whether the error was caused by the login missing when required (true), or the login existing when not
+  /// required (false). For example, creating a new account can only be done when logged out.
+  final bool loginRequired;
 
   @override
   String toString() {
@@ -200,6 +204,9 @@ class OpenHealthManager with ChangeNotifier {
 
   /// Attempts to sign in. Returns `null` if the sign in attempt failed. Raises an exception on communication failure.
   Future<AuthData?> signIn(String email, String password) async {
+    if (_authData != null) {
+      throw AuthenticationStateError("Cannot login while currently logged in", loginRequired: false);
+    }
     final jsonData = await postJsonObject(serverUrl.resolve("api/authenticate"), <String, dynamic>{
       "username": email,
       "password": password,
@@ -212,48 +219,72 @@ class OpenHealthManager with ChangeNotifier {
       // Missing or otherwise invalid
       throw const InvalidResponseException('Missing or invalid "id_token" from server');
     }
-    final AuthData auth;
+    final auth = AuthData(_getIdFromJWT(token), email, token, true);
+    authData = auth;
+    return auth;
+  }
+
+  /// Signs out.
+  Future<void> signOut() {
+    if (_authData == null) {
+      throw AuthenticationStateError("Cannot sign out when not signed in");
+    }
+    authData = null;
+    // In the future this may invoke a server call to invalidate the session or something, but for now, it just
+    // discards the authentication data.
+    return Future.value();
+  }
+
+  /// Get an ID from a JWT. Throws an InvalidResponseException if the JWT is missing the patient ID.
+  Id _getIdFromJWT(String token) {
     try {
       final parsedToken = jwt.Token.parse(token);
       final id = parsedToken.payload['patient'];
       if (id is! String) {
         throw const InvalidResponseException('Missing or invalid "patient" in JWT payload');
       }
-      auth = AuthData(Id(id), email, token, true);
+      return Id(id);
     } on FormatException catch(error) {
       throw InvalidResponseException('Invalid JWT from server: ' + error.message);
     }
-    authData = auth;
-    return auth;
   }
 
   /// Attempts to create an account. Throws an exception on error. Returns the associated AuthData for the newly created
   /// account on success.
-  Future<AuthData> createAccount(String fullName, String email) async {
-    // FIXME: None of this process will work at present
-    throw UnimplementedError("Creating a new account via JHipster is not currently implemented.");
-    final response = await postJsonObjectToResource("Patient", {
-      "resourceType": "Patient",
-      "identifier": [
-        {
-          "system": "urn:mitre:healthmanager:account:username",
-          "value": email
-        }
-      ],
-      "name": [
-        { "text": fullName }
-      ]
-    });
-    // Try and parse the response
-    final patient = Patient.fromJson(response);
-    // Make sure we have an ID
-    final id = patient.id;
-    if (id == null) {
-      throw const InvalidResponseException('Returned response has no patient ID');
+  Future<AuthData> createAccount(String username, String email, String password, {String? firstName, String? lastName}) async {
+    if (_authData != null) {
+      throw AuthenticationStateError("Cannot create an account while currently logged in", loginRequired: false);
     }
-    final auth = AuthData(id, email, "", false);
-    _authData = auth;
-    notifyListeners();
+    // The way this currently works involves first creating the account and then automatically attempting to log in to
+    // the newly created account.
+    final requestJson = <String, dynamic>{
+      "login": username,
+      "email": email,
+      "password": password,
+      // Tell JHipster to create the account already activated (does this really work?)
+      "activated": true,
+      // It's unclear if this is needed, but keep it for now:
+      "langKey": "en"
+    };
+    if (firstName != null) {
+      requestJson["firstName"] = firstName;
+    }
+    if (lastName != null) {
+      requestJson["lastName"] = lastName;
+    }
+    final request = http.Request('POST', serverUrl.resolve("api/register"));
+    request.headers['Content-type'] = 'application/json; charset=UTF-8';
+    request.body = json.encode(requestJson);
+    final response = await client.send(request);
+    if (response.statusCode != 201) {
+      throw ServerErrorException(response.statusCode, response.reasonPhrase, 'Error creating account');
+    }
+    // Now basically "forward" to signIn
+    final auth = await signIn(username, password);
+    if (auth == null) {
+      // This isn't *really* an error, probably, but it breaks the current UI flow
+      throw const InvalidResponseException("Unable to log in to newly created account");
+    }
     return auth;
   }
 
@@ -275,7 +306,7 @@ class OpenHealthManager with ChangeNotifier {
   Future<Patient> queryPatient() async {
     final patientId = _authData?.id.toString();
     if (patientId == null) {
-      throw NotAuthenticatedError("No current session");
+      throw AuthenticationStateError("No current session");
     }
     final uri = fhirBase.resolve("Patient/$patientId");
     log("targetURI: " + uri.toString());
@@ -290,7 +321,7 @@ class OpenHealthManager with ChangeNotifier {
   Future<Bundle> queryResource(String name, [Map<String, dynamic>? query]) async {
     final patientId = _authData?.id.toString();
     if (patientId == null) {
-      throw NotAuthenticatedError("No current session");
+      throw AuthenticationStateError("No current session");
     }
     var uri = fhirBase.resolve(name);
     final queryParameters = <String, dynamic>{"patient": patientId};
@@ -381,7 +412,7 @@ class OpenHealthManager with ChangeNotifier {
   Future<Map<String, dynamic>> sendProcessMessage(Iterable<Map<String, dynamic>> resources, {String? fhirVersion, String? endpoint}) {
     final authData = _authData;
     if (authData == null) {
-      throw NotAuthenticatedError("Cannot post message when not authenticated");
+      throw AuthenticationStateError("Cannot post message when not authenticated");
     }
     // Build a bundle based on that
     final bundle = <String, dynamic>{
