@@ -59,7 +59,7 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                       dataServicesHeading: 'US Preventative Services',
                       dataServicesSubHeading: 'Preventative Task Force',
                       imageReferenceText:
-                          'assets/care_plan/hypertension-in-adults-screening.png',
+                          'assets/care_plan/hypertension.png',
                     ));
                     break;
                   case ConnectionState.waiting:
@@ -74,7 +74,7 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                       dataServicesHeading: 'US Preventative Services',
                       dataServicesSubHeading: 'Preventative Task Force',
                       imageReferenceText:
-                          'assets/care_plan/lung-cancer-screening.png',
+                          'assets/care_plan/lungs.png',
                     ));*/
                     return Row(children: const [
                       CircularProgressIndicator(),
@@ -113,7 +113,7 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                                 dataServicesSubHeading:
                                     'Preventative Task Force',
                                 imageReferenceText:
-                                    'assets/care_plan/hypertension-in-adults-screening.png',
+                                    'assets/care_plan/hypertension.png',
                               ));
                         } else {
                           cards.add(CarePlanCards(
@@ -128,7 +128,7 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                             dataServicesHeading: 'US Preventative Services',
                             dataServicesSubHeading: 'Preventative Task Force',
                             imageReferenceText:
-                                'assets/care_plan/lung-cancer-screening.png',
+                                'assets/care_plan/lungs.png',
                           ));
                         }
                       }
