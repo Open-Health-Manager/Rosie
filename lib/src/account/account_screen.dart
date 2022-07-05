@@ -36,7 +36,15 @@ class _SubmitAction extends Action<SubmitIntent> {
 /// A scaffolding for the account screens, both the sign in and the create
 /// account screens.
 class AccountScreen extends StatefulWidget {
-  const AccountScreen({Key? key, required this.title, required this.builder, required this.submitLabel, required this.onSubmit, this.loadingLabel="Loading..."}) : super(key: key);
+  const AccountScreen({
+    Key? key,
+    required this.title,
+    required this.formBuilder,
+    required this.submitLabel,
+    required this.onSubmit,
+    this.loadingLabel="Loading...",
+    this.afterFormBuilder
+  }) : super(key: key);
 
   final String title;
   final String submitLabel;
@@ -46,7 +54,9 @@ class AccountScreen extends StatefulWidget {
   /// submit succeeded.
   final Future<String?> Function() onSubmit;
   /// Build the widgets that are contained within the form.
-  final Widget Function(BuildContext) builder;
+  final Widget Function(BuildContext) formBuilder;
+  /// An optional builder to build any content that should occur after the form
+  final Widget Function(BuildContext)? afterFormBuilder;
 
   @override
   createState() => _AccountScreenState();
@@ -76,10 +86,11 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final afterFormBuilder = widget.afterFormBuilder;
     List<Widget> formChildren = [
       Text(widget.title, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: AccountThemePalette.textColor)),
       const SizedBox(height: 30.0),
-      Builder(builder: widget.builder),
+      Builder(builder: widget.formBuilder),
       const SizedBox(height: 30.0),
       FutureBuilder(future: _submitFuture,
         builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
@@ -121,7 +132,8 @@ class _AccountScreenState extends State<AccountScreen> {
               ]);
           }
         },
-      )
+      ),
+      if (afterFormBuilder != null) Builder(builder: afterFormBuilder)
     ];
     return Theme(
       data: createAccountTheme(),

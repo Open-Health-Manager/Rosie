@@ -34,7 +34,7 @@ class _SignInState extends State<SignIn> {
   Widget build(BuildContext context) {
     return AccountScreen(
       title: "Sign In",
-      builder: (BuildContext context) {
+      formBuilder: (BuildContext context) {
         return AutofillGroup(
           child: Column(
             children: [
@@ -86,6 +86,14 @@ class _SignInState extends State<SignIn> {
         } else {
           return "Username and password are required";
         }
+      },
+      afterFormBuilder: (BuildContext context) {
+        // A link to retrieve the password
+        return TextButton(
+          child: const Text('Forgot password?'),
+          onPressed: () {
+            // TODO: Move to page to allow retrieving a password
+          },);
       },
     );
   }

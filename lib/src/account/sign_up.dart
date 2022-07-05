@@ -117,7 +117,7 @@ class _SignUpState extends State<SignUp> {
   Widget build(BuildContext context) {
     return AccountScreen(
       title: "Sign Up",
-      builder: _buildForm,
+      formBuilder: _buildForm,
       submitLabel: "Sign Up",
       onSubmit: () async {
         // currentState being null would indicate an actual error in the code
