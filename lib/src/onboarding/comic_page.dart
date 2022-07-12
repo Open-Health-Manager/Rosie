@@ -15,40 +15,17 @@
 // A single page in the data agreement comic.
 
 import 'package:flutter/material.dart';
-import 'signature_page.dart';
+import 'package:rosie/src/onboarding/comic.dart';
+import 'onboarding.dart';
 
-// Holds data about a single page
-class _Page {
-  const _Page({required this.altText, this.nextLabel="Next"});
-
-  final String altText;
-  final String nextLabel;
-}
-
-const List<_Page> _comicPages = [
-  _Page(altText: "Get control of your health. Follow me and learn how!"),
-  _Page(altText: "Your data can come from anywhere... from you, the doctor\u2019s office, or a device like your phone. We put it all in the same place."),
-  _Page(altText: "Now you can finally have one place to see your entire health picture."),
-  _Page(altText: "Mistakes Happen. This is why you can correct (with some exceptions) and annotate your data."),
-  _Page(altText: "You can share your data with anyone. We always need your permission before sharing your data."),
-  _Page(altText: "You can share your data with recommendation services to access suggestions for a healthier lifestyle."),
-  _Page(altText: "You can share data automatically during an emergency. First responders would be able to see critical health information about you."),
-  _Page(altText: "You can review who has access to your data.", nextLabel: "Half-way through, continue"),
-  _Page(altText: "You can stop sharing your data at any time."),
-  _Page(altText: "However, those you have shared with may keep a copy of your data. But, they cannot get any new data after you stop sharing."),
-  _Page(altText: "You can delete your data. We won\u2019t keep a copy. However, we can\u2019t make people delete the data you already shared with them."),
-  _Page(altText: "You can transfer your data. We won\u2019t keep a copy."),
-  _Page(altText: "We\u2019re responsible for keeping your data safe. You can hold us accountable if there is a data breach from Open Health Manager.")
-];
-
-// A single comic page. Requires
+/// A single comic page.
 class ComicPage extends StatelessWidget {
-  const ComicPage({Key? key, required this.text, required this.comicPage, required this.pageNumber, required this.nextLabel}) : super(key: key);
+  const ComicPage({Key? key, required this.text, required this.comicPage, required this.nextLabel, this.showLoginLink=false}) : super(key: key);
 
   final String text;
   final String comicPage;
   final String nextLabel;
-  final int pageNumber;
+  final bool showLoginLink;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +38,7 @@ class ComicPage extends StatelessWidget {
         ElevatedButton(
           onPressed: () {
             // When pressed, move on to the next page, if possible
-            Navigator.pushNamed(context, "page", arguments: pageNumber + 1);
+            Actions.invoke(context, const NextPageIntent());
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -74,7 +51,7 @@ class ComicPage extends StatelessWidget {
         )
       )
     ];
-    if (pageNumber == 0) {
+    if (showLoginLink) {
       // Add a way to log in
       children.insert(0,
         Padding(
@@ -102,22 +79,12 @@ class ComicPage extends StatelessWidget {
     );
   }
 
-}
-
-Widget createPage(int pageNumber) {
-  if (pageNumber < 0 || pageNumber > _comicPages.length) {
-    throw RangeError.range(pageNumber, 0, _comicPages.length, "pageNumber");
-  }
-  if (pageNumber < _comicPages.length) {
-    final page = _comicPages[pageNumber];
+  factory ComicPage.fromPage(OnboardingComicPage page) {
     return ComicPage(
       text: page.altText,
-      comicPage: "assets/data_use_agreement/page${pageNumber + 1}.png",
-      pageNumber: pageNumber,
-      nextLabel: page.nextLabel
+      comicPage: "assets/data_use_agreement/page${page.pageNumber}.png",
+      nextLabel: page.nextLabel,
+      showLoginLink: page.firstPage,
     );
-  } else {
-    // In this case, they're at the end, so show the signature page
-    return const SignaturePage();
   }
 }
