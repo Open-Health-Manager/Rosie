@@ -123,7 +123,7 @@ class _AgreementText extends StatelessWidget {
             text: "Patient Data Use Agreement",
             style: const TextStyle(color: Colors.blue),
             recognizer: TapGestureRecognizer()..onTap = () {
-              launchUrl(Uri.parse('https://patient-data-manager.github.io/pdua/patient-data-use-agreement'));
+              launchUrl(Uri.parse('https://open-health-manager.github.io/patient-data-use-agreement/v2020-03-21/patient-data-use-agreement'));
             }
           ),
           const TextSpan(text: " and acknowledge that typing my name above represents my electronic signature.")
