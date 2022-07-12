@@ -251,14 +251,14 @@ class OpenHealthManager with ChangeNotifier {
 
   /// Attempts to create an account. Throws an exception on error. Returns the associated AuthData for the newly created
   /// account on success.
-  Future<AuthData> createAccount(String username, String email, String password, {String? firstName, String? lastName}) async {
+  Future<AuthData> createAccount(String email, String password, {String? firstName, String? lastName}) async {
     if (_authData != null) {
       throw AuthenticationStateError("Cannot create an account while currently logged in", loginRequired: false);
     }
     // The way this currently works involves first creating the account and then automatically attempting to log in to
     // the newly created account.
     final requestJson = <String, dynamic>{
-      "login": username,
+      "login": email,
       "email": email,
       "password": password,
       // Tell JHipster to create the account already activated (does this really work?)
@@ -280,7 +280,7 @@ class OpenHealthManager with ChangeNotifier {
       throw ServerErrorException(response.statusCode, response.reasonPhrase, 'Error creating account');
     }
     // Now basically "forward" to signIn
-    final auth = await signIn(username, password);
+    final auth = await signIn(email, password);
     if (auth == null) {
       // This isn't *really* an error, probably, but it breaks the current UI flow
       throw const InvalidResponseException("Unable to log in to newly created account");

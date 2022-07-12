@@ -30,7 +30,6 @@ class _SignUpState extends State<SignUp> {
   final _formKey = GlobalKey<FormState>();
   final _firstName = TextEditingController();
   final _lastName = TextEditingController();
-  final _login = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirmPassword = TextEditingController();
@@ -46,15 +45,6 @@ class _SignUpState extends State<SignUp> {
       child: Form(key: _formKey,
         child: Column(
           children: <Widget>[
-            TextFormField(
-              autofocus: true,
-              autofillHints: const <String>[AutofillHints.newUsername],
-              decoration: const InputDecoration(hintText: "User Name", prefixIcon: Icon(Icons.account_circle)),
-              controller: _login,
-              validator: (String? value) => value == null || value.isEmpty ? "User name cannot be blank" : null,
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 15),
             TextFormField(
               autofillHints: const <String>[AutofillHints.givenName],
               decoration: const InputDecoration(hintText: "First Name", prefixIcon: Icon(Icons.badge)),
@@ -123,7 +113,7 @@ class _SignUpState extends State<SignUp> {
         // currentState being null would indicate an actual error in the code
         if (_formKey.currentState!.validate()) {
           await context.read<OpenHealthManager>().createAccount(
-            _login.text, _email.text, _password.text,
+            _email.text, _password.text,
             firstName: _firstName.text,
             lastName: _lastName.text
           );
