@@ -17,6 +17,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:fhir/r4.dart';
+import '../../data_use_agreement/data_use_agreement.dart';
 import 'jwt_token.dart' as jwt;
 import 'transaction_manager.dart';
 
@@ -249,11 +250,30 @@ class OpenHealthManager with ChangeNotifier {
     }
   }
 
-  /// Attempts to create an account. Throws an exception on error. Returns the associated AuthData for the newly created
-  /// account on success.
-  Future<AuthData> createAccount(String email, String password, {String? firstName, String? lastName}) async {
+  /// Attempts to create an account. Throws an exception on error. Accounts are created inactive and unverified and
+  /// cannot be initially used. If the future completes successfully, the account has been created but is inactive.
+  ///
+  /// Both `duaAccepted` and `ageAttested` must be true. If they are false, this method will throw an ArgumentError
+  /// and refuse to continue.
+  Future<void> createAccount(
+    String email,
+    String password,
+    {
+      required DataUseAgreement dataUseAgreement,
+      required bool duaAccepted,
+      required bool ageAttested,
+      String? firstName,
+      String? lastName
+    }
+  ) async {
     if (_authData != null) {
       throw AuthenticationStateError("Cannot create an account while currently logged in", loginRequired: false);
+    }
+    if (!duaAccepted) {
+      throw ArgumentError.value(duaAccepted, "duaAccepted", "Use must accept data use agreement");
+    }
+    if (!ageAttested) {
+      throw ArgumentError.value(duaAccepted, "ageAttested", "Use must indicate they are 18 or older");
     }
     // The way this currently works involves first creating the account and then automatically attempting to log in to
     // the newly created account.
@@ -261,10 +281,14 @@ class OpenHealthManager with ChangeNotifier {
       "login": email,
       "email": email,
       "password": password,
-      // Tell JHipster to create the account already activated (does this really work?)
-      "activated": true,
       // It's unclear if this is needed, but keep it for now:
-      "langKey": "en"
+      "langKey": "en",
+      "authorities": <String>["ROLE_USER"],
+      "userDUADTO": {
+        "active": duaAccepted,
+        "version": dataUseAgreement.version,
+        "ageAttested": ageAttested
+      }
     };
     if (firstName != null) {
       requestJson["firstName"] = firstName;
@@ -279,13 +303,7 @@ class OpenHealthManager with ChangeNotifier {
     if (response.statusCode != 201) {
       throw ServerErrorException(response.statusCode, response.reasonPhrase, 'Error creating account');
     }
-    // Now basically "forward" to signIn
-    final auth = await signIn(email, password);
-    if (auth == null) {
-      // This isn't *really* an error, probably, but it breaks the current UI flow
-      throw const InvalidResponseException("Unable to log in to newly created account");
-    }
-    return auth;
+    // If here, the account was created successfully
   }
 
   /// Assuming the user is logged in, attempts to create a reference to their patient record.

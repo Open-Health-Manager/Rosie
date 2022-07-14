@@ -12,33 +12,68 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:convert';
+import 'dart:developer';
+import 'package:flutter/services.dart';
+import '../../data_use_agreement/data_use_agreement.dart';
+
 /// Class that describes the data for the onboarding comic.
 /// Eventually there will be a way of loading this information from a JSON
 /// object, and it will be made more complicated.
 class OnboardingComic {
-  const OnboardingComic(this.pages);
+  const OnboardingComic(this.pages, this.dataUseAgreement);
 
   final List<OnboardingComicPage> pages;
+  final DataUseAgreement dataUseAgreement;
 
-  static Future<OnboardingComic> load() async {
-    // For now, this isn't really async
-    // Eventually this will load initially from the internal
-    // assets/comic/comic.json and then finally (most likely) from a web server
-    return const OnboardingComic([
-      OnboardingComicPage(pageNumber: 1, firstPage: true, altText: "Get control of your health. Follow me and learn how!"),
-      OnboardingComicPage(pageNumber: 2, altText: "Your data can come from anywhere... from you, the doctor\u2019s office, or a device like your phone. We put it all in the same place."),
-      OnboardingComicPage(pageNumber: 3, altText: "Now you can finally have one place to see your entire health picture."),
-      OnboardingComicPage(pageNumber: 4, altText: "Mistakes Happen. This is why you can correct (with some exceptions) and annotate your data."),
-      OnboardingComicPage(pageNumber: 5, altText: "You can share your data with anyone. We always need your permission before sharing your data."),
-      OnboardingComicPage(pageNumber: 6, altText: "You can share your data with recommendation services to access suggestions for a healthier lifestyle."),
-      OnboardingComicPage(pageNumber: 7, altText: "You can share data automatically during an emergency. First responders would be able to see critical health information about you."),
-      OnboardingComicPage(pageNumber: 8, altText: "You can review who has access to your data.", nextLabel: "Half-way through, continue"),
-      OnboardingComicPage(pageNumber: 9, altText: "You can stop sharing your data at any time."),
-      OnboardingComicPage(pageNumber: 10, altText: "However, those you have shared with may keep a copy of your data. But, they cannot get any new data after you stop sharing."),
-      OnboardingComicPage(pageNumber: 11, altText: "You can delete your data. We won\u2019t keep a copy. However, we can\u2019t make people delete the data you already shared with them."),
-      OnboardingComicPage(pageNumber: 12, altText: "You can transfer your data. We won\u2019t keep a copy."),
-      OnboardingComicPage(pageNumber: 13, altText: "We\u2019re responsible for keeping your data safe. You can hold us accountable if there is a data breach from Open Health Manager.")
-    ]);
+  static Future<OnboardingComic> load(AssetBundle assetBundle) async {
+    final data = json.decode(await assetBundle.loadString('assets/onboarding/onboarding.json'));
+    if (data is! Map<String, dynamic>) {
+      // Cannot parse
+      throw const FormatException("Invalid object type for onboarding JSON");
+    }
+    final pagesData = data["pages"];
+    if (pagesData is! List<dynamic>) {
+      throw const FormatException("Missing page data");
+    }
+    final duaData = data["dataUseAgreement"];
+    if (duaData is! Map<String, dynamic>) {
+      throw const FormatException("Missing dataUseAgreement data");
+    }
+    // Parse the data
+    var pages = <OnboardingComicPage>[];
+    // For now the page number is simply a number that is increased with each
+    // page. In the future, it will likely be replaced.
+    int pageNumber = 1;
+    for (final pageData in pagesData) {
+      if (pageData is! Map<String, dynamic>) {
+        log('Invalid object within page array, ignoring!', level: 900);
+      } else {
+        // Grab the page information
+        final textData = pageData["text"];
+        final nextLabelData = pageData["nextLabel"];
+        if (textData is! String) {
+          log('Invalid text object within page, skipping page!', level: 900);
+          continue;
+        }
+        if (nextLabelData != null && nextLabelData is! String) {
+          log('Invalid nextLabel object within page, skipping page!', level: 900);
+          continue;
+        }
+        final nextLabel = nextLabelData == null ? null : nextLabelData as String;
+        pages.add(
+          OnboardingComicPage(
+            pageNumber: pageNumber,
+            firstPage: pageNumber == 1,
+            altText: textData,
+            nextLabel: nextLabel ?? "Next"
+          )
+        );
+        // Increase the page number
+        pageNumber++;
+      }
+    }
+    return OnboardingComic(pages, DataUseAgreement.fromJson(duaData));
   }
 }
 

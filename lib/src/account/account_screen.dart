@@ -27,16 +27,59 @@ class SubmitIntent extends Intent {
 class _SubmitAction extends Action<SubmitIntent> {
   _SubmitAction(this._state);
 
-  final _AccountScreenState _state;
+  final _AccountScreenFormState _state;
 
   @override
   void invoke(SubmitIntent intent) => _state.submit();
 }
 
-/// A scaffolding for the account screens, both the sign in and the create
+/// A widget that shows all the various parts around one of the screens within
+/// the account login or signin process. This provides the app bar and the box
+/// which Rosie sits on top of.
+class AccountScreen extends StatelessWidget {
+  const AccountScreen({Key? key, required this.builder}) : super(key: key);
+
+  final WidgetBuilder builder;
+
+  @override
+  Widget build(BuildContext context) {
+    return Theme(
+      data: createAccountTheme(),
+      child: Scaffold(
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+        backgroundColor: AccountThemePalette.background,
+        extendBodyBehindAppBar: true,
+        body: ListView(
+          children: [
+            // This exists for padding
+            const SizedBox(height: 20.0),
+            // Create a stack to place Rosie on top of the screen
+            Stack(
+              alignment: AlignmentDirectional.topCenter,
+              children: [
+                // Rosie is 163x145
+                // This is the "real" box
+                Container(
+                  margin: const EdgeInsets.fromLTRB(40.0, 132.0, 40.0, 0.0),
+                  padding: const EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 20.0),
+                  decoration: createAccountBoxDecoration(),
+                  child: Builder(builder: builder)
+                ),
+                const Image(image: AssetImage("assets/pdm_comic_avatar.png"))
+              ]
+            )
+          ]
+        )
+      )
+    );
+  }
+
+}
+
+/// A scaffolding for the account screen form, both the sign in and the create
 /// account screens.
-class AccountScreen extends StatefulWidget {
-  const AccountScreen({
+class AccountScreenForm extends StatefulWidget {
+  const AccountScreenForm({
     Key? key,
     required this.title,
     required this.formBuilder,
@@ -59,10 +102,10 @@ class AccountScreen extends StatefulWidget {
   final Widget Function(BuildContext)? afterFormBuilder;
 
   @override
-  createState() => _AccountScreenState();
+  createState() => _AccountScreenFormState();
 }
 
-class _AccountScreenState extends State<AccountScreen> {
+class _AccountScreenFormState extends State<AccountScreenForm> {
   // This is the future that indicates if a login/account creation is in process
   Future<String?>? _submitFuture;
   // Indicates that a submit is not in progress. This is intended more to
@@ -135,40 +178,14 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       if (afterFormBuilder != null) Builder(builder: afterFormBuilder)
     ];
-    return Theme(
-      data: createAccountTheme(),
-      child: Scaffold(
-        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-        backgroundColor: AccountThemePalette.background,
-        extendBodyBehindAppBar: true,
-        body: Actions(
-          actions: <Type, Action<Intent>>{
-            SubmitIntent: _SubmitAction(this)
-          },
-          child: ListView(
-            children: [
-              // This exists for padding
-              const SizedBox(height: 20.0),
-              // Create a stack to place Rosie on top of the screen
-              Stack(
-                alignment: AlignmentDirectional.topCenter,
-                children: [
-                  // Rosie is 163x145
-                  // This is the "real" box
-                  Container(
-                    margin: const EdgeInsets.fromLTRB(40.0, 132.0, 40.0, 0.0),
-                    padding: const EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 20.0),
-                    decoration: createAccountBoxDecoration(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: formChildren
-                    )
-                  ),
-                  const Image(image: AssetImage("assets/pdm_comic_avatar.png"))
-                ]
-              )
-            ]
-          )
+    return Actions(
+      actions: <Type, Action<Intent>>{
+        SubmitIntent: _SubmitAction(this)
+      },
+      child: AccountScreen(
+        builder: (context) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: formChildren
         )
       )
     );

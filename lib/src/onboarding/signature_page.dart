@@ -16,9 +16,12 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'onboarding_theme.dart';
+import '../../data_use_agreement/data_use_agreement.dart';
 
 class SignaturePage extends StatefulWidget {
-  const SignaturePage({Key? key}) : super(key: key);
+  const SignaturePage({Key? key, required this.dataUseAgreement}) : super(key: key);
+
+  final DataUseAgreement dataUseAgreement;
 
   @override
   State<StatefulWidget> createState() => SignaturePageState();
@@ -70,7 +73,7 @@ class SignaturePageState extends State<SignaturePage> {
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.only(top: 10),
-                    child: const _AgreementText()
+                    child: _AgreementText(dataUseAgreement: widget.dataUseAgreement)
                   )
                 )
               ],),
@@ -111,7 +114,9 @@ class SignaturePageState extends State<SignaturePage> {
 }
 
 class _AgreementText extends StatelessWidget {
-  const _AgreementText({Key? key}): super(key: key);
+  const _AgreementText({Key? key, required this.dataUseAgreement}): super(key: key);
+
+  final DataUseAgreement dataUseAgreement;
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +128,7 @@ class _AgreementText extends StatelessWidget {
             text: "Patient Data Use Agreement",
             style: const TextStyle(color: Colors.blue),
             recognizer: TapGestureRecognizer()..onTap = () {
-              launchUrl(Uri.parse('https://patient-data-manager.github.io/pdua/patient-data-use-agreement'));
+              launchUrl(dataUseAgreement.source);
             }
           ),
           const TextSpan(text: " and acknowledge that typing my name above represents my electronic signature.")

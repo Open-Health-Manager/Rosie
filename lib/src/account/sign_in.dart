@@ -32,7 +32,7 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    return AccountScreen(
+    return AccountScreenForm(
       title: "Sign In",
       formBuilder: (BuildContext context) {
         return AutofillGroup(
@@ -82,9 +82,9 @@ class _SignInState extends State<SignIn> {
       onSubmit: () async {
         if (email != null && password != null) {
           final auth = await context.read<OpenHealthManager>().signIn(email!, password!);
-          return auth == null ? "Login failed (check your username and password)" : null;
+          return auth == null ? "Login failed (check your email and password)" : null;
         } else {
-          return "Username and password are required";
+          return "Email and password are required";
         }
       },
       afterFormBuilder: (BuildContext context) {

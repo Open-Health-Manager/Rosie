@@ -40,7 +40,7 @@ class _OnboardingState extends State<Onboarding> {
     super.initState();
     // This will eventually depend on the state because it will eventually load
     // assets.
-    _comicFuture = OnboardingComic.load();
+    _comicFuture = OnboardingComic.load(DefaultAssetBundle.of(context));
   }
 
   @override
@@ -53,13 +53,41 @@ class _OnboardingState extends State<Onboarding> {
           return _buildComic(context, comic);
         } else {
           // Build an error page
-          return const Center(child: Text("Unable to load comic data."));
+          return Scaffold(
+            body: Center(
+              child: Text.rich(
+                TextSpan(children: [
+                  const TextSpan(text: "Unable to load comic data:\n"),
+                  _buildErrorMessage(context, snapshot.error)
+                ])
+              )
+            )
+          );
         }
       } else {
-        return const Center(child: Text("Loading data use agreement..."));
+        return const Scaffold(
+          body: Center(child:
+            Text("Loading data use agreement...")
+          )
+        );
       }
     },
     future: _comicFuture);
+  }
+
+  TextSpan _buildErrorMessage(BuildContext context, Object? error) {
+    if (error == null) {
+      return const TextSpan(text: "Unknown error.");
+    }
+    final stackTrace = (error is Error) ? error.stackTrace : null;
+    if (stackTrace != null) {
+      return TextSpan(children: [
+        TextSpan(text: error.toString() + "\n"),
+        TextSpan(text: stackTrace.toString(), style: const TextStyle(fontFamily: "Courier", fontFamilyFallback: ["monospace"]))
+      ]);
+    } else {
+      return TextSpan(text: error.toString());
+    }
   }
 
   Widget _buildComic(BuildContext context, OnboardingComic comic) {
@@ -103,10 +131,10 @@ class _OnboardingState extends State<Onboarding> {
                     settings: settings
                   );
                 case "signature":
-                  builder = (BuildContext context) => const SignaturePage();
+                  builder = (BuildContext context) => SignaturePage(dataUseAgreement: comic.dataUseAgreement);
                   break;
                 case "signUp":
-                  builder = (BuildContext context) => const SignUp();
+                  builder = (BuildContext context) => SignUp(dataUseAgreement: comic.dataUseAgreement);
                   break;
                 case "signIn":
                   builder = (BuildContext context) => const SignIn();
@@ -166,8 +194,8 @@ class _NextPageAction extends ContextAction<NextPageIntent> {
           page++;
           if (page >= lastPage) {
             // If moving to the next page would move past the end, move to the
-            // signature page.
-            Navigator.pushNamed<void>(context, "signature");
+            // sign up page.
+            Navigator.pushNamed<void>(context, "signUp");
           } else {
             // Otherwise, move to the next page
             Navigator.pushNamed<void>(context, "page", arguments: page);

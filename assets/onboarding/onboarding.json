@@ -40,5 +40,9 @@
     {
       "text": "We\u2019re responsible for keeping your data safe. You can hold us accountable if there is a data breach from Open Health Manager."
     }
-  ]
+  ],
+  "dataUseAgreement": {
+    "source": "https://open-health-manager.github.io/patient-data-use-agreement/v2020-03-21/patient-data-use-agreement",
+    "version": "v2020-03-21"
+  }
 }

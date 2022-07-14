@@ -15,7 +15,7 @@
 // A single page in the data agreement comic.
 
 import 'package:flutter/material.dart';
-import 'package:rosie/src/onboarding/comic.dart';
+import 'comic.dart';
 import 'onboarding.dart';
 
 /// A single comic page.

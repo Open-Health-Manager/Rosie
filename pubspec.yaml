@@ -68,6 +68,7 @@ flutter:
 
   assets:
     - assets/data_use_agreement/
+    - assets/onboarding/onboarding.json
     - assets/rosie/
     - assets/pdm_comic_avatar.png
     - assets/config/
