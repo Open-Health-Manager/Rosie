@@ -114,7 +114,7 @@ String _sanitizeBearerToken(String token) {
 
 /// Authentication information. This contains the JWT token used for authenticating requests with the server.
 class AuthData {
-  AuthData(this.id, this.username, String token, this.dataConnected) : bearerToken = _sanitizeBearerToken(token);
+  AuthData(this.id, this.username, String token) : bearerToken = _sanitizeBearerToken(token);
   final Id id;
   final String username;
   /// The bearer token. This always starts with the text "Bearer ".
@@ -135,9 +135,6 @@ class AuthData {
       ]
     );
   }
-
-  // true if logged in, false if created. should not ultimately live here.
-  bool dataConnected;
 }
 
 /// Provides APIs for accessing parts of Open Health Manager.
@@ -220,7 +217,7 @@ class OpenHealthManager with ChangeNotifier {
       // Missing or otherwise invalid
       throw const InvalidResponseException('Missing or invalid "id_token" from server');
     }
-    final auth = AuthData(_getIdFromJWT(token), email, token, true);
+    final auth = AuthData(_getIdFromJWT(token), email, token);
     authData = auth;
     return auth;
   }

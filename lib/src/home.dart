@@ -19,8 +19,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'care_plan/care_plan_home.dart';
 import 'get_started/get_started.dart';
-import 'open_health_manager/open_health_manager.dart';
 import 'app_config.dart';
+import 'app_state.dart';
 import 'rosie_theme.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = context.read<OpenHealthManager>().authData?.dataConnected == true ? 1 : 2;
+    _selectedIndex = context.read<AppState>().initialLogin ? 2 : 1;
     // Grab the API key if possible
     _uspstfApiKey = context.read<AppConfig>().getString("uspstfApi.key");
   }

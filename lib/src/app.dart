@@ -19,11 +19,12 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'app_config.dart';
+import 'app_state.dart';
 import 'home.dart';
+import 'onboarding/onboarding.dart';
 import 'open_health_manager/open_health_manager.dart';
 import 'open_health_manager/patient_data.dart';
 import 'rosie_theme.dart';
-import 'onboarding/onboarding.dart';
 
 const defaultServerUrl = "http://localhost:8080/";
 
@@ -77,17 +78,20 @@ class _RosieAppState extends State<RosieApp> {
     if (manager != null && patientData != null) {
       // Otherwise, we have what we need to create providers, which need to be above the MaterialApp to ensure they're
       // accessible on all routes.
-      return Provider.value(
-        value: _config,
-        child: ChangeNotifierProvider<OpenHealthManager>.value(
-          value: manager,
-          child: ChangeNotifierProvider<PatientData>.value(
-            value: patientData,
-            child: MaterialApp(
-              title: 'Rosie',
-              theme: createRosieTheme(),
-              darkTheme: createRosieTheme(brightness: Brightness.dark),
-              home: const _RosieHome()
+      return ChangeNotifierProvider(
+        create: (context) => AppState(),
+        child: Provider.value(
+          value: _config,
+          child: ChangeNotifierProvider<OpenHealthManager>.value(
+            value: manager,
+            child: ChangeNotifierProvider<PatientData>.value(
+              value: patientData,
+              child: MaterialApp(
+                title: 'Rosie',
+                theme: createRosieTheme(),
+                darkTheme: createRosieTheme(brightness: Brightness.dark),
+                home: const _RosieHome()
+              )
             )
           )
         )

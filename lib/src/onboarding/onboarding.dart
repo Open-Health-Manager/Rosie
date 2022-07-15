@@ -16,12 +16,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'comic.dart';
 import 'comic_page.dart';
 import 'onboarding_theme.dart';
 import 'signature_page.dart';
 import '../account/sign_in.dart';
 import '../account/sign_up.dart';
+import '../app_state.dart';
 
 /// The onboarding UI. This provides the root of the system for navigating
 /// through the UI.
@@ -137,6 +139,8 @@ class _OnboardingState extends State<Onboarding> {
                   builder = (BuildContext context) => SignUp(dataUseAgreement: comic.dataUseAgreement);
                   break;
                 case "signIn":
+                  // When accessed via this route, this is not the initial login, so flag that
+                  context.read<AppState>().initialLogin = false;
                   builder = (BuildContext context) => const SignIn();
                   break;
                 default:

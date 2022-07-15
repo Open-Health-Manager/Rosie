@@ -13,8 +13,11 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'account_screen.dart';
+import 'sign_in.dart';
+import '../app_state.dart';
 
 class VerifyAccountScreen extends StatelessWidget {
   const VerifyAccountScreen({Key? key, required this.email}) : super(key: key);
@@ -52,7 +55,17 @@ class VerifyAccountScreen extends StatelessWidget {
             onPressed: () {
               // Does nothing for now
             }
-          )
+          ),
+          const SizedBox(height: 15),
+          const Text("Once verified, you can:"),
+          const SizedBox(height: 15),
+          ElevatedButton(
+            child: const Text("Sign In"),
+            onPressed: () {
+              // Flag that this is in the initial login context
+              context.read<AppState>().initialLogin = true;
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SignIn()));
+            })
         ],
       )
     );
