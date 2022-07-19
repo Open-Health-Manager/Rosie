@@ -111,7 +111,7 @@ void main() {
         client.send(argThat(matchesRequest('GET', Uri.https('localhost:8080', '/fhir/Patient'))))
       ).thenAnswer((_) async => response);
       final testManager = OpenHealthManager.forServerURL(testBaseUri, client: client);
-      testManager.authData = AuthData(Id('1'), 'test', 'Bearer example_token', false);
+      testManager.authData = AuthData(Id('1'), 'test', 'Bearer example_token');
       // Don't care about the result for this text
       await testManager.getJsonObject(Uri.https('localhost:8080', '/fhir/Patient'));
       expect(verify(client.send(captureAny)).captured.single.headers, containsPair('Authorization', 'Bearer example_token'));
