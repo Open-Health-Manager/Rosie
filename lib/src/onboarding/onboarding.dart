@@ -84,7 +84,7 @@ class _OnboardingState extends State<Onboarding> {
     final stackTrace = (error is Error) ? error.stackTrace : null;
     if (stackTrace != null) {
       return TextSpan(children: [
-        TextSpan(text: error.toString() + "\n"),
+        TextSpan(text: '$error\n'),
         TextSpan(text: stackTrace.toString(), style: const TextStyle(fontFamily: "Courier", fontFamilyFallback: ["monospace"]))
       ]);
     } else {

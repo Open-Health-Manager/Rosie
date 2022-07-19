@@ -109,7 +109,7 @@ class InvalidConfigError extends Error {
 /// text, including the space), returns the token unmodified. Otherwise, returns the token with `'Bearer '` prepended to
 /// it.
 String _sanitizeBearerToken(String token) {
-  return token.startsWith('Bearer ') ? token : 'Bearer ' +  token;
+  return token.startsWith('Bearer ') ? token : 'Bearer $token';
 }
 
 /// Authentication information. This contains the JWT token used for authenticating requests with the server.
@@ -243,7 +243,7 @@ class OpenHealthManager with ChangeNotifier {
       }
       return Id(id);
     } on FormatException catch(error) {
-      throw InvalidResponseException('Invalid JWT from server: ' + error.message);
+      throw InvalidResponseException('Invalid JWT from server: ${error.message}');
     }
   }
 
@@ -324,7 +324,7 @@ class OpenHealthManager with ChangeNotifier {
       throw AuthenticationStateError("No current session");
     }
     final uri = fhirBase.resolve("Patient/$patientId");
-    log("targetURI: " + uri.toString());
+    log("targetURI: $uri");
     final jsonObject = await getJsonObject(uri);
     return Patient.fromJson(jsonObject);
   }

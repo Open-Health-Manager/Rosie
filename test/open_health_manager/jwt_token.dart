@@ -21,8 +21,7 @@ void main() {
     test('parses a token without a signature', () {
       // This is a very simple token
       final token = Token.parse(
-        base64UrlEncode(utf8.encode('{"header":true}')) + '.' +
-        base64UrlEncode(utf8.encode('{"payload":true}'))
+        '${base64UrlEncode(utf8.encode('{"header":true}'))}.${base64UrlEncode(utf8.encode('{"payload":true}'))}'
       );
       expect(token.header, equals({'header': true}));
       expect(token.payload, equals({'payload': true}));

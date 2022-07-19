@@ -101,15 +101,13 @@ class CarePlanCards extends StatelessWidget {
               alignment: MainAxisAlignment.start,
               children: [
                 ElevatedButton(
-                  child: const Text('Remind Later',
-                      style: TextStyle(color: Color(0xFF6750A4))),
                   onPressed: () {/* ... */},
                   style: ElevatedButton.styleFrom(
                       primary: Colors.white, shape: const StadiumBorder()),
+                  child: const Text('Remind Later',
+                      style: TextStyle(color: Color(0xFF6750A4))),
                 ),
                 ElevatedButton(
-                  child: Text('Update $title',
-                      style: const TextStyle(color: Colors.white)),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -128,6 +126,8 @@ class CarePlanCards extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                       primary: const Color(0xFF6750A4),
                       shape: const StadiumBorder()),
+                  child: Text('Update $title',
+                      style: const TextStyle(color: Colors.white)),
                 )
               ],
             )

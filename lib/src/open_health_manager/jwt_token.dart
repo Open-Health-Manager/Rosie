@@ -24,9 +24,9 @@ Uint8List base64UrlDecode(String s) {
     case 0:
       padded = s; break;
     case 2:
-      padded = s + '=='; break;
+      padded = '$s=='; break;
     case 3:
-      padded = s + '='; break;
+      padded = '$s='; break;
     // Only possible value for default is 1 but use default so the compiler
     // knows padded must be set
     default:
@@ -99,11 +99,10 @@ class Token {
   /// Note that this does **not** modify the header! If given an invalid Hmac based on the JWT header within the token,
   /// this will happily encode a junk token.
   String encoded([Hmac? hmac]) {
-    final body = base64UrlEncodeString(json.encode(header)) + '.' +
-      base64UrlEncodeString(json.encode(payload));
+    final body = '${base64UrlEncodeString(json.encode(header))}.${base64UrlEncodeString(json.encode(payload))}';
     if (hmac != null) {
       Digest signature = hmac.convert(utf8.encode(body));
-      return body + '.' + base64UrlEncode(signature.bytes);
+      return '$body.${base64UrlEncode(signature.bytes)}';
     } else {
       return body;
     }

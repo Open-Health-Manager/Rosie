@@ -94,7 +94,7 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                 return Row(children: const [
                   CircularProgressIndicator(),
                   SizedBox(width: 8),
-                  Flexible(child: Text("Loading..."), flex: 1)
+                  Flexible(flex: 1, child: Text("Loading..."))
                 ]);
                 // break;
               case ConnectionState.active:

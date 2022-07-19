@@ -141,8 +141,8 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
             case ConnectionState.none:
             case ConnectionState.done:
               final submitButton = ElevatedButton(
-                child: Text(widget.submitLabel),
-                onPressed: submit
+                onPressed: submit,
+                child: Text(widget.submitLabel)
               );
               String? error;
               if (snapshot.hasError) {
@@ -154,6 +154,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
                 return submitButton;
               } else {
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children:[
                     Text(
                       error,
@@ -162,7 +163,6 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
                     ),
                     submitButton
                   ],
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                 );
               }
             case ConnectionState.waiting:
@@ -171,7 +171,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
               return Row(children: [
                 const CircularProgressIndicator(),
                 const SizedBox(width: 8),
-                Flexible(child: Text(widget.loadingLabel), flex: 1)
+                Flexible(flex: 1, child: Text(widget.loadingLabel))
               ]);
           }
         },

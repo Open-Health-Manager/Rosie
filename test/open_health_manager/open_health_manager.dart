@@ -99,7 +99,7 @@ void main() {
       expect(authData, isNotNull);
       // Now repeat that Dart knows it isn't null locally
       if (authData != null) {
-        expect(authData.bearerToken, equals('Bearer ' + token));
+        expect(authData.bearerToken, equals('Bearer $token'));
         expect(authData.id, equals(Id("42")));
       }
     });

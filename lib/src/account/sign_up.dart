@@ -168,6 +168,7 @@ class _SignUpState extends State<SignUp> {
                       _agreesToTerms = newValue == true;
                     });
                   },
+                  errorText: field.errorText,
                   child: Text.rich(
                     TextSpan(
                       children: [
@@ -182,8 +183,7 @@ class _SignUpState extends State<SignUp> {
                         const TextSpan(text: ".")
                       ]
                     )
-                  ),
-                  errorText: field.errorText
+                  )
                 ),
               validator: (value) {
                 return value == true ? null : "You must agree to the terms and conditions.";
@@ -200,8 +200,8 @@ class _SignUpState extends State<SignUp> {
                     _assertsAge = newValue == true;
                   });
                 },
-                child: const Text("I am at least 18 years of age or older."),
                 errorText: field.errorText,
+                child: const Text("I am at least 18 years of age or older."),
               ),
               validator: (value) {
                 return value == true ? null : "You must be at least 18 years of age to use this app";
@@ -234,6 +234,8 @@ class _SignUpState extends State<SignUp> {
             duaAccepted: _agreesToTerms,
             ageAttested: _assertsAge
           );
+          // Ensure the view is still mounted
+          if (!mounted) return null;
           // If here, we need to push on to the verify account page
           // TODO: Should this reset the nav stack?
           Navigator.push(context, MaterialPageRoute(builder: (context) => VerifyAccountScreen(email: email)));

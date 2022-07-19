@@ -47,7 +47,7 @@ class TransactionManager {
           url: FhirUri(theResource.resourceTypeString! +
               ((theResource.id == null || theResource.id!.value == null)
                   ? ""
-                  : "/" + theResource.id!.value!))),
+                  : "/${theResource.id!.value!}"))),
     );
     List<BundleEntry>? updatedEntryList = _updateBatch!.entry;
     if (updatedEntryList == null) {

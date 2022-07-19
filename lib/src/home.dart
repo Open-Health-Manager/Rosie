@@ -51,11 +51,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _addRosieBackground(Widget child) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
         child: Container(
           decoration: createRosieScreenBoxDecoration(),
           child: child
-        ),
-        value: SystemUiOverlayStyle.dark
+        )
       );
   }
 
@@ -78,8 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AnnotatedRegion<SystemUiOverlayStyle>(
-        child: _buildSelectedPage(),
-        value: SystemUiOverlayStyle.dark
+        value: SystemUiOverlayStyle.dark,
+        child: _buildSelectedPage()
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

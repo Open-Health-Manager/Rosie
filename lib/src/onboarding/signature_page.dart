@@ -91,7 +91,6 @@ class SignaturePageState extends State<SignaturePage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: ElevatedButton(
-                        child: const Text("Agree"),
                         onPressed: () {
                           if (checked && fullname != null && fullname!.isNotEmpty) {
                             Navigator.pushNamed(context, "signUp");
@@ -99,7 +98,8 @@ class SignaturePageState extends State<SignaturePage> {
                             // Show an error
                           }
                         },
-                        style: ElevatedButton.styleFrom(primary: OnboardingTheme.primary)
+                        style: ElevatedButton.styleFrom(primary: OnboardingTheme.primary),
+                        child: const Text("Agree"),
                       )
                     )
                   ]
