@@ -12,33 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This provides the sign in process
+// The UI for resetting your password
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'account_screen.dart';
-import 'reset_password.dart';
+import 'account_theme.dart';
 import '../open_health_manager/open_health_manager.dart';
 
-class SignIn extends StatefulWidget {
-  const SignIn({Key? key}) : super(key: key);
+class ResetPassword extends StatefulWidget {
+  const ResetPassword({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _SignInState();
+  State<StatefulWidget> createState() => _ResetPasswordState();
 }
 
-class _SignInState extends State<SignIn> {
+class _ResetPasswordState extends State<ResetPassword> {
   String? email;
   String? password;
 
   @override
   Widget build(BuildContext context) {
     return AccountScreenForm(
-      title: "Sign In",
+      title: "Retrieve Account",
       formBuilder: (BuildContext context) {
         return AutofillGroup(
           child: Column(
             children: [
+              const Text("Enter your email to get an email with password reset instructions."),
+              const SizedBox(height: 15.0),
               TextFormField(
                 autocorrect: false,
                 autofocus: true,
@@ -55,47 +57,44 @@ class _SignInState extends State<SignIn> {
                 autofillHints: const [AutofillHints.email],
                 textInputAction: TextInputAction.next,
               ),
-              const SizedBox(height: 15.0),
-              TextFormField(
-                autocorrect: false,
-                decoration: const InputDecoration(hintText: "Password", prefixIcon: Icon(Icons.lock)),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Password cannot be blank";
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  password = value;
-                },
-                onEditingComplete: () {
-                  Actions.invoke(context, const SubmitIntent());
-                },
-                autofillHints: const [AutofillHints.password],
-                textInputAction: TextInputAction.done,
-              ),
             ],
           )
         );
       },
-      submitLabel: "Sign In",
+      submitLabel: "Recover Account",
       onSubmit: () async {
-        if (email != null && password != null) {
-          final auth = await context.read<OpenHealthManager>().signIn(email!, password!);
-          return auth == null ? "Login failed (check your email and password)" : null;
+        if (email != null) {
+          await context.read<OpenHealthManager>().requestPasswordReset(email!);
+          if (!mounted) return null;
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const PasswordResetSent()));
+          return null;
         } else {
-          return "Email and password are required";
+          return "Email is required";
         }
       },
-      afterFormBuilder: (BuildContext context) {
-        // A link to retrieve the password
-        return TextButton(
-          child: const Text('Forgot password?'),
-          onPressed: () {
-            Navigator.push<void>(context, MaterialPageRoute<void>(builder: (context) => const ResetPassword()));
-          },);
-      },
     );
+  }
+}
+
+/// This screen is shown after the password request email has been successfully sent.
+class PasswordResetSent extends StatelessWidget {
+  const PasswordResetSent({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AccountScreen(builder: (context) {
+      return Column(children: <Widget>[
+        const Text('Retrieve Account', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: AccountThemePalette.textColor)),
+        const SizedBox(height: 30.0),
+        const Text('Recovery email sent!'),
+        const SizedBox(height: 30.0),
+        ElevatedButton(
+          onPressed: () {
+            // Attempt to open the email app
+          },
+          child: const Text('Open Email')
+        )
+      ]);
+    });
   }
 }

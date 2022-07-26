@@ -303,6 +303,21 @@ class OpenHealthManager with ChangeNotifier {
     // If here, the account was created successfully
   }
 
+  /// Requests a password reset email be sent to the given email.
+  ///
+  /// A success doesn't necessarily mean an email was sent - attempting to reset accounts that do not exist will also
+  /// receive a success response. It just means the server received and handled the request.
+  Future<void> requestPasswordReset(String email) async {
+    final request = http.Request('POST', serverUrl.resolve("api/account/reset-password/init"));
+    request.headers['Content-type'] = 'text/plain; charset=UTF-8';
+    // JSON body is just the email as a JSON string
+    request.body = email;
+    final response = await client.send(request);
+    if (response.statusCode != 200) {
+      throw ServerErrorException(response.statusCode, response.reasonPhrase, 'Error resetting password');
+    }
+  }
+
   /// Assuming the user is logged in, attempts to create a reference to their patient record.
   ///
   /// It's possible this method may need to be refactored elsewhere in the
