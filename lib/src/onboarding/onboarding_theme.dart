@@ -36,44 +36,7 @@ ThemeData createOnboardingTheme({brightness = Brightness.light}) {
       elevation: 0.0
     ),
     scaffoldBackgroundColor: Colors.white,
-    // For this theme, use a "special" transition builder when transitioning between pages of the comic
-    // pageTransitionsTheme: const PageTransitionsTheme(builders: {
-    //   TargetPlatform.android: ComicFlipTransitionsBuilder(ZoomPageTransitionsBuilder()),
-    //   TargetPlatform.iOS: ComicFlipTransitionsBuilder(CupertinoPageTransitionsBuilder()),
-    //   TargetPlatform.macOS: ComicFlipTransitionsBuilder(CupertinoPageTransitionsBuilder()),
-    // })
   );
-}
-
-class ComicFlipTransitionsBuilder extends PageTransitionsBuilder {
-  const ComicFlipTransitionsBuilder(this.defaultTransitionsBuilder);
-
-  final PageTransitionsBuilder defaultTransitionsBuilder;
-
-  @override
-  Widget buildTransitions<T>(PageRoute<T> route,
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child)
-  {
-    if (route.settings.name == 'page') {
-      // Generate an animation that slides between two pages
-      return SlideTransition(
-        position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(animation),
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: Offset.zero,
-            end: const Offset(-1.0, 0)
-          ).animate(secondaryAnimation),
-          child: child
-        )
-      );
-    } else {
-      // Use the default
-      return defaultTransitionsBuilder.buildTransitions(route, context, animation, secondaryAnimation, child);
-    }
-  }
 }
 
 /// Page flip transition.

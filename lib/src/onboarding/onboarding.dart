@@ -121,17 +121,7 @@ class _OnboardingState extends State<Onboarding> {
                     throw Exception("Invalid page argument ${settings.arguments}");
                   }
                   // For comic pages, we want to build a special transition.
-                  return PageRouteBuilder(
-                    pageBuilder: (BuildContext context, Animation<double> _, Animation<double> __) => ComicPage.fromPage(comic.pages[page]),
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      return ComicPageFlipTransition(
-                        animation: animation,
-                        secondaryAnimation: secondaryAnimation,
-                        child: child
-                      );
-                    },
-                    settings: settings
-                  );
+                  return ComicPageRoute(builder: (context) => ComicPage.fromPage(comic.pages[page]), settings: settings);
                 case "signature":
                   builder = (BuildContext context) => SignaturePage(dataUseAgreement: comic.dataUseAgreement);
                   break;
@@ -154,6 +144,53 @@ class _OnboardingState extends State<Onboarding> {
         )
       )
     );
+  }
+}
+
+/// Represents a route to a specific page within the comic.
+class ComicPageRoute<T> extends PageRoute<T> {
+  ComicPageRoute({required this.builder, RouteSettings? settings}) : super(settings: settings);
+
+  final WidgetBuilder builder;
+
+  /// A bit of state: whether to animate to the next route using the page flip animation or the out animation. Default
+  /// to true so that when pushed to the top of the stack it will be true.
+  bool _flipPage = true;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+    return builder(context);
+  }
+
+  @override
+  // TODO: It's probably possible to set this to false for the comic, but it's unclear if it should be
+  bool get maintainState => true;
+
+  @override
+  // 300ms is the transition duration default
+  Duration get transitionDuration => const Duration(milliseconds: 300);
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+    if (_flipPage) {
+      return ComicPageFlipTransition(animation: animation, secondaryAnimation: secondaryAnimation, child: child);
+    } else {
+      final PageTransitionsTheme theme = Theme.of(context).pageTransitionsTheme;
+      return theme.buildTransitions<T>(this, context, animation, secondaryAnimation, child);
+    }
+  }
+
+  @override void didChangeNext(Route? nextRoute) {
+    // Flip the page when the page is null (this is now the top) or the next
+    // route is also a comic page.
+    _flipPage = nextRoute == null || nextRoute is ComicPageRoute;
+    super.didChangeNext(nextRoute);
   }
 }
 
