@@ -17,6 +17,9 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:fhir/r4.dart';
+import '../../data_use_agreement/data_use_agreement.dart';
+import 'jwt_token.dart' as jwt;
+import 'transaction_manager.dart';
 
 class InternalException implements Exception {
   const InternalException(this.message);
@@ -76,10 +79,14 @@ class InvalidResourceException implements Exception {
   }
 }
 
-/// Thrown when an attempt is made to execute a method that requires an authenticated session.
-class NotAuthenticatedError extends Error {
-  NotAuthenticatedError(this.message) : super();
+/// Thrown when an attempt is made to execute a method that requires the authentication state to be different than what
+/// it currently is.
+class AuthenticationStateError extends Error {
+  AuthenticationStateError(this.message, {this.loginRequired=true}) : super();
   final String message;
+  /// Indicates whether the error was caused by the login missing when required (true), or the login existing when not
+  /// required (false). For example, creating a new account can only be done when logged out.
+  final bool loginRequired;
 
   @override
   String toString() {
@@ -98,12 +105,23 @@ class InvalidConfigError extends Error {
   }
 }
 
-/// Mostly a place-holder class, this represents the authentication information. At present, this just contains the
-/// patient ID.
+/// Ensures that the given bearer token begins with `'Bearer '`. If the given string starts with `'Bearer '` (that exact
+/// text, including the space), returns the token unmodified. Otherwise, returns the token with `'Bearer '` prepended to
+/// it.
+String _sanitizeBearerToken(String token) {
+  return token.startsWith('Bearer ') ? token : 'Bearer $token';
+}
+
+/// Authentication information. This contains the JWT token used for authenticating requests with the server.
 class AuthData {
-  AuthData(this.id, this.username, this.dataConnected);
+  AuthData(this.id, this.username, String token) : bearerToken = _sanitizeBearerToken(token);
   final Id id;
   final String username;
+  /// The bearer token. This always starts with the text "Bearer ".
+  final String bearerToken;
+
+  /// Gets the token minus the text "Bearer ".
+  String get token => bearerToken.substring(7);
 
   MessageHeader createHeader({String? endpoint}) {
     return MessageHeader(
@@ -117,136 +135,187 @@ class AuthData {
       ]
     );
   }
-
-  // true if logged in, false if created. should not ultimately live here.
-  bool dataConnected;
-}
-
-class TransactionManager {
-  Bundle? _updateBatch;
-
-  bool activeBatch() {
-    return (_updateBatch != null);
-  }
-
-  createUpdateBatch() {
-    if (_updateBatch != null) {}
-    _updateBatch = Bundle(type: BundleType.transaction);
-  }
-
-  postCurrentUpdateBatch(OpenHealthManager manager) async {
-    if (_updateBatch != null) {
-      await manager.postTransaction(_updateBatch!);
-      _updateBatch = null;
-    }
-  }
-
-  addEntryToUpdateBatch(Resource theResource) {
-    if (_updateBatch == null) {
-      createUpdateBatch();
-    }
-    BundleEntry theEntry = BundleEntry(
-      resource: theResource,
-      request: BundleRequest(
-          method: (theResource.id == null)
-              ? BundleRequestMethod.post
-              : BundleRequestMethod.put,
-          url: FhirUri(theResource.resourceTypeString! +
-              ((theResource.id == null || theResource.id!.value == null)
-                  ? ""
-                  : "/" + theResource.id!.value!))),
-    );
-    List<BundleEntry>? updatedEntryList = _updateBatch!.entry;
-    if (updatedEntryList == null) {
-      updatedEntryList = <BundleEntry>[theEntry];
-    } else {
-      updatedEntryList.add(theEntry);
-    }
-
-    _updateBatch = _updateBatch!.copyWith(entry: updatedEntryList);
-  }
 }
 
 /// Provides APIs for accessing parts of Open Health Manager.
 /// This also holds on to the authentication information.
 class OpenHealthManager with ChangeNotifier {
-  OpenHealthManager({required this.fhirBase});
+  /// Create a new OpenHealthManager instance with the given configuration options.
+  OpenHealthManager({required this.serverUrl, required this.fhirBase, http.Client? client}) :
+    client = client ?? http.Client();
 
-  /// The base URI for FHIR requests.
+  /// Creates the OpenHealthManager for a single server.
+  OpenHealthManager.forServerURL(this.serverUrl, {http.Client? client}) :
+    fhirBase = serverUrl.resolve('fhir/'),
+    client = client ?? http.Client();
+
+  /// The base URI for the backend server.
+  final Uri serverUrl;
+
+  /// The base URI for FHIR requests. This is generally just [serverUrl] with
+  /// the path `fhir/` added to the end.
   ///
   /// Resolved URIs are created via [fhirBase.resolve].
   final Uri fhirBase;
-  final TransactionManager transactionManager = TransactionManager();
+  final transactionManager = TransactionManager();
+
+  /// Internal client used for all requests.
+  final http.Client client;
   AuthData? _authData;
 
+  /// The current authentication data.
   AuthData? get authData => _authData;
+
+  /// Sets new authentication data and notifies listeners that it has been changed. This can be used to restore an
+  /// existing set of authentication data that was persisted without requiring the user log in again. It can also be
+  /// used to "log out" by setting back to null without actually logging out of the server.
+  set authData(AuthData? newValue) {
+    _authData = newValue;
+    notifyListeners();
+  }
+
   bool get isSignedIn => _authData != null;
 
+  /// Creates an OpenHealthManager with the given configuration. Currently this looks for a single key in the given
+  /// object, `"openHealthManager"`, which is a string that's used to populate [serverUrl]. In the future this may
+  /// accept an object with more settings.
+  ///
+  /// If the value is missing or invalid, this throws [InvalidConfigError].
   static OpenHealthManager fromConfig(Map<String, dynamic> config) {
-    if (!config.containsKey("fhirBase")) {
-      throw InvalidConfigError('Missing required key "fhirBase"');
+    if (!config.containsKey("openHealthManager")) {
+      throw InvalidConfigError('Missing required key "openHealthManager"');
     }
-    var fhirBase = config["fhirBase"];
-    if (fhirBase is String) {
-      return OpenHealthManager(fhirBase: Uri.parse(fhirBase));
+    var ohmConfig = config["openHealthManager"];
+    if (ohmConfig is String) {
+      final Uri serverUrl;
+      try {
+        serverUrl = Uri.parse(ohmConfig);
+      } on FormatException catch(_) {
+        throw InvalidConfigError('Could not parse URL "$ohmConfig" as a valid URI');
+      }
+      return OpenHealthManager.forServerURL(serverUrl);
     } else {
-      throw InvalidConfigError('Invalid value for key "fhirBase": $fhirBase');
+      // In the future this may also accept a map of more specific values
+      throw InvalidConfigError('Invalid value for key "openHealthManager": $ohmConfig');
     }
   }
 
-  /// Attempts to sign in. Returns null if the sign in attempt was rejected. Raises an exception on communication failure.
+  /// Attempts to sign in. Returns `null` if the sign in attempt failed. Raises an exception on communication failure.
   Future<AuthData?> signIn(String email, String password) async {
-    final jsonData = await getJsonObjectFromResource('Patient', {
-      "identifier": "urn:mitre:healthmanager:account:username|$email"
+    if (_authData != null) {
+      throw AuthenticationStateError("Cannot login while currently logged in", loginRequired: false);
+    }
+    final jsonData = await postJsonObject(serverUrl.resolve("api/authenticate"), <String, dynamic>{
+      "username": email,
+      "password": password,
+      // Currently always false, unclear if it matters
+      "rememberMe": false
     });
-    final bundle = Bundle.fromJson(jsonData);
-    // Pull out the entries (mostly so the compiler can confirm we throw on null)
-    final entries = bundle.entry;
-    if (entries == null || entries.isEmpty) {
-      // Empty or missing means no matching user means "login" failed
-      return null;
+    // JSON response will only contain the bearer token
+    final token = jsonData["id_token"];
+    if (token is! String) {
+      // Missing or otherwise invalid
+      throw const InvalidResponseException('Missing or invalid "id_token" from server');
     }
-    final patientResource = entries.first.resource;
-    if (patientResource == null) {
-      // This is invalid
-      throw const InvalidResponseException('Server bundle did not include a resource');
-    }
-    final patientId = patientResource.id;
-    if (patientId == null) {
-      throw const InvalidResponseException('Patient returned has no associated ID');
-    }
-    final auth = AuthData(patientId, email, true);
-    _authData = auth;
-    notifyListeners();
-    return _authData;
+    final auth = AuthData(_getIdFromJWT(token), email, token);
+    authData = auth;
+    return auth;
   }
 
-  /// Attempts to create an account. Throws an exception on error. Returns the associated AuthData for the newly created
-  /// account on success.
-  Future<AuthData> createAccount(String fullName, String email) async {
-    final response = await postJsonObjectToResource("Patient", {
-      "resourceType": "Patient",
-      "identifier": [
-        {
-          "system": "urn:mitre:healthmanager:account:username",
-          "value": email
-        }
-      ],
-      "name": [
-        { "text": fullName }
-      ]
-    });
-    // Try and parse the response
-    final patient = Patient.fromJson(response);
-    // Make sure we have an ID
-    final id = patient.id;
-    if (id == null) {
-      throw const InvalidResponseException('Returned response has no patient ID');
+  /// Signs out.
+  Future<void> signOut() {
+    if (_authData == null) {
+      throw AuthenticationStateError("Cannot sign out when not signed in");
     }
-    final auth = AuthData(id, email, false);
-    _authData = auth;
-    notifyListeners();
-    return auth;
+    authData = null;
+    // In the future this may invoke a server call to invalidate the session or something, but for now, it just
+    // discards the authentication data.
+    return Future.value();
+  }
+
+  /// Get an ID from a JWT. Throws an InvalidResponseException if the JWT is missing the patient ID.
+  Id _getIdFromJWT(String token) {
+    try {
+      final parsedToken = jwt.Token.parse(token);
+      final id = parsedToken.payload['patient'];
+      if (id is! String) {
+        throw const InvalidResponseException('Missing or invalid "patient" in JWT payload');
+      }
+      return Id(id);
+    } on FormatException catch(error) {
+      throw InvalidResponseException('Invalid JWT from server: ${error.message}');
+    }
+  }
+
+  /// Attempts to create an account. Throws an exception on error. Accounts are created inactive and unverified and
+  /// cannot be initially used. If the future completes successfully, the account has been created but is inactive.
+  ///
+  /// Both `duaAccepted` and `ageAttested` must be true. If they are false, this method will throw an ArgumentError
+  /// and refuse to continue.
+  Future<void> createAccount(
+    String email,
+    String password,
+    {
+      required DataUseAgreement dataUseAgreement,
+      required bool duaAccepted,
+      required bool ageAttested,
+      String? firstName,
+      String? lastName
+    }
+  ) async {
+    if (_authData != null) {
+      throw AuthenticationStateError("Cannot create an account while currently logged in", loginRequired: false);
+    }
+    if (!duaAccepted) {
+      throw ArgumentError.value(duaAccepted, "duaAccepted", "Use must accept data use agreement");
+    }
+    if (!ageAttested) {
+      throw ArgumentError.value(duaAccepted, "ageAttested", "Use must indicate they are 18 or older");
+    }
+    // The way this currently works involves first creating the account and then automatically attempting to log in to
+    // the newly created account.
+    final requestJson = <String, dynamic>{
+      "login": email,
+      "email": email,
+      "password": password,
+      // It's unclear if this is needed, but keep it for now:
+      "langKey": "en",
+      "authorities": <String>["ROLE_USER"],
+      "userDUADTO": {
+        "active": duaAccepted,
+        "version": dataUseAgreement.version,
+        "ageAttested": ageAttested
+      }
+    };
+    if (firstName != null) {
+      requestJson["firstName"] = firstName;
+    }
+    if (lastName != null) {
+      requestJson["lastName"] = lastName;
+    }
+    final request = http.Request('POST', serverUrl.resolve("api/register"));
+    request.headers['Content-type'] = 'application/json; charset=UTF-8';
+    request.body = json.encode(requestJson);
+    final response = await client.send(request);
+    if (response.statusCode != 201) {
+      throw ServerErrorException(response.statusCode, response.reasonPhrase, 'Error creating account');
+    }
+    // If here, the account was created successfully
+  }
+
+  /// Requests a password reset email be sent to the given email.
+  ///
+  /// A success doesn't necessarily mean an email was sent - attempting to reset accounts that do not exist will also
+  /// receive a success response. It just means the server received and handled the request.
+  Future<void> requestPasswordReset(String email) async {
+    final request = http.Request('POST', serverUrl.resolve("api/account/reset-password/init"));
+    request.headers['Content-type'] = 'text/plain; charset=UTF-8';
+    // JSON body is just the email as a JSON string
+    request.body = email;
+    final response = await client.send(request);
+    if (response.statusCode != 200) {
+      throw ServerErrorException(response.statusCode, response.reasonPhrase, 'Error resetting password');
+    }
   }
 
   /// Assuming the user is logged in, attempts to create a reference to their patient record.
@@ -267,10 +336,10 @@ class OpenHealthManager with ChangeNotifier {
   Future<Patient> queryPatient() async {
     final patientId = _authData?.id.toString();
     if (patientId == null) {
-      throw NotAuthenticatedError("No current session");
+      throw AuthenticationStateError("No current session");
     }
     final uri = fhirBase.resolve("Patient/$patientId");
-    log("targetURI: " + uri.toString());
+    log("targetURI: $uri");
     final jsonObject = await getJsonObject(uri);
     return Patient.fromJson(jsonObject);
   }
@@ -282,7 +351,7 @@ class OpenHealthManager with ChangeNotifier {
   Future<Bundle> queryResource(String name, [Map<String, dynamic>? query]) async {
     final patientId = _authData?.id.toString();
     if (patientId == null) {
-      throw NotAuthenticatedError("No current session");
+      throw AuthenticationStateError("No current session");
     }
     var uri = fhirBase.resolve(name);
     final queryParameters = <String, dynamic>{"patient": patientId};
@@ -294,9 +363,26 @@ class OpenHealthManager with ChangeNotifier {
     return Bundle.fromJson(jsonObject);
   }
 
-  /// Parse a response as a JSON object, throwing an [InvalidResponseException] if the JSON response isn't a JSON object.
-  /// Throws a [FormatException] if the given data cannot be parsed as JSON.
-  Map<String, dynamic> _parseJsonResponse(http.Response response) {
+  /// Core method for sending HTTP requests. This will add any necessary authentication headers to the request before
+  /// sending it. See [http.Client.send] for details about the underlying method used. If an error prevents the request
+  /// from being sent, an [http.ClientException] may be raised.
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    // If we have a bearer token, set it
+    final authData = _authData;
+    if (authData != null) {
+      request.headers['Authorization'] = authData.bearerToken;
+    }
+    return client.send(request);
+  }
+
+  /// Sends a request, parsing the response as a JSON object and returning that JSON object.
+  ///
+  /// This wraps [send] and therefore may throw [http.ClientException]. If the response cannot be parsed as JSON, this
+  /// will throw a [FormatException]. IF it can be parsed but does not contain a JSON object, it will throw a
+  /// [InvalidResponseException]. If the server response is an error, this will throw a [ServerErrorException].
+  Future<Map<String, dynamic>> sendJsonRequest(http.BaseRequest request) async {
+    final streamedResponse = await send(request);
+    final response = await http.Response.fromStream(streamedResponse);
     if (response.statusCode >= 200 && response.statusCode < 299) {
       final parsed = json.decode(response.body);
       if (parsed is Map<String, dynamic>) {
@@ -307,6 +393,15 @@ class OpenHealthManager with ChangeNotifier {
     } else {
       throw ServerErrorException.fromResponse(response, 'Server returned an error');
     }
+  }
+
+  /// Send a JSON object and receive a JSON object in response. This wraps [sendJsonRequest] and generates a
+  /// [http.Request] containing the given object as the HTTP body.
+  Future<Map<String, dynamic>> sendJsonObject(String method, Uri uri, Map<String, dynamic> object) {
+    final request = http.Request(method, uri);
+    request.headers['Content-Type'] = 'application/json; charset=UTF-8';
+    request.body = json.encode(object);
+    return sendJsonRequest(request);
   }
 
   /// Sends a GET query to a specific FHIR resource and retrieve a parsed JSON object.
@@ -324,15 +419,30 @@ class OpenHealthManager with ChangeNotifier {
   ///
   /// If the response cannot be parsed as JSON, this will throw a [FormatException]. If the response can be parsed as
   /// JSON but is otherwise invalid, throws a [InvalidResponseException].
-  Future<Map<String, dynamic>> getJsonObject(Uri uri) async {
-    return _parseJsonResponse(await http.get(uri, headers: {"Cache-Control": "no-cache"}));
+  Future<Map<String, dynamic>> getJsonObject(Uri uri) {
+    final request = http.Request("GET", uri);
+    // TODO: Make this a parameter or something?
+    request.headers["Cache-Control"] = "no-cache";
+    return sendJsonRequest(request);
+  }
+
+  /// Helper method for POSTing a JSON object to the server and receiving a JSON object as a response. This wraps
+  /// [sendJsonRequest] and can throw exceptions it can.
+  Future<Map<String, dynamic>> postJsonObject(Uri url, Map<String, dynamic> object) {
+    return sendJsonObject('POST', url, object);
+  }
+
+  /// Helper method for PUTting a JSON object to the server and receiving a JSON object as a response. This wraps
+  /// [sendJsonRequest] and can throw exceptions it can.
+  Future<Map<String, dynamic>> putJsonObject(Uri url, Map<String, dynamic> object) {
+    return sendJsonObject('PUT', url, object);
   }
 
   /// Sends a process message with the given set of resources.
   Future<Map<String, dynamic>> sendProcessMessage(Iterable<Map<String, dynamic>> resources, {String? fhirVersion, String? endpoint}) {
     final authData = _authData;
     if (authData == null) {
-      throw NotAuthenticatedError("Cannot post message when not authenticated");
+      throw AuthenticationStateError("Cannot post message when not authenticated");
     }
     // Build a bundle based on that
     final bundle = <String, dynamic>{
@@ -406,20 +516,5 @@ class OpenHealthManager with ChangeNotifier {
   Future<Map<String, dynamic>> putJsonObjectToResourceId(
       String resource, String id, Map<String, dynamic> object) {
     return putJsonObject(fhirBase.resolve("$resource/$id"), object);
-  }
-
-  /// Helper method for posting a JSON object to the server and receiving a JSON object as a response.
-  Future<Map<String, dynamic>> postJsonObject(Uri url, Map<String, dynamic> object) async {
-    return _parseJsonResponse(await http.post(url, headers: {
-      "Content-type": "application/json; charset=utf-8"
-    }, body: json.encode(object)));
-  }
-
-  /// Helper method for posting a JSON object to the server and receiving a JSON object as a response.
-  Future<Map<String, dynamic>> putJsonObject(
-      Uri url, Map<String, dynamic> object) async {
-    return _parseJsonResponse(await http.put(url,
-        headers: {"Content-type": "application/json; charset=utf-8"},
-        body: json.encode(object)));
   }
 }

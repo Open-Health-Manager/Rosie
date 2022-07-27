@@ -64,9 +64,9 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            SizedBox(child: _createTextField("Systolic", _systolicController), width: 88),
+            SizedBox(width: 88, child: _createTextField("Systolic", _systolicController)),
             const Text("/", style: TextStyle(fontSize: 48)),
-            SizedBox(child: _createTextField("Diastolic", _diastolicController), width: 85)
+            SizedBox(width: 85, child: _createTextField("Diastolic", _diastolicController))
           ]
         ),
         InkWell(
@@ -144,6 +144,7 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
                   })
                 );
                 await patientData.addBloodPressureObservation(obs);
+                if (!mounted) return;
                 // Pop off our loading modal
                 Navigator.of(context).pop();
                 // And the observation we just created

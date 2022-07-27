@@ -78,7 +78,7 @@ class _SendHealthKitScreenState extends State<SendHealthKitScreen> {
             Text("Sent $uploadCount records")
           ],
           const SizedBox(height: 20),
-          ElevatedButton(child: Text(reload ? "Reload Records" : "Load Records"), onPressed: onLoadPressed),
+          ElevatedButton(onPressed: onLoadPressed, child: Text(reload ? "Reload Records" : "Load Records")),
           if (loading) ...[
             const SizedBox(height: 20),
             Row(children: <Widget>[

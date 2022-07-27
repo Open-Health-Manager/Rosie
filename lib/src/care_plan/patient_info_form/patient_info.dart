@@ -77,10 +77,6 @@ class PatientInfoState extends State<PatientInfo> {
     'Former Smoker',
     'Never Smoked'
   ];
-
-  String _initialPregnancyStatus = "";
-  String _initialTobaccoUsageStatus = "";
-  String _initialSexuallyActivityStatus = "";
   //final _heightController = TextEditingController();
   //final _weightController = TextEditingController();
   //final _systolicController = TextEditingController();
@@ -422,7 +418,7 @@ class PatientInfoState extends State<PatientInfo> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
       child: DropdownButtonFormField<String>(
-          value: _initialPregnancyStatus,
+          value: '',
           items: pregnancyOptions.map((String val) {
             return DropdownMenuItem(
               value: val,
@@ -515,7 +511,7 @@ class PatientInfoState extends State<PatientInfo> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
       child: DropdownButtonFormField<String>(
-          value: _initialSexuallyActivityStatus,
+          value: '',
           items: sexualActivityOptions.map((String val) {
             return DropdownMenuItem(
               value: val,
@@ -639,10 +635,6 @@ class PatientInfoState extends State<PatientInfo> {
                       alignment: MainAxisAlignment.end,
                       children: [
                         ElevatedButton(
-                            child: const Text(
-                              'Submit',
-                              style: TextStyle(color: Colors.white),
-                            ),
                             style: ElevatedButton.styleFrom(
                                 primary: const Color(0xFF6750A4),
                                 shape: const StadiumBorder()),
@@ -658,7 +650,12 @@ class PatientInfoState extends State<PatientInfo> {
                                 ptData.postCurrentTransaction();
                               }
                               Navigator.pop(context);
-                            }),
+                            },
+                            child: const Text(
+                              'Submit',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
                       ],
                     ),
                   )

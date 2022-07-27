@@ -1,6 +1,9 @@
 # Rosie-specific configuration files
 /assets/config/config.local.json
 
+# Mockito mocks
+/test/**/*.mocks.dart
+
 # Miscellaneous
 *.class
 *.log

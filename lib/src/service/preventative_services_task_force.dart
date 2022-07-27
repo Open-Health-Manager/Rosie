@@ -173,7 +173,7 @@ class PreventativeServicesTaskForce with ChangeNotifier {
     }
     final Uri targetURI = _serviceURL.replace(queryParameters: queryParameters);
     final Uri copy = targetURI;
-    log("targetURI: " + targetURI.toString());
+    log("targetURI: $targetURI");
     return await getJsonObject(targetURI);
   }
 

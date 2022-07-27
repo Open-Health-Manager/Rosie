@@ -35,7 +35,8 @@ ThemeData createAccountTheme() {
       hintStyle: TextStyle(color: Colors.black54),
       prefixIconColor: Colors.black
     ),
-    textTheme: Typography.material2018().white.copyWith(subtitle1: const TextStyle(color: Colors.black))
+    textTheme: Typography.material2018().white.copyWith(subtitle1: const TextStyle(color: Colors.black)),
+    toggleableActiveColor: AccountThemePalette.background
   );
 }
 

@@ -64,7 +64,7 @@ class HealthKitResource {
       try {
         final resource = json.decode(resourceJson);
         if (resource is Map<String, dynamic>) {
-          return HealthKitResource(fhirVersion: version, sourceUrl: sourceUrl, resource: resource);;
+          return HealthKitResource(fhirVersion: version, sourceUrl: sourceUrl, resource: resource);
         } else {
           // Log this but otherwise ignore it
           log('Invalid object from FHIR record: expected JSON object, got ${resource.runtimeType}', level: 800);
