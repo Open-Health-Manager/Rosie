@@ -40,4 +40,13 @@ void main() {
       }));
     });
   });
+
+  group('Token.getDateTime', () {
+    test('parses a known time', () {
+      final token = Token(<String, dynamic>{}, <String, dynamic>{
+        "exp": 1300819380
+      });
+      expect(token.expirationTime, equals(DateTime.utc(2011, 3, 22, 18, 43)));
+    });
+  });
 }
