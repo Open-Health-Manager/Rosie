@@ -20,7 +20,13 @@ import 'onboarding.dart';
 
 /// A single comic page.
 class ComicPage extends StatelessWidget {
-  const ComicPage({Key? key, required this.text, required this.comicPage, required this.nextLabel, this.showLoginLink=false}) : super(key: key);
+  const ComicPage(
+      {Key? key,
+      required this.text,
+      required this.comicPage,
+      required this.nextLabel,
+      this.showLoginLink = false})
+      : super(key: key);
 
   final String text;
   final String comicPage;
@@ -33,56 +39,48 @@ class ComicPage extends StatelessWidget {
     final List<Widget> children = [
       Expanded(child: Image(image: AssetImage(comicPage), fit: BoxFit.contain)),
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-        child:
-        ElevatedButton(
-          onPressed: () {
-            // When pressed, move on to the next page, if possible
-            Actions.invoke(context, const NextPageIntent());
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(nextLabel),
-              const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward_rounded)
-            ]
-          )
-        )
-      )
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+          child: ElevatedButton(
+              onPressed: () {
+                // When pressed, move on to the next page, if possible
+                Actions.invoke(context, const NextPageIntent());
+              },
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(nextLabel),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.arrow_forward_ios)
+                  ])))
     ];
     if (showLoginLink) {
       // Add a way to log in
-      children.insert(0,
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 36),
-          child: Row(children: [
-            const Text("Already have an account?"),
-            TextButton(
-              child: const Text("Sign In"),
-              onPressed: () {
-                Navigator.pushNamed(context, "signIn");
-              }
-            )
-          ])
-        )
-      );
+      children.insert(
+          0,
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 36),
+              child: Row(children: [
+                const Text("Already have an account?"),
+                TextButton(
+                    child: const Text("Sign In"),
+                    onPressed: () {
+                      Navigator.pushNamed(context, "signIn");
+                    })
+              ])));
     }
     return Scaffold(
-      appBar: AppBar(),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Column(children: children)
-        )
-      )
-    );
+        appBar: AppBar(),
+        body: SafeArea(
+            child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(children: children))));
   }
 
   factory ComicPage.fromPage(OnboardingComicPage page) {
     return ComicPage(
       text: page.altText,
-      comicPage: "assets/data_use_agreement/rosieOnboarding-${page.pageNumber}.png",
+      comicPage:
+          "assets/data_use_agreement/rosieOnboarding-${page.pageNumber}.png",
       nextLabel: page.nextLabel,
       showLoginLink: page.firstPage,
     );
