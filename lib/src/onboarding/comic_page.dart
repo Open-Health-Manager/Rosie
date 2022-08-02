@@ -37,6 +37,7 @@ class ComicPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // This children change depending on page number, so build them first
     final List<Widget> children = [
+      Container(child: Text(text)),
       Expanded(child: Image(image: AssetImage(comicPage), fit: BoxFit.contain)),
       Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
