@@ -82,7 +82,7 @@ class ComicPage extends StatelessWidget {
   factory ComicPage.fromPage(OnboardingComicPage page) {
     return ComicPage(
       text: page.altText,
-      comicPage: "assets/data_use_agreement/page${page.pageNumber}.png",
+      comicPage: "assets/data_use_agreement/rosieOnboarding-${page.pageNumber}.png",
       nextLabel: page.nextLabel,
       showLoginLink: page.firstPage,
     );
