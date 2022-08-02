@@ -15,34 +15,33 @@
 import 'package:flutter/material.dart';
 
 class AccountThemePalette {
-  static const Color darkGrey = Color.fromARGB(255, 0x28, 0x28, 0x28);
-  static const Color background = Color.fromARGB(255, 66, 140, 227);
-  static const Color textColor = Colors.white;
+  static const Color boxColor = Color(0xFFFEF2F5);
+  static const Color background = Color(0xFFFA99AF);
+  static const Color textColor = Color(0xFF1F201D);
 }
 
 ThemeData createAccountTheme() {
   return ThemeData(
-    brightness: Brightness.dark,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: AccountThemePalette.background,
-      elevation: 0.0
-    ),
-    backgroundColor: AccountThemePalette.darkGrey,
-    inputDecorationTheme: const InputDecorationTheme(
-      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
-      fillColor: Colors.white,
-      filled: true,
-      hintStyle: TextStyle(color: Colors.black54),
-      prefixIconColor: Colors.black
-    ),
-    textTheme: Typography.material2018().white.copyWith(subtitle1: const TextStyle(color: Colors.black)),
-    toggleableActiveColor: AccountThemePalette.background
-  );
+      brightness: Brightness.dark,
+      appBarTheme: const AppBarTheme(
+          backgroundColor: AccountThemePalette.background, elevation: 0.0),
+      backgroundColor: AccountThemePalette.boxColor,
+      inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          fillColor: Colors.white,
+          filled: true,
+          hintStyle: TextStyle(color: Colors.black54),
+          prefixIconColor: Colors.black),
+      textTheme: Typography.material2018()
+          .black
+          .copyWith(subtitle1: const TextStyle(color: Color(0xFF1F201D))),
+      toggleableActiveColor: AccountThemePalette.background);
 }
 
 BoxDecoration createAccountBoxDecoration() {
   return BoxDecoration(
-    color: AccountThemePalette.darkGrey,
+    color: AccountThemePalette.boxColor,
     border: Border.all(color: Colors.white, width: 2.0),
     borderRadius: BorderRadius.circular(30),
   );
