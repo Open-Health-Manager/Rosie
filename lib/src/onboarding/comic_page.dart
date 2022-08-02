@@ -33,7 +33,7 @@ class ComicPage extends StatelessWidget {
     final List<Widget> children = [
       Expanded(child: Image(image: AssetImage(comicPage), fit: BoxFit.contain)),
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         child:
         ElevatedButton(
           onPressed: () {
