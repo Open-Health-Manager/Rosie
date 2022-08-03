@@ -86,13 +86,13 @@ class PasswordResetSent extends StatelessWidget {
       return Column(children: <Widget>[
         const Text('Retrieve Account', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: AccountThemePalette.textColor)),
         const SizedBox(height: 30.0),
-        const Text('Recovery email sent!'),
+        const Text('Recovery email sent! Please check your email for instructions on how to reset your password. Once reset, you can'),
         const SizedBox(height: 30.0),
         ElevatedButton(
           onPressed: () {
-            // Attempt to open the email app
+            Navigator.popUntil(context, (route) => route.settings.name == "signIn");
           },
-          child: const Text('Open Email')
+          child: const Text('Return to Sign In')
         )
       ]);
     });
