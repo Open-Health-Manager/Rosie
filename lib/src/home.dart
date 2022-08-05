@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'account_settings/account_settings.dart';
 import 'care_plan/care_plan_home.dart';
 import 'get_started/get_started.dart';
 import 'app_config.dart';
@@ -69,6 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ));
       case 2:
         return _addRosieBackground(const Center(child: GetStarted()));
+      case 4:
+        return _addRosieBackground(const AccountSettingsScreen());
       default:
         return _addRosieBackground(const Center(child: Text("Not Implemented")));
     }
@@ -98,7 +101,11 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.share),
             label: 'Community'
-          )
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle_outlined),
+            label: 'Account'
+          ),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped

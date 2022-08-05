@@ -12,20 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../open_health_manager/open_health_manager.dart';
 
-/// Rosie app state. This represents parts of Rosie that are app-specific.
-class AppState with ChangeNotifier {
-  /// Secure storage, used to store information that needs to be encrypted
-  final secureStorage = const FlutterSecureStorage();
+/// Account settings screen. At present, does one thing: lets you log out.
+class AccountSettingsScreen extends StatelessWidget {
+  const AccountSettingsScreen({Key? key}) : super(key: key);
 
-  bool _initialLogin = false;
-
-  bool get initialLogin => _initialLogin;
-
-  set initialLogin(bool newValue) {
-    _initialLogin = newValue;
-    notifyListeners();
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ElevatedButton(
+        onPressed: () {
+          context.read<OpenHealthManager>().signOut();
+        },
+        child: const Text('Log Out')
+      ),
+    );
   }
 }

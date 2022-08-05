@@ -15,6 +15,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:fhir/r4.dart';
 import '../../data_use_agreement/data_use_agreement.dart';
@@ -135,6 +136,49 @@ class AuthData {
       ]
     );
   }
+
+  Future<void> writeToSecureStorage(FlutterSecureStorage storage, [String key="auth"]) {
+    return storage.write(key: "auth", value: toJson());
+  }
+
+  /// Returns a string containing a JSON representation of this auth data.
+  String toJson() {
+    return json.encode(<String, String>{
+      "id": id.toString(),
+      "username": username,
+      "token": token
+    });
+  }
+
+  factory AuthData.fromJson(json) {
+    if (json is Map<String, dynamic>) {
+      final id = json["id"];
+      final username = json["username"];
+      final token = json["token"];
+      if (id is String && username is String && token is String) {
+        return AuthData(Id(id), username, token);
+      } else {
+        throw const FormatException("Invalid JSON: missing required key");
+      }
+    } else {
+      throw const FormatException("Invalid JSON: not a JSON object");
+    }
+  }
+
+  static Future<AuthData?> readFromSecureStorage(FlutterSecureStorage storage, [String key="auth"]) async {
+    final jsonData = await storage.read(key: key);
+    if (jsonData == null) {
+      return null;
+    }
+    // Otherwise, try and parse it
+    try {
+      return AuthData.fromJson(json.decode(jsonData));
+    } on FormatException catch (error) {
+      // Handle these by returning null
+      log("Unable to decode stored authentication data.", level: 700, error: error);
+      return null;
+    }
+  }
 }
 
 /// Provides APIs for accessing parts of Open Health Manager.
@@ -218,6 +262,7 @@ class OpenHealthManager with ChangeNotifier {
       throw const InvalidResponseException('Missing or invalid "id_token" from server');
     }
     final auth = AuthData(_getIdFromJWT(token), email, token);
+    // Set authData through the setter so listeners get fired
     authData = auth;
     return auth;
   }

@@ -50,6 +50,8 @@ class RosieApp extends StatefulWidget {
 class _RosieAppState extends State<RosieApp> {
   /// Application configuration data
   AppConfig? _config;
+  /// Application state.
+  AppState? _appState;
   /// The health manager - provides API access.
   OpenHealthManager? _healthManager;
   /// Patient data manager.
@@ -59,14 +61,36 @@ class _RosieAppState extends State<RosieApp> {
   initState() {
     super.initState();
     // Start loading our configuration.
-    AppConfig.fromAssetBundle(rootBundle).then((config) {
-      setState(() {
-        _config = config;
-        // Next attempt to create the rest
-        final manager = _createOpenHealthManager(config);
-        _healthManager = manager;
-        _patientData = PatientData(manager);
-      });
+    _loadApp().catchError((error) {
+      // Not much can be done with errors here other than to log them
+      log("Error while initializing app - things may not work properly!", error: error);
+    });
+  }
+
+  Future<void> _loadApp() async {
+    final appState = AppState();
+    final config = await AppConfig.fromAssetBundle(rootBundle);
+    final manager = _createOpenHealthManager(config);
+    // With the config loaded, attempt to restore the session
+    manager.authData = await AuthData.readFromSecureStorage(appState.secureStorage);
+    // Also add a listener so that any future changes to AuthData will be stored
+    manager.addListener(() {
+      // For now, always assume the auth data has changed, and attempt to save it
+      final authData = manager.authData;
+      if (authData == null) {
+        // Delete the auth key. Note that this is async.
+        appState.secureStorage.delete(key: "auth");
+      } else {
+        // Otherwise, attempt to write the new one
+        authData.writeToSecureStorage(appState.secureStorage);
+      }
+    });
+    // Once that's done, set our local values.
+    setState(() {
+      _config = config;
+      _appState = appState;
+      _healthManager = manager;
+      _patientData = PatientData(manager);
     });
   }
 
@@ -78,8 +102,8 @@ class _RosieAppState extends State<RosieApp> {
     if (manager != null && patientData != null) {
       // Otherwise, we have what we need to create providers, which need to be above the MaterialApp to ensure they're
       // accessible on all routes.
-      return ChangeNotifierProvider(
-        create: (context) => AppState(),
+      return ChangeNotifierProvider.value(
+        value: _appState,
         child: Provider.value(
           value: _config,
           child: ChangeNotifierProvider<OpenHealthManager>.value(
