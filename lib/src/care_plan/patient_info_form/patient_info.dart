@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../open_health_manager/patient_data.dart';
@@ -160,7 +161,7 @@ class PatientInfoState extends State<PatientInfo> {
     );
   }
 
-  _selectDOBDate(BuildContext context, DateTime? dobValue) async {
+  void _selectDOBDate(BuildContext context, DateTime? dobValue) async {
     var initialDateOfBirth = (dobValue != null) ? dobValue : DateTime.now();
     final DateTime? picked = await showDatePicker(
         context: context,
@@ -176,6 +177,7 @@ class PatientInfoState extends State<PatientInfo> {
       }
     }
   }
+
 /*
   _selectBloodPressureRecordedDate(BuildContext context) async {
     var initialBloodPressureRecordedDate = DateFormat('MM/dd/yy')
@@ -196,131 +198,158 @@ class PatientInfoState extends State<PatientInfo> {
   }
   */
 
-  Widget _builDOBField(DateTime? dobValue) {
+  Widget _buildTextField({
+    required String label,
+    TextEditingController? controller,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+    void Function(String)? onChanged,
+    void Function(String?)? onSaved,
+    void Function()? onTap,
+    double? paddingTop
+  }) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 10, 20, 0),
+      padding: EdgeInsets.fromLTRB(0, paddingTop ?? 20, 20, 0),
       child: TextFormField(
         style: const TextStyle(color: Colors.black),
         cursorColor: Colors.black,
-        controller: _dateofBirthController,
-        onTap: () => _selectDOBDate(context, dobValue),
-        decoration: const InputDecoration(
-          labelText: 'Date of Birth',
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter your Date of Birth';
-          }
-          return null;
-        },
-        onSaved: (value) {
-          //Provider.of<PatientData>(context, listen: false).dob = value!;
-          if (_dateOfBirthDirty) {
-            Provider.of<PatientData>(context, listen: false)
-                .patientDemographics
-                .value
-                ?.updateDateOfBirth((value == null)
-                    ? null
-                    : DateFormat('MM/dd/yy').parse(value));
-          }
-        },
-        onChanged: (value) {
-          _dateOfBirthDirty = true;
-        },
+        controller: controller,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
+        onTap: onTap,
+        decoration: InputDecoration(labelText: label, ),
+        validator: validator,
+        onSaved: onSaved,
+        onChanged: onChanged,
       ),
+    );
+  }
+
+  Widget _builDOBField(DateTime? dobValue) {
+    return _buildTextField(
+      label: 'Date of Birth',
+      paddingTop: 10,
+      controller: _dateofBirthController,
+      onTap: () => _selectDOBDate(context, dobValue),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your Date of Birth';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        //Provider.of<PatientData>(context, listen: false).dob = value!;
+        if (_dateOfBirthDirty) {
+          Provider.of<PatientData>(context, listen: false)
+              .patientDemographics
+              .value
+              ?.updateDateOfBirth((value == null)
+                  ? null
+                  : DateFormat('MM/dd/yy').parse(value));
+        }
+      },
+      onChanged: (value) {
+        _dateOfBirthDirty = true;
+      },
+    );
+  }
+
+  Widget _buildDropdown({
+    String? value,
+    List<DropdownMenuItem<String>>? items,
+    String? label,
+    String? Function(String?)? validator,
+    void Function(String?)? onSaved,
+    void Function(String?)? onChanged
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        items: items,
+        style: const TextStyle(color: Colors.black),
+        iconEnabledColor: Colors.black,
+        iconDisabledColor: Colors.black,
+        dropdownColor: Colors.blueGrey,
+        decoration: InputDecoration(
+          labelText: label,
+        ),
+        validator: validator,
+        onSaved: onSaved,
+        onChanged: onChanged,
+      )
     );
   }
 
   Widget _buildSexAssignedAtBirthField(genderValue) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-      child: DropdownButtonFormField<String>(
-          value: genderValue,
-          items: sexAtBirthOptions.map((String val) {
-            return DropdownMenuItem(
-              value: val,
-              child: Text(
-                val,
-              ),
-            );
-          }).toList(),
-          style: const TextStyle(color: Colors.black),
-          iconEnabledColor: Colors.black,
-          iconDisabledColor: Colors.black,
-          dropdownColor: Colors.blueGrey,
-          decoration: const InputDecoration(
-            labelText: 'Sex at Birth',
+    return _buildDropdown(
+      value: genderValue,
+      items: sexAtBirthOptions.map((String val) {
+        return DropdownMenuItem(
+          value: val,
+          child: Text(
+            val,
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please select your Sex at Birth';
-            }
-            return null;
-          },
-          onSaved: (value) {
-            //Provider.of<PatientData>(context, listen: false).gender = value!;
-            if (_genderDirty) {
-              Provider.of<PatientData>(context, listen: false)
-                  .patientDemographics
-                  .value
-                  ?.updateGender(value);
-            }
-          },
-          onChanged: (value) {
-            //Provider.of<PatientData>(context, listen: false).gender = value!;
-            _genderDirty = true;
-          }),
+        );
+      }).toList(),
+      label: 'Sex at Birth',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select your Sex at Birth';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        //Provider.of<PatientData>(context, listen: false).gender = value!;
+        if (_genderDirty) {
+          Provider.of<PatientData>(context, listen: false)
+              .patientDemographics
+              .value
+              ?.updateGender(value);
+        }
+      },
+      onChanged: (value) {
+        //Provider.of<PatientData>(context, listen: false).gender = value!;
+        _genderDirty = true;
+      }
     );
   }
 
-/*
+  /*
   Widget _buildHeightField() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-      child: TextFormField(
-        controller: _heightController,
-        style: const TextStyle(color: Colors.black),
-        cursorColor: Colors.black,
-        decoration: const InputDecoration(
-          labelText: 'Height',
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter your Height';
-          }
-          return null;
-        },
-        onSaved: (value) {
-          //Provider.of<PatientData>(context, listen: false).height = value!;
-        },
-      ),
+    return _buildTextField(
+      controller: _heightController,
+      label: 'Height',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your Height';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        //Provider.of<PatientData>(context, listen: false).height = value!;
+      },
     );
   }
 
   Widget _buildWeightField() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-      child: TextFormField(
-        controller: _weightController,
-        style: const TextStyle(color: Colors.black),
-        cursorColor: Colors.black,
-        keyboardType: TextInputType.number,
-        inputFormatters: <TextInputFormatter>[
-          FilteringTextInputFormatter.digitsOnly
-        ],
-        decoration: const InputDecoration(
-          labelText: 'Weight (lb)',
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter your Weight';
-          }
-          return null;
-        },
-        onSaved: (value) {
-          //Provider.of<PatientData>(context, listen: false).weight = value!;
-        },
-      ),
+    return _buildTextField(
+      controller: _weightController,
+      keyboardType: TextInputType.number,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.digitsOnly
+      ],
+      label: 'Weight (lb)',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your Weight';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        //Provider.of<PatientData>(context, listen: false).weight = value!;
+      },
     );
   }*/
   /*
@@ -336,211 +365,167 @@ class PatientInfoState extends State<PatientInfo> {
   }
 
   Widget _buildSystolicField() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 10, 20, 0),
-      child: TextFormField(
-        controller: _systolicController,
-        style: const TextStyle(color: Colors.black),
-        cursorColor: Colors.black,
-        keyboardType: TextInputType.number,
-        inputFormatters: <TextInputFormatter>[
-          FilteringTextInputFormatter.digitsOnly
-        ],
-        decoration: const InputDecoration(
-          labelText: 'Systolic (mmHg)',
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter a Systolic Blood Pressure Reading';
-          }
-          return null;
-        },
-        onSaved: (value) {
-          Provider.of<PatientData>(context, listen: false).systolic = value!;
-        },
-      ),
+    return _buildTextField(
+      paddingTop: 10,
+      controller: _systolicController,
+      keyboardType: TextInputType.number,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.digitsOnly
+      ],
+      label: 'Systolic (mmHg)',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter a Systolic Blood Pressure Reading';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        Provider.of<PatientData>(context, listen: false).systolic = value!;
+      },
     );
   }
 
   Widget _buildDiastolicField() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-      child: TextFormField(
-        controller: _diastolicController,
-        style: const TextStyle(color: Colors.black),
-        cursorColor: Colors.black,
-        keyboardType: TextInputType.number,
-        inputFormatters: <TextInputFormatter>[
-          FilteringTextInputFormatter.digitsOnly
-        ],
-        decoration: const InputDecoration(
-          labelText: 'Diastolic (mmHg)',
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter a Diastolic Blood Pressure Reading';
-          }
-          return null;
-        },
-        onSaved: (value) {
-          Provider.of<PatientData>(context, listen: false).diastolic = value!;
-        },
-      ),
+    return _buildTextField(
+      controller: _diastolicController,
+      keyboardType: TextInputType.number,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.digitsOnly
+      ],
+      label: 'Diastolic (mmHg)',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter a Diastolic Blood Pressure Reading';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        Provider.of<PatientData>(context, listen: false).diastolic = value!;
+      },
     );
   }
 
   Widget _buildBloodPressureDateRecordedField() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-      child: TextFormField(
-        style: const TextStyle(color: Colors.black),
-        cursorColor: Colors.black,
-        controller: _dateofBloodPressureRecordedController,
-        onTap: () => _selectBloodPressureRecordedDate(context),
-        decoration: const InputDecoration(
-          labelText: 'Date Recorded',
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter the Date of Blood Pressure Recording';
-          }
-          return null;
-        },
-        onSaved: (value) {
-          Provider.of<PatientData>(context, listen: false)
-              .bloodPressureRecorded = value!;
-        },
-      ),
+    return _buildTextField(
+      controller: _dateofBloodPressureRecordedController,
+      onTap: () => _selectBloodPressureRecordedDate(context),
+      label: 'Date Recorded',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter the Date of Blood Pressure Recording';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        Provider.of<PatientData>(context, listen: false)
+            .bloodPressureRecorded = value!;
+      },
     );
   }
 */
   Widget _buildPregnancyField() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-      child: DropdownButtonFormField<String>(
-          value: '',
-          items: pregnancyOptions.map((String val) {
-            return DropdownMenuItem(
-              value: val,
-              child: Text(
-                val,
-              ),
-            );
-          }).toList(),
-          style: const TextStyle(color: Colors.black),
-          iconEnabledColor: Colors.black,
-          iconDisabledColor: Colors.black,
-          dropdownColor: Colors.blueGrey,
-          decoration: const InputDecoration(
-            labelText: 'Pregnancy',
+    return _buildDropdown(
+      value: '',
+      items: pregnancyOptions.map((String val) {
+        return DropdownMenuItem(
+          value: val,
+          child: Text(
+            val,
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please select your Pregnancy status';
-            }
-            return null;
-          },
-          onSaved: (value) {
-            //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
-            //value!;
-          },
-          onChanged: (value) {
-            //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
-            //value!;
-          }),
+        );
+      }).toList(),
+      label: 'Pregnancy',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select your Pregnancy status';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
+        //value!;
+      },
+      onChanged: (value) {
+        //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
+        //value!;
+      }
     );
   }
 
   Widget _buildTobaccoUsageField(SmokingStatus displayValue) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-      child: DropdownButtonFormField<String>(
-          value: displayValue.toPatientInfoString(),
-          items: tobaccoOptions.map((String val) {
-            return DropdownMenuItem(
-              value: val,
-              child: Text(
-                val,
-              ),
-            );
-          }).toList(),
-          style: const TextStyle(color: Colors.black),
-          iconEnabledColor: Colors.black,
-          iconDisabledColor: Colors.black,
-          dropdownColor: Colors.blueGrey,
-          decoration: const InputDecoration(
-            labelText: 'Tobacco Usage',
+    return _buildDropdown(
+      value: displayValue.toPatientInfoString(),
+      items: tobaccoOptions.map((String val) {
+        return DropdownMenuItem(
+          value: val,
+          child: Text(
+            val,
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please select your Tobacco Usage status';
-            }
-            return null;
-          },
-          onSaved: (value) {
-            if (_smokingStatusDirty) {
-              SmokingStatus theStatus = SmokingStatus.unknown;
-              switch (value) {
-                case '':
-                  theStatus = SmokingStatus.unknown;
-                  break;
-                case 'Never Smoked':
-                  theStatus = SmokingStatus.neverSmoked;
-                  break;
-                case 'Former Smoker':
-                  theStatus = SmokingStatus.formerSmoker;
-                  break;
-                case 'Current Smoker':
-                  theStatus = SmokingStatus.currentSmoker;
-                  break;
-              }
+        );
+      }).toList(),
+      label: 'Tobacco Usage',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select your Tobacco Usage status';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        if (_smokingStatusDirty) {
+          SmokingStatus theStatus = SmokingStatus.unknown;
+          switch (value) {
+            case '':
+              theStatus = SmokingStatus.unknown;
+              break;
+            case 'Never Smoked':
+              theStatus = SmokingStatus.neverSmoked;
+              break;
+            case 'Former Smoker':
+              theStatus = SmokingStatus.formerSmoker;
+              break;
+            case 'Current Smoker':
+              theStatus = SmokingStatus.currentSmoker;
+              break;
+          }
 
-              final obs = SmokingStatusObservation(theStatus);
+          final obs = SmokingStatusObservation(theStatus);
 
-              Provider.of<PatientData>(context, listen: false)
-                  .addSmokingStatusObservation(obs, inBatch: true);
-            }
-          },
-          onChanged: (value) {
-            _smokingStatusDirty = true;
-          }),
+          Provider.of<PatientData>(context, listen: false)
+              .addSmokingStatusObservation(obs, inBatch: true);
+        }
+      },
+      onChanged: (value) {
+        _smokingStatusDirty = true;
+      }
     );
   }
 
   Widget _buildSexuallyActiveField() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-      child: DropdownButtonFormField<String>(
-          value: '',
-          items: sexualActivityOptions.map((String val) {
-            return DropdownMenuItem(
-              value: val,
-              child: Text(
-                val,
-              ),
-            );
-          }).toList(),
-          style: const TextStyle(color: Colors.black),
-          iconEnabledColor: Colors.black,
-          iconDisabledColor: Colors.black,
-          dropdownColor: Colors.blueGrey,
-          decoration: const InputDecoration(
-            labelText: 'Sexually Active',
+    return _buildDropdown(
+      value: '',
+      items: sexualActivityOptions.map((String val) {
+        return DropdownMenuItem(
+          value: val,
+          child: Text(
+            val,
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please select your Sexually Active status';
-            }
-            return null;
-          },
-          onSaved: (value) {
-            //Provider.of<PatientData>(context, listen: false)
-            // .sexualActivityStatus = value!;
-          },
-          onChanged: (value) {
-            //Provider.of<PatientData>(context, listen: false)
-            // .sexualActivityStatus = value!;
-          }),
+        );
+      }).toList(),
+      label: 'Sexually Active',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select your Sexually Active status';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        //Provider.of<PatientData>(context, listen: false)
+        // .sexualActivityStatus = value!;
+      },
+      onChanged: (value) {
+        //Provider.of<PatientData>(context, listen: false)
+        // .sexualActivityStatus = value!;
+      }
     );
   }
 
