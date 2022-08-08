@@ -139,8 +139,13 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
             case ConnectionState.done:
+              // refactor so that styling is the same as other buttons
               final submitButton = ElevatedButton(
-                  onPressed: submit, child: Text(widget.submitLabel));
+                  style: ElevatedButton.styleFrom(
+                    primary: Color(0xFFFA99AF),
+                  ),
+                  onPressed: submit,
+                  child: Text(widget.submitLabel));
               String? error;
               if (snapshot.hasError) {
                 error = (snapshot.error ?? "Unknown error").toString();
