@@ -46,13 +46,15 @@ class ComicPage extends StatelessWidget {
                 // When pressed, move on to the next page, if possible
                 Actions.invoke(context, const NextPageIntent());
               },
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(nextLabel),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_ios)
-                  ])))
+              child:
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Text(
+                  nextLabel,
+                  style: TextStyle(fontSize: 24),
+                ),
+                const SizedBox(width: 8, height: 42),
+                const Icon(Icons.arrow_forward_ios)
+              ])))
     ];
     if (showLoginLink) {
       // Add a way to log in
