@@ -42,7 +42,6 @@ ThemeData createAccountTheme() {
 BoxDecoration createAccountBoxDecoration() {
   return BoxDecoration(
     color: AccountThemePalette.boxColor,
-    border: Border.all(color: Colors.white, width: 2.0),
     borderRadius: BorderRadius.circular(30),
   );
 }
