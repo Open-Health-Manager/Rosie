@@ -58,18 +58,27 @@ class ComicPage extends StatelessWidget {
     ];
     if (showLoginLink) {
       // Add a way to log in
+
       children.insert(
-          0,
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 36),
-              child: Row(children: [
-                const Text("Already have an account?"),
-                TextButton(
-                    child: const Text("Sign In"),
-                    onPressed: () {
-                      Navigator.pushNamed(context, "signIn");
-                    })
-              ])));
+          2,
+          Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Color(0xFFFEF2F5),
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, "signIn");
+                  },
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Skip to Sign In",
+                          style: TextStyle(fontSize: 24),
+                        ),
+                        const SizedBox(width: 8, height: 42),
+                      ]))));
     }
     return Scaffold(
         appBar: AppBar(),
