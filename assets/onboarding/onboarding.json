@@ -1,7 +1,8 @@
 {
   "pages": [
     {
-      "text": "Get control of your health. Follow me and learn how!"
+      "text": "Get control of your health. Follow me and learn how!",
+      "nextLabel": "Learn More"
     },
     {
       "text": "Your data can come from anywhere... from you, the doctor\u2019s office, or a device like your phone. We put it all in the same place."
