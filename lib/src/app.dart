@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
 import 'app_config.dart';
@@ -28,15 +27,17 @@ import 'rosie_theme.dart';
 
 const defaultServerUrl = "http://localhost:8080/";
 
+final log = Logger('Rosie');
+
 OpenHealthManager _createDefaultHealthManager() => OpenHealthManager.forServerURL(Uri.parse(defaultServerUrl));
 
 OpenHealthManager _createOpenHealthManager(AppConfig config) {
   try {
     final healthManager = OpenHealthManager.fromConfig(config.config);
-    log("Successfully loaded configuration, end point is ${healthManager.fhirBase}");
+    log.config("Successfully loaded configuration, end point is ${healthManager.fhirBase}");
     return healthManager;
   } catch (error, stackTrace) {
-    log("Invalid JSON configuration, defaulting to $defaultFhirBase", error: error, stackTrace: stackTrace, level: 900);
+    log.severe("Invalid JSON configuration, defaulting to $defaultFhirBase", error, stackTrace);
   }
   return _createDefaultHealthManager();
 }
@@ -63,7 +64,7 @@ class _RosieAppState extends State<RosieApp> {
     // Start loading our configuration.
     _loadApp().catchError((error) {
       // Not much can be done with errors here other than to log them
-      log("Error while initializing app - things may not work properly!", error: error);
+      log.severe("Error while initializing app - things may not work properly!", error);
     });
   }
 
