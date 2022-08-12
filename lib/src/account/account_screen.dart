@@ -207,7 +207,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
               return Row(children: [
                 const CircularProgressIndicator(),
                 const SizedBox(width: 8),
-                Flexible(flex: 1, child: Text(widget.loadingLabel))
+                Flexible(flex: 1, child: Text(widget.loadingLabel)),
               ]);
           }
         },

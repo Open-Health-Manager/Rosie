@@ -41,7 +41,7 @@ class _LabeledCheckbox extends StatelessWidget {
     required this.value,
     required this.onChanged,
     required this.child,
-    required this.errorText
+    required this.errorText,
   }) : super(key: key);
 
   final bool value;
@@ -66,21 +66,20 @@ class _LabeledCheckbox extends StatelessWidget {
   }
 
   Widget _buildCheckbox(BuildContext context) {
-    return Row(children: [
-      Checkbox(
-        value: value,
-        onChanged: onChanged
-      ),
-      const SizedBox(width: 15),
-      Expanded(child:
-        InkWell(
-          child: child,
-          onTap: () {
-            onChanged(!value);
-          }
-        )
-      )
-    ]);
+    return Row(
+      children: [
+        Checkbox(value: value, onChanged: onChanged),
+        const SizedBox(width: 15),
+        Expanded(
+          child: InkWell(
+            child: child,
+            onTap: () {
+              onChanged(!value);
+            },
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -102,47 +101,75 @@ class _SignUpState extends State<SignUp> {
 
   Widget _buildForm(BuildContext context) {
     return AutofillGroup(
-      child: Form(key: _formKey,
+      child: Form(
+        key: _formKey,
         child: Column(
           children: <Widget>[
             TextFormField(
               autofillHints: const <String>[AutofillHints.givenName],
-              decoration: const InputDecoration(hintText: "First Name", prefixIcon: Icon(Icons.badge)),
+              decoration: const InputDecoration(
+                hintText: "First Name",
+                prefixIcon: Icon(
+                  Icons.badge,
+                ),
+              ),
               controller: _firstName,
-              validator: (String? value) => value == null || value.isEmpty ? "First name cannot be blank" : null,
+              validator: (String? value) => value == null || value.isEmpty
+                  ? "First name cannot be blank"
+                  : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
             TextFormField(
               autofillHints: const <String>[AutofillHints.familyName],
-              decoration: const InputDecoration(hintText: "Last Name", prefixIcon: Icon(Icons.badge)),
+              decoration: const InputDecoration(
+                hintText: "Last Name",
+                prefixIcon: Icon(Icons.badge),
+              ),
               controller: _lastName,
-              validator: (String? value) => value == null || value.isEmpty ? "Last name cannot be blank" : null,
+              validator: (String? value) => value == null || value.isEmpty
+                  ? "Last name cannot be blank"
+                  : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
             TextFormField(
               autofillHints: const <String>[AutofillHints.email],
-              decoration: const InputDecoration(hintText: "Email Address", prefixIcon: Icon(Icons.email)),
+              decoration: const InputDecoration(
+                hintText: "Email Address",
+                prefixIcon: Icon(
+                  Icons.email,
+                ),
+              ),
               controller: _email,
               // TODO (maybe): Validate that this is at least sort of accurate
-              validator: (String? value) => value == null || value.isEmpty ? "Email cannot be blank" : null,
+              validator: (String? value) => value == null || value.isEmpty
+                  ? "Email cannot be blank"
+                  : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
             TextFormField(
               autofillHints: const <String>[AutofillHints.newPassword],
-              decoration: const InputDecoration(hintText: "Password", prefixIcon: Icon(Icons.lock)),
+              decoration: const InputDecoration(
+                hintText: "Password",
+                prefixIcon: Icon(Icons.lock),
+              ),
               controller: _password,
               obscureText: true,
-              validator: (String? value) => value == null || value.isEmpty ? "Password cannot be blank" : null,
+              validator: (String? value) => value == null || value.isEmpty
+                  ? "Password cannot be blank"
+                  : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
             TextFormField(
               // Apparently should also be "new password"
               autofillHints: const <String>[AutofillHints.newPassword],
-              decoration: const InputDecoration(hintText: "Confirm Password", prefixIcon: Icon(Icons.lock)),
+              decoration: const InputDecoration(
+                hintText: "Confirm Password",
+                prefixIcon: Icon(Icons.lock),
+              ),
               controller: _confirmPassword,
               obscureText: true,
               validator: (String? value) {
@@ -150,7 +177,9 @@ class _SignUpState extends State<SignUp> {
                   return null;
                 }
                 // Otherwise, check if they match
-                return value == _password.text ? null : "Passwords do not match";
+                return value == _password.text
+                    ? null
+                    : "Passwords do not match";
               },
               textInputAction: TextInputAction.done,
               onEditingComplete: () {
@@ -159,40 +188,45 @@ class _SignUpState extends State<SignUp> {
             ),
             const SizedBox(height: 15),
             FormField<bool>(
-              builder: (field) =>
-                _LabeledCheckbox(
-                  value: field.value == true,
-                  onChanged: (bool? newValue) {
-                    field.didChange(newValue);
-                    setState(() {
-                      _agreesToTerms = newValue == true;
-                    });
-                  },
-                  errorText: field.errorText,
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        const TextSpan(text: "I agree to the "),
-                        TextSpan(
-                          text: "terms and conditions",
-                          style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
-                          recognizer: TapGestureRecognizer()..onTap = () {
-                            launchUrl(widget.dataUseAgreement.source);
-                          }
+              builder: (field) => _LabeledCheckbox(
+                value: field.value == true,
+                onChanged: (bool? newValue) {
+                  field.didChange(newValue);
+                  setState(() {
+                    _agreesToTerms = newValue == true;
+                  });
+                },
+                errorText: field.errorText,
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      const TextSpan(text: "I agree to the "),
+                      TextSpan(
+                        text: "terms and conditions",
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
                         ),
-                        const TextSpan(text: ".")
-                      ]
-                    )
-                  )
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            launchUrl(widget.dataUseAgreement.source);
+                          },
+                      ),
+                      const TextSpan(text: ".")
+                    ],
+                  ),
                 ),
+              ),
               validator: (value) {
-                return value == true ? null : "You must agree to the terms and conditions.";
+                return value == true
+                    ? null
+                    : "You must agree to the terms and conditions.";
               },
               initialValue: _agreesToTerms,
             ),
             const SizedBox(height: 15),
-            FormField<bool>(builder: (field) =>
-              _LabeledCheckbox(
+            FormField<bool>(
+              builder: (field) => _LabeledCheckbox(
                 value: field.value == true,
                 onChanged: (bool? newValue) {
                   field.didChange(newValue);
@@ -204,13 +238,15 @@ class _SignUpState extends State<SignUp> {
                 child: const Text("I am at least 18 years of age or older."),
               ),
               validator: (value) {
-                return value == true ? null : "You must be at least 18 years of age to use this app";
+                return value == true
+                    ? null
+                    : "You must be at least 18 years of age to use this app";
               },
               initialValue: _assertsAge,
-            )
+            ),
           ],
-        )
-      )
+        ),
+      ),
     );
   }
 
@@ -227,23 +263,29 @@ class _SignUpState extends State<SignUp> {
           // make it immutable anyway
           final email = _email.text;
           await context.read<OpenHealthManager>().createAccount(
-            email, _password.text,
-            firstName: _firstName.text,
-            lastName: _lastName.text,
-            dataUseAgreement: widget.dataUseAgreement,
-            duaAccepted: _agreesToTerms,
-            ageAttested: _assertsAge
-          );
+                email,
+                _password.text,
+                firstName: _firstName.text,
+                lastName: _lastName.text,
+                dataUseAgreement: widget.dataUseAgreement,
+                duaAccepted: _agreesToTerms,
+                ageAttested: _assertsAge,
+              );
           // Ensure the view is still mounted
           if (!mounted) return null;
           // If here, we need to push on to the verify account page
           // TODO: Should this reset the nav stack?
-          Navigator.push(context, MaterialPageRoute(builder: (context) => VerifyAccountScreen(email: email)));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VerifyAccountScreen(email: email),
+            ),
+          );
           return null;
         } else {
           return "Please correct the above errors and try again";
         }
-      }
+      },
     );
   }
 }

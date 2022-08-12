@@ -52,28 +52,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _addRosieBackground(Widget child) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.dark,
-        child: Container(
-          decoration: createRosieScreenBoxDecoration(),
-          child: child
-        )
-      );
+      value: SystemUiOverlayStyle.dark,
+      child: Container(
+        decoration: createRosieScreenBoxDecoration(),
+        child: child,
+      ),
+    );
   }
 
   Widget _buildSelectedPage() {
     switch (_selectedIndex) {
       case 1:
-        return _addRosieBackground(Center(
-          child: _uspstfApiKey == null ?
-            const Text("Not configured (API key missing)") :
-            CarePlanHome(apiKey: _uspstfApiKey!)
-          ));
+        return _addRosieBackground(
+          Center(
+            child: _uspstfApiKey == null
+                ? const Text("Not configured (API key missing)")
+                : CarePlanHome(apiKey: _uspstfApiKey!),
+          ),
+        );
       case 2:
         return _addRosieBackground(const Center(child: GetStarted()));
       case 4:
         return _addRosieBackground(const AccountSettingsScreen());
       default:
-        return _addRosieBackground(const Center(child: Text("Not Implemented")));
+        return _addRosieBackground(
+            const Center(child: Text("Not Implemented")));
     }
   }
 
@@ -82,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
-        child: _buildSelectedPage()
+        child: _buildSelectedPage(),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -92,23 +95,23 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.mail),
-            label: 'Care Plan'
+            label: 'Care Plan',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.arrow_upward),
-            label: 'Home'
+            label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.share),
-            label: 'Community'
+            label: 'Community',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_circle_outlined),
-            label: 'Account'
+            label: 'Account',
           ),
         ],
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped
+        onTap: _onItemTapped,
       ),
     );
   }

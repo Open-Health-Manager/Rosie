@@ -39,12 +39,16 @@ class _ResetPasswordState extends State<ResetPassword> {
         return AutofillGroup(
           child: Column(
             children: [
-              const Text("Enter your email to get an email with password reset instructions."),
+              const Text(
+                  "Enter your email to get an email with password reset instructions."),
               const SizedBox(height: 15.0),
               TextFormField(
                 autocorrect: false,
                 autofocus: true,
-                decoration: const InputDecoration(hintText: "Email", prefixIcon: Icon(Icons.email)),
+                decoration: const InputDecoration(
+                  hintText: "Email",
+                  prefixIcon: Icon(Icons.email),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Email is required";
@@ -58,7 +62,7 @@ class _ResetPasswordState extends State<ResetPassword> {
                 textInputAction: TextInputAction.next,
               ),
             ],
-          )
+          ),
         );
       },
       submitLabel: "Recover Account",
@@ -66,7 +70,10 @@ class _ResetPasswordState extends State<ResetPassword> {
         if (email != null) {
           await context.read<OpenHealthManager>().requestPasswordReset(email!);
           if (!mounted) return null;
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const PasswordResetSent()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PasswordResetSent()),
+          );
           return null;
         } else {
           return "Email is required";
@@ -82,19 +89,32 @@ class PasswordResetSent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AccountScreen(builder: (context) {
-      return Column(children: <Widget>[
-        const Text('Retrieve Account', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: AccountThemePalette.textColor)),
-        const SizedBox(height: 30.0),
-        const Text('Recovery email sent! Please check your email for instructions on how to reset your password. Once reset, you can'),
-        const SizedBox(height: 30.0),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.popUntil(context, (route) => route.settings.name == "signIn");
-          },
-          child: const Text('Return to Sign In')
-        )
-      ]);
-    });
+    return AccountScreen(
+      builder: (context) {
+        return Column(
+          children: <Widget>[
+            const Text(
+              'Retrieve Account',
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: AccountThemePalette.textColor,
+              ),
+            ),
+            const SizedBox(height: 30.0),
+            const Text(
+                'Recovery email sent! Please check your email for instructions on how to reset your password. Once reset, you can'),
+            const SizedBox(height: 30.0),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.popUntil(
+                    context, (route) => route.settings.name == "signIn");
+              },
+              child: const Text('Return to Sign In'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

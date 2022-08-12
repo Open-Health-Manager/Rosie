@@ -27,7 +27,7 @@ class AccountSettingsScreen extends StatelessWidget {
         onPressed: () {
           context.read<OpenHealthManager>().signOut();
         },
-        child: const Text('Log Out')
+        child: const Text('Log Out'),
       ),
     );
   }

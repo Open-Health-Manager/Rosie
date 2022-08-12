@@ -29,18 +29,22 @@ const defaultServerUrl = "http://localhost:8080/";
 
 final log = Logger('Rosie');
 
-OpenHealthManager _createDefaultHealthManager() => OpenHealthManager.forServerURL(Uri.parse(defaultServerUrl));
+OpenHealthManager _createDefaultHealthManager() =>
+    OpenHealthManager.forServerURL(Uri.parse(defaultServerUrl));
 
 OpenHealthManager _createOpenHealthManager(AppConfig config) {
   try {
     final healthManager = OpenHealthManager.fromConfig(config.config);
-    log.config("Successfully loaded configuration, end point is ${healthManager.fhirBase}");
+    log.config(
+        "Successfully loaded configuration, end point is ${healthManager.fhirBase}");
     return healthManager;
   } catch (error, stackTrace) {
-    log.severe("Invalid JSON configuration, defaulting to $defaultFhirBase", error, stackTrace);
+    log.severe("Invalid JSON configuration, defaulting to $defaultFhirBase",
+        error, stackTrace);
   }
   return _createDefaultHealthManager();
 }
+
 class RosieApp extends StatefulWidget {
   const RosieApp({Key? key}) : super(key: key);
 
@@ -51,10 +55,13 @@ class RosieApp extends StatefulWidget {
 class _RosieAppState extends State<RosieApp> {
   /// Application configuration data
   AppConfig? _config;
+
   /// Application state.
   AppState? _appState;
+
   /// The health manager - provides API access.
   OpenHealthManager? _healthManager;
+
   /// Patient data manager.
   PatientData? _patientData;
 
@@ -64,7 +71,8 @@ class _RosieAppState extends State<RosieApp> {
     // Start loading our configuration.
     _loadApp().catchError((error) {
       // Not much can be done with errors here other than to log them
-      log.severe("Error while initializing app - things may not work properly!", error);
+      log.severe("Error while initializing app - things may not work properly!",
+          error);
     });
   }
 
@@ -73,7 +81,8 @@ class _RosieAppState extends State<RosieApp> {
     final config = await AppConfig.fromAssetBundle(rootBundle);
     final manager = _createOpenHealthManager(config);
     // With the config loaded, attempt to restore the session
-    manager.authData = await AuthData.readFromSecureStorage(appState.secureStorage);
+    manager.authData =
+        await AuthData.readFromSecureStorage(appState.secureStorage);
     // Also add a listener so that any future changes to AuthData will be stored
     manager.addListener(() {
       // For now, always assume the auth data has changed, and attempt to save it
@@ -115,11 +124,11 @@ class _RosieAppState extends State<RosieApp> {
                 title: 'Rosie',
                 theme: createRosieTheme(),
                 darkTheme: createRosieTheme(brightness: Brightness.dark),
-                home: const _RosieHome()
-              )
-            )
-          )
-        )
+                home: const _RosieHome(),
+              ),
+            ),
+          ),
+        ),
       );
     } else {
       // While still loading our config, present a simplified loading screen
@@ -127,8 +136,8 @@ class _RosieAppState extends State<RosieApp> {
         color: Colors.white,
         child: const Directionality(
           textDirection: TextDirection.ltr,
-          child: Center(child: Text("Rosie"))
-        )
+          child: Center(child: Text("Rosie")),
+        ),
       );
     }
   }
