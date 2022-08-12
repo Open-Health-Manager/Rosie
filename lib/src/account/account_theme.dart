@@ -22,21 +22,26 @@ class AccountThemePalette {
 
 ThemeData createAccountTheme() {
   return ThemeData(
-      brightness: Brightness.dark,
-      appBarTheme: const AppBarTheme(
-          backgroundColor: AccountThemePalette.background, elevation: 0.0),
-      backgroundColor: AccountThemePalette.boxColor,
-      inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10.0))),
-          fillColor: Colors.white,
-          filled: true,
-          hintStyle: TextStyle(color: Colors.black54),
-          prefixIconColor: Colors.black),
-      textTheme: Typography.material2018()
-          .black
-          .copyWith(subtitle1: const TextStyle(color: Color(0xFF1F201D))),
-      toggleableActiveColor: AccountThemePalette.background);
+    brightness: Brightness.dark,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AccountThemePalette.background,
+      elevation: 0.0,
+    ),
+    backgroundColor: AccountThemePalette.boxColor,
+    inputDecorationTheme: const InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      ),
+      fillColor: Colors.white,
+      filled: true,
+      hintStyle: TextStyle(color: Colors.black54),
+      prefixIconColor: Colors.black,
+    ),
+    textTheme: Typography.material2018()
+        .black
+        .copyWith(subtitle1: const TextStyle(color: Color(0xFF1F201D))),
+    toggleableActiveColor: AccountThemePalette.background,
+  );
 }
 
 BoxDecoration createAccountBoxDecoration() {

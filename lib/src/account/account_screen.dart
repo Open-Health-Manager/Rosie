@@ -44,41 +44,49 @@ class AccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Theme(
-        data: createAccountTheme(),
-        child: Scaffold(
-            appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-            backgroundColor: AccountThemePalette.background,
-            extendBodyBehindAppBar: true,
-            body: ListView(children: [
-              // This exists for padding
-              const SizedBox(height: 20.0),
-              // Create a stack to place Rosie on top of the screen
-              Stack(alignment: AlignmentDirectional.topStart, children: [
+      data: createAccountTheme(),
+      child: Scaffold(
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+        backgroundColor: AccountThemePalette.background,
+        extendBodyBehindAppBar: true,
+        body: ListView(
+          children: [
+            // This exists for padding
+            const SizedBox(height: 20.0),
+            // Create a stack to place Rosie on top of the screen
+            Stack(
+              alignment: AlignmentDirectional.topStart,
+              children: [
                 // Rosie is 163x145
                 // This is the "real" box
                 Container(
-                    margin: const EdgeInsets.fromLTRB(40.0, 60.0, 40.0, 0.0),
-                    padding: const EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 20.0),
-                    decoration: createAccountBoxDecoration(),
-                    child: Builder(builder: builder)),
-                const Image(image: AssetImage("assets/pdm_comic_avatar.png"))
-              ])
-            ])));
+                  margin: const EdgeInsets.fromLTRB(40.0, 60.0, 40.0, 0.0),
+                  padding: const EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 20.0),
+                  decoration: createAccountBoxDecoration(),
+                  child: Builder(builder: builder),
+                ),
+                const Image(image: AssetImage("assets/pdm_comic_avatar.png")),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
 /// A scaffolding for the account screen form, both the sign in and the create
 /// account screens.
 class AccountScreenForm extends StatefulWidget {
-  const AccountScreenForm(
-      {Key? key,
-      required this.title,
-      required this.formBuilder,
-      required this.submitLabel,
-      required this.onSubmit,
-      this.loadingLabel = "Loading...",
-      this.afterFormBuilder})
-      : super(key: key);
+  const AccountScreenForm({
+    Key? key,
+    required this.title,
+    required this.formBuilder,
+    required this.submitLabel,
+    required this.onSubmit,
+    this.loadingLabel = "Loading...",
+    this.afterFormBuilder,
+  }) : super(key: key);
 
   final String title;
   final String submitLabel;
@@ -125,11 +133,14 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
   Widget build(BuildContext context) {
     final afterFormBuilder = widget.afterFormBuilder;
     List<Widget> formChildren = [
-      Text(widget.title,
-          style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AccountThemePalette.textColor)),
+      Text(
+        widget.title,
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: AccountThemePalette.textColor,
+        ),
+      ),
       const SizedBox(height: 30.0),
       Builder(builder: widget.formBuilder),
       const SizedBox(height: 30.0),
@@ -141,11 +152,12 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
             case ConnectionState.done:
               // refactor so that styling is the same as other buttons
               final submitButton = ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Color(0xFFFA99AF),
-                  ),
-                  onPressed: submit,
-                  child: Text(widget.submitLabel));
+                style: ElevatedButton.styleFrom(
+                  primary: const Color(0xFFFA99AF),
+                ),
+                onPressed: submit,
+                child: Text(widget.submitLabel),
+              );
               String? error;
               if (snapshot.hasError) {
                 error = (snapshot.error ?? "Unknown error").toString();
@@ -158,31 +170,38 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(error,
-                        softWrap: true,
-                        style: TextStyle(color: Theme.of(context).errorColor)),
-                    submitButton
+                    Text(
+                      error,
+                      softWrap: true,
+                      style: TextStyle(color: Theme.of(context).errorColor),
+                    ),
+                    submitButton,
                   ],
                 );
               }
             case ConnectionState.waiting:
             case ConnectionState.active:
               // Display a loading indicator
-              return Row(children: [
-                const CircularProgressIndicator(),
-                const SizedBox(width: 8),
-                Flexible(flex: 1, child: Text(widget.loadingLabel))
-              ]);
+              return Row(
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(width: 8),
+                  Flexible(flex: 1, child: Text(widget.loadingLabel)),
+                ],
+              );
           }
         },
       ),
-      if (afterFormBuilder != null) Builder(builder: afterFormBuilder)
+      if (afterFormBuilder != null) Builder(builder: afterFormBuilder),
     ];
     return Actions(
-        actions: <Type, Action<Intent>>{SubmitIntent: _SubmitAction(this)},
-        child: AccountScreen(
-            builder: (context) => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: formChildren)));
+      actions: <Type, Action<Intent>>{SubmitIntent: _SubmitAction(this)},
+      child: AccountScreen(
+        builder: (context) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: formChildren,
+        ),
+      ),
+    );
   }
 }

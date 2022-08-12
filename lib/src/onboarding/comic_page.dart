@@ -20,13 +20,13 @@ import 'onboarding.dart';
 
 /// A single comic page.
 class ComicPage extends StatelessWidget {
-  const ComicPage(
-      {Key? key,
-      required this.text,
-      required this.comicPage,
-      required this.nextLabel,
-      this.showLoginLink = false})
-      : super(key: key);
+  const ComicPage({
+    Key? key,
+    required this.text,
+    required this.comicPage,
+    required this.nextLabel,
+    this.showLoginLink = false,
+  }) : super(key: key);
 
   final String text;
   final String comicPage;
@@ -38,64 +38,76 @@ class ComicPage extends StatelessWidget {
     // This children change depending on page number, so build them first
     final List<Widget> children = [
       Container(
-          child: Text(
-            text,
-            style: TextStyle(fontSize: 24.0, fontFamily: 'ComicNeue'),
-          ),
-          margin: const EdgeInsets.all(15.0),
-          padding: const EdgeInsets.all(25.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(15)),
-            color: Color(0xFFFEF2F5),
-          )),
+        margin: const EdgeInsets.all(15.0),
+        padding: const EdgeInsets.all(25.0),
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(15)),
+          color: Color(0xFFFEF2F5),
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(fontSize: 24.0, fontFamily: 'ComicNeue'),
+        ),
+      ),
       Expanded(child: Image(image: AssetImage(comicPage), fit: BoxFit.contain)),
       Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-          child: ElevatedButton(
-              onPressed: () {
-                // When pressed, move on to the next page, if possible
-                Actions.invoke(context, const NextPageIntent());
-              },
-              child:
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Text(
-                  nextLabel,
-                  style: TextStyle(fontSize: 24),
-                ),
-                const SizedBox(width: 8, height: 42),
-                const Icon(Icons.arrow_forward_ios)
-              ])))
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+        child: ElevatedButton(
+          onPressed: () {
+            // When pressed, move on to the next page, if possible
+            Actions.invoke(context, const NextPageIntent());
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                nextLabel,
+                style: const TextStyle(fontSize: 24),
+              ),
+              const SizedBox(width: 8, height: 42),
+              const Icon(Icons.arrow_forward_ios),
+            ],
+          ),
+        ),
+      ),
     ];
     if (showLoginLink) {
       // Add a way to log in
 
       children.insert(
-          2,
-          Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Color(0xFFFEF2F5),
-                  ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, "signIn");
-                  },
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Skip to Sign In",
-                          style: TextStyle(fontSize: 24),
-                        ),
-                        const SizedBox(width: 8, height: 42),
-                      ]))));
+        2,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              primary: const Color(0xFFFEF2F5),
+            ),
+            onPressed: () {
+              Navigator.pushNamed(context, "signIn");
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const <Widget>[
+                Text(
+                  "Skip to Sign In",
+                  style: TextStyle(fontSize: 24),
+                ),
+                SizedBox(width: 8, height: 42),
+              ],
+            ),
+          ),
+        ),
+      );
     }
     return Scaffold(
-        appBar: AppBar(),
-        body: SafeArea(
-            child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Column(children: children))));
+      appBar: AppBar(),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Column(children: children),
+        ),
+      ),
+    );
   }
 
   factory ComicPage.fromPage(OnboardingComicPage page) {
