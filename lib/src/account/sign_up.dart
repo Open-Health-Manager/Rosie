@@ -109,9 +109,7 @@ class _SignUpState extends State<SignUp> {
               autofillHints: const <String>[AutofillHints.givenName],
               decoration: const InputDecoration(
                 hintText: "First Name",
-                prefixIcon: Icon(
-                  Icons.badge,
-                ),
+                prefixIcon: Icon(Icons.badge),
               ),
               controller: _firstName,
               validator: (String? value) => value == null || value.isEmpty
@@ -137,9 +135,7 @@ class _SignUpState extends State<SignUp> {
               autofillHints: const <String>[AutofillHints.email],
               decoration: const InputDecoration(
                 hintText: "Email Address",
-                prefixIcon: Icon(
-                  Icons.email,
-                ),
+                prefixIcon: Icon(Icons.email),
               ),
               controller: _email,
               // TODO (maybe): Validate that this is at least sort of accurate
@@ -204,7 +200,6 @@ class _SignUpState extends State<SignUp> {
                       TextSpan(
                         text: "terms and conditions",
                         style: const TextStyle(
-                          color: Colors.blue,
                           decoration: TextDecoration.underline,
                         ),
                         recognizer: TapGestureRecognizer()
@@ -212,7 +207,7 @@ class _SignUpState extends State<SignUp> {
                             launchUrl(widget.dataUseAgreement.source);
                           },
                       ),
-                      const TextSpan(text: ".")
+                      const TextSpan(text: "."),
                     ],
                   ),
                 ),
@@ -253,9 +248,9 @@ class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     return AccountScreenForm(
-      title: "Sign Up",
+      title: "Create an Account",
       formBuilder: _buildForm,
-      submitLabel: "Sign Up",
+      submitLabel: "Confirm",
       onSubmit: () async {
         // currentState being null would indicate an actual error in the code
         if (_formKey.currentState!.validate()) {

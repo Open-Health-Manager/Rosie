@@ -56,16 +56,20 @@ class AccountScreen extends StatelessWidget {
             // This exists for padding
             const SizedBox(height: 20.0),
             // Create a stack to place Rosie on top of the screen
-            Stack(alignment: AlignmentDirectional.topCenter, children: [
-              // Rosie is 163x145
-              // This is the "real" box
-              Container(
-                  margin: const EdgeInsets.fromLTRB(40.0, 132.0, 40.0, 0.0),
+            Stack(
+              alignment: AlignmentDirectional.topStart,
+              children: [
+                // Rosie is 163x145
+                // This is the "real" box
+                Container(
+                  margin: const EdgeInsets.fromLTRB(40.0, 60.0, 40.0, 0.0),
                   padding: const EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 20.0),
                   decoration: createAccountBoxDecoration(),
-                  child: Builder(builder: builder)),
-              const Image(image: AssetImage("assets/pdm_comic_avatar.png")),
-            ])
+                  child: Builder(builder: builder),
+                ),
+                const Image(image: AssetImage("assets/pdm_comic_avatar.png")),
+              ],
+            ),
           ],
         ),
       ),
@@ -164,7 +168,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
       Text(
         widget.title,
         style: const TextStyle(
-          fontSize: 30,
+          fontSize: 24,
           fontWeight: FontWeight.bold,
           color: AccountThemePalette.textColor,
         ),
@@ -178,7 +182,11 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
             case ConnectionState.done:
+              // refactor so that styling is the same as other buttons
               final submitButton = ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: const Color(0xFFFA99AF),
+                ),
                 onPressed: submit,
                 child: Text(widget.submitLabel),
               );
@@ -204,11 +212,13 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
             case ConnectionState.waiting:
             case ConnectionState.active:
               // Display a loading indicator
-              return Row(children: [
-                const CircularProgressIndicator(),
-                const SizedBox(width: 8),
-                Flexible(flex: 1, child: Text(widget.loadingLabel)),
-              ]);
+              return Row(
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(width: 8),
+                  Flexible(flex: 1, child: Text(widget.loadingLabel)),
+                ],
+              );
           }
         },
       ),

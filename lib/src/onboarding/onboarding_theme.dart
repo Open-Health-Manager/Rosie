@@ -16,8 +16,8 @@ import 'package:flutter/material.dart';
 // import 'package:flutter/cupertino.dart';
 
 class OnboardingTheme {
-  static const Color primary = Color.fromARGB(255, 66, 140, 227);
-  static const Color onPrimary = Colors.white;
+  static const Color primary = Color(0xFFFA99AF);
+  static const Color onPrimary = Color(0xFF1F201D);
 }
 
 ThemeData createOnboardingTheme({brightness = Brightness.light}) {
@@ -31,7 +31,7 @@ ThemeData createOnboardingTheme({brightness = Brightness.light}) {
       background: Colors.white,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: OnboardingTheme.onPrimary,
+      backgroundColor: Colors.white,
       foregroundColor: OnboardingTheme.primary,
       elevation: 0.0,
     ),
