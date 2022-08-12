@@ -41,6 +41,7 @@ ThemeData createAccountTheme() {
         .black
         .copyWith(subtitle1: const TextStyle(color: Color(0xFF1F201D))),
     toggleableActiveColor: AccountThemePalette.background,
+    unselectedWidgetColor: AccountThemePalette.textColor,
   );
 }
 
