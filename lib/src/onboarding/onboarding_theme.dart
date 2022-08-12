@@ -22,18 +22,18 @@ class OnboardingTheme {
 
 ThemeData createOnboardingTheme({brightness = Brightness.light}) {
   // Currently you are allowed to pass a brightness, and it will be happily ignored.
-  return ThemeData(colorScheme:
-    ColorScheme.fromSeed(
+  return ThemeData(
+    colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.light,
       seedColor: OnboardingTheme.primary,
       primary: OnboardingTheme.primary,
       onPrimary: OnboardingTheme.onPrimary,
-      background: Colors.white
+      background: Colors.white,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: OnboardingTheme.onPrimary,
       foregroundColor: OnboardingTheme.primary,
-      elevation: 0.0
+      elevation: 0.0,
     ),
     scaffoldBackgroundColor: Colors.white,
   );
@@ -45,8 +45,8 @@ class ComicPageFlipTransition extends StatelessWidget {
     Key? key,
     required this.animation,
     required this.secondaryAnimation,
-    this.child
-  }): super(key: key);
+    this.child,
+  }) : super(key: key);
 
   final Animation<double> animation;
   final Animation<double> secondaryAnimation;
@@ -56,14 +56,20 @@ class ComicPageFlipTransition extends StatelessWidget {
   Widget build(BuildContext context) {
     // Use easeInOutSine for the curve
     final curveTween = CurveTween(curve: Curves.easeInOutSine);
-    final slideIn = Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).chain(curveTween);
-    final slideOut = Tween<Offset>(begin: Offset.zero, end: const Offset(-1.0, 0.0)).chain(curveTween);
+    final slideIn = Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).chain(curveTween);
+    final slideOut = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(-1.0, 0.0),
+    ).chain(curveTween);
     return SlideTransition(
       position: slideIn.animate(animation),
       child: SlideTransition(
         position: slideOut.animate(secondaryAnimation),
-        child: child
-      )
+        child: child,
+      ),
     );
   }
 }

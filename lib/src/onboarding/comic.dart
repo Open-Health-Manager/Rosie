@@ -27,7 +27,8 @@ class OnboardingComic {
   final DataUseAgreement dataUseAgreement;
 
   static Future<OnboardingComic> load(AssetBundle assetBundle) async {
-    final data = json.decode(await assetBundle.loadString('assets/onboarding/onboarding.json'));
+    final data = json.decode(
+        await assetBundle.loadString('assets/onboarding/onboarding.json'));
     if (data is! Map<String, dynamic>) {
       // Cannot parse
       throw const FormatException("Invalid object type for onboarding JSON");
@@ -57,18 +58,18 @@ class OnboardingComic {
           continue;
         }
         if (nextLabelData != null && nextLabelData is! String) {
-          log('Invalid nextLabel object within page, skipping page!', level: 900);
+          log('Invalid nextLabel object within page, skipping page!',
+              level: 900);
           continue;
         }
-        final nextLabel = nextLabelData == null ? null : nextLabelData as String;
-        pages.add(
-          OnboardingComicPage(
-            pageNumber: pageNumber,
-            firstPage: pageNumber == 1,
-            altText: textData,
-            nextLabel: nextLabel ?? "Next"
-          )
-        );
+        final nextLabel =
+            nextLabelData == null ? null : nextLabelData as String;
+        pages.add(OnboardingComicPage(
+          pageNumber: pageNumber,
+          firstPage: pageNumber == 1,
+          altText: textData,
+          nextLabel: nextLabel ?? "Next",
+        ));
         // Increase the page number
         pageNumber++;
       }
@@ -81,12 +82,13 @@ class OnboardingComicPage {
   const OnboardingComicPage({
     required this.altText,
     required this.pageNumber,
-    this.nextLabel="Next",
-    this.firstPage=false
+    this.nextLabel = "Next",
+    this.firstPage = false,
   });
 
   final String altText;
   final String nextLabel;
+
   /// Flag indicating that this page is the first page and that a shortcut to login should be present on this page
   final bool firstPage;
   final int pageNumber;

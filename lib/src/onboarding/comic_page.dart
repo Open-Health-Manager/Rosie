@@ -20,7 +20,13 @@ import 'onboarding.dart';
 
 /// A single comic page.
 class ComicPage extends StatelessWidget {
-  const ComicPage({Key? key, required this.text, required this.comicPage, required this.nextLabel, this.showLoginLink=false}) : super(key: key);
+  const ComicPage({
+    Key? key,
+    required this.text,
+    required this.comicPage,
+    required this.nextLabel,
+    this.showLoginLink = false,
+  }) : super(key: key);
 
   final String text;
   final String comicPage;
@@ -31,11 +37,15 @@ class ComicPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // This children change depending on page number, so build them first
     final List<Widget> children = [
-      Expanded(child: Image(image: AssetImage(comicPage), fit: BoxFit.contain)),
+      Expanded(
+        child: Image(
+          image: AssetImage(comicPage),
+          fit: BoxFit.contain,
+        ),
+      ),
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 40),
-        child:
-        ElevatedButton(
+        child: ElevatedButton(
           onPressed: () {
             // When pressed, move on to the next page, if possible
             Actions.invoke(context, const NextPageIntent());
@@ -45,27 +55,30 @@ class ComicPage extends StatelessWidget {
             children: [
               Text(nextLabel),
               const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward_rounded)
-            ]
-          )
-        )
-      )
+              const Icon(Icons.arrow_forward_rounded),
+            ],
+          ),
+        ),
+      ),
     ];
     if (showLoginLink) {
       // Add a way to log in
-      children.insert(0,
+      children.insert(
+        0,
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 36),
-          child: Row(children: [
-            const Text("Already have an account?"),
-            TextButton(
-              child: const Text("Sign In"),
-              onPressed: () {
-                Navigator.pushNamed(context, "signIn");
-              }
-            )
-          ])
-        )
+          child: Row(
+            children: [
+              const Text("Already have an account?"),
+              TextButton(
+                child: const Text("Sign In"),
+                onPressed: () {
+                  Navigator.pushNamed(context, "signIn");
+                },
+              )
+            ],
+          ),
+        ),
       );
     }
     return Scaffold(
@@ -73,9 +86,9 @@ class ComicPage extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Column(children: children)
-        )
-      )
+          child: Column(children: children),
+        ),
+      ),
     );
   }
 
