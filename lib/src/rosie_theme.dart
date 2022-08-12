@@ -39,9 +39,14 @@ class RosieTheme {
   static const Gradient backgroundGradient = LinearGradient(
     colors: [backgroundTop, backgroundBottom],
     begin: Alignment.topCenter,
-    end: Alignment.bottomCenter
+    end: Alignment.bottomCenter,
   );
-  static const List<Color> urgencyPalette = [ belowOptimal, optimal, concern, urgent ];
+  static const List<Color> urgencyPalette = [
+    belowOptimal,
+    optimal,
+    concern,
+    urgent,
+  ];
 
   // Generates the comic font for the Rosie theme.
   static TextStyle comicFont({
@@ -63,8 +68,8 @@ class RosieTheme {
     TextDecoration? decoration,
     Color? decorationColor,
     TextDecorationStyle? decorationStyle,
-    double? decorationThickness}
-  ) {
+    double? decorationThickness,
+  }) {
     return GoogleFonts.comicNeue(
       textStyle: textStyle,
       color: color,
@@ -84,7 +89,7 @@ class RosieTheme {
       decoration: decoration,
       decorationColor: decorationColor,
       decorationStyle: decorationStyle,
-      decorationThickness: decorationThickness
+      decorationThickness: decorationThickness,
     );
   }
 
@@ -108,8 +113,8 @@ class RosieTheme {
     TextDecoration? decoration,
     Color? decorationColor,
     TextDecorationStyle? decorationStyle,
-    double? decorationThickness}
-  ) {
+    double? decorationThickness,
+  }) {
     return GoogleFonts.ubuntu(
       textStyle: textStyle,
       color: color,
@@ -129,13 +134,14 @@ class RosieTheme {
       decoration: decoration,
       decorationColor: decorationColor,
       decorationStyle: decorationStyle,
-      decorationThickness: decorationThickness
+      decorationThickness: decorationThickness,
     );
   }
 }
 
 ColorScheme createRosieColorScheme({required Brightness brightness}) {
-  return ColorScheme.fromSeed(seedColor: RosieTheme.backgroundBottom, brightness: brightness);
+  return ColorScheme.fromSeed(
+      seedColor: RosieTheme.backgroundBottom, brightness: brightness);
 }
 
 ThemeData createRosieTheme({brightness = Brightness.light}) {
@@ -144,37 +150,39 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
     colorScheme: createRosieColorScheme(brightness: Brightness.light),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
-        foregroundColor: MaterialStateProperty.all<Color>(RosieTheme.onButtonColor),
-        shape: MaterialStateProperty.all<OutlinedBorder>(
-          const StadiumBorder()
-        )
-      )
+        backgroundColor:
+            MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
+        foregroundColor:
+            MaterialStateProperty.all<Color>(RosieTheme.onButtonColor),
+        shape: MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder()),
+      ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
-        foregroundColor: MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
-        side: MaterialStateProperty.all<BorderSide>(const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
-        shape: MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder())
-      )),
+        style: ButtonStyle(
+      backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+      foregroundColor: MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
+      side: MaterialStateProperty.all<BorderSide>(
+          const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
+      shape: MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder()),
+    )),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: Color.fromARGB(255, 231, 224, 236),
       selectedItemColor: Color.fromARGB(255, 29, 25, 43),
-      unselectedItemColor: Color.fromARGB(255, 31, 31, 31)
+      unselectedItemColor: Color.fromARGB(255, 31, 31, 31),
     ),
     inputDecorationTheme: const InputDecorationTheme(
       filled: true,
-      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: RosieTheme.accent, width: 2)),
+      focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: RosieTheme.accent, width: 2)),
       focusColor: RosieTheme.accent,
       hoverColor: Color(0x141C1B1F),
       fillColor: RosieTheme.inputBackground,
-      labelStyle: TextStyle(color: RosieTheme.accent)
+      labelStyle: TextStyle(color: RosieTheme.accent),
     ),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: RosieTheme.accent,
       selectionColor: RosieTheme.accent.withAlpha(128),
-      selectionHandleColor: RosieTheme.accent
+      selectionHandleColor: RosieTheme.accent,
     ),
   );
 }

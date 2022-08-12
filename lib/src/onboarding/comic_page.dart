@@ -73,7 +73,6 @@ class ComicPage extends StatelessWidget {
     ];
     if (showLoginLink) {
       // Add a way to log in
-
       children.insert(
         2,
         Container(

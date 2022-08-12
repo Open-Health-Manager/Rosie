@@ -13,9 +13,13 @@
 // limitations under the License.
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Rosie app state. This represents parts of Rosie that are app-specific.
 class AppState with ChangeNotifier {
+  /// Secure storage, used to store information that needs to be encrypted
+  final secureStorage = const FlutterSecureStorage();
+
   bool _initialLogin = false;
 
   bool get initialLogin => _initialLogin;

@@ -25,11 +25,16 @@ class VerifyAccountScreen extends StatelessWidget {
   final String email;
 
   TextSpan _createDescription() {
-    return TextSpan(children: [
-      const TextSpan(text: "I've sent an email to "),
-      TextSpan(text: email, style: const TextStyle(fontWeight: FontWeight.bold)),
-      const TextSpan(text: ".")
-    ]);
+    return TextSpan(
+      children: [
+        const TextSpan(text: "I've sent an email to "),
+        TextSpan(
+          text: email,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const TextSpan(text: "."),
+      ],
+    );
   }
 
   @override
@@ -37,24 +42,26 @@ class VerifyAccountScreen extends StatelessWidget {
     return AccountScreen(
       builder: (context) => Column(
         children: <Widget>[
-          Text("Verify your Email", style: Theme.of(context).textTheme.headlineMedium),
+          Text("Verify your Email",
+              style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 15),
           Text.rich(_createDescription()),
           const SizedBox(height: 15),
-          OutlinedButton(child:
-            const Text("Open Mail"),
+          OutlinedButton(
+            child: const Text("Open Mail"),
             onPressed: () {
               // Attempt to launch a mailto: link
               launchUrl(Uri.parse('mailto:'));
-            }
+            },
           ),
-          const Text("You need to verify your email to continue. If you don't see it, check your spam folder, or get another verification email sent."),
+          const Text(
+              "You need to verify your email to continue. If you don't see it, check your spam folder, or get another verification email sent."),
           const SizedBox(height: 15),
           OutlinedButton(
             child: const Text("Resend Verification Email"),
             onPressed: () {
               // Does nothing for now
-            }
+            },
           ),
           const SizedBox(height: 15),
           const Text("Once verified, you can:"),
@@ -64,10 +71,14 @@ class VerifyAccountScreen extends StatelessWidget {
             onPressed: () {
               // Flag that this is in the initial login context
               context.read<AppState>().initialLogin = true;
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const SignIn()));
-            })
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SignIn()),
+              );
+            },
+          ),
         ],
-      )
+      ),
     );
   }
 }

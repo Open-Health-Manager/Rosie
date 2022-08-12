@@ -258,20 +258,24 @@ class _SignUpState extends State<SignUp> {
           // make it immutable anyway
           final email = _email.text;
           await context.read<OpenHealthManager>().createAccount(
-              email, _password.text,
-              firstName: _firstName.text,
-              lastName: _lastName.text,
-              dataUseAgreement: widget.dataUseAgreement,
-              duaAccepted: _agreesToTerms,
-              ageAttested: _assertsAge);
+                email,
+                _password.text,
+                firstName: _firstName.text,
+                lastName: _lastName.text,
+                dataUseAgreement: widget.dataUseAgreement,
+                duaAccepted: _agreesToTerms,
+                ageAttested: _assertsAge,
+              );
           // Ensure the view is still mounted
           if (!mounted) return null;
           // If here, we need to push on to the verify account page
           // TODO: Should this reset the nav stack?
           Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => VerifyAccountScreen(email: email)));
+            context,
+            MaterialPageRoute(
+              builder: (context) => VerifyAccountScreen(email: email),
+            ),
+          );
           return null;
         } else {
           return "Please correct the above errors and try again";

@@ -16,6 +16,8 @@
 
 import 'package:flutter/material.dart';
 import 'account_theme.dart';
+import '../open_health_manager/open_health_manager.dart';
+import '../open_health_manager/server_error_message.dart';
 
 /// Intent for submitting the form within the account screen. This is intented
 /// to be used to inform the account screen that some action has happened within
@@ -129,6 +131,36 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
     });
   }
 
+  String _parseErrorMessage(dynamic error) {
+    if (error is ServerErrorException) {
+      // This is "special" - a more detailed error message may be available
+      if (error.statusCode == 400) {
+        // "Bad Request" - attempt to parse out the body
+        try {
+          final serverError = ServerErrorMessage.fromJson(error.responseObject);
+          if (serverError.fieldErrors.isEmpty) {
+            return serverError.title ?? "Unknown error from server";
+          }
+          return serverError.fieldErrors
+              .map((field) => "Invalid ${field.field}: ${field.message}")
+              .join("\n\n");
+        } on FormatException catch (_) {
+          // Ignore this and fall through
+        }
+      }
+    }
+    // Default: return whatever toString does
+    return error.toString();
+  }
+
+  Widget _buildErrorMessage(BuildContext context, dynamic error) {
+    return Text(
+      _parseErrorMessage(error),
+      softWrap: true,
+      style: TextStyle(color: Theme.of(context).errorColor),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final afterFormBuilder = widget.afterFormBuilder;
@@ -158,9 +190,11 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
                 onPressed: submit,
                 child: Text(widget.submitLabel),
               );
-              String? error;
+              // Error is an error object from the backend and is likely a
+              // ServerErrorException
+              dynamic error;
               if (snapshot.hasError) {
-                error = (snapshot.error ?? "Unknown error").toString();
+                error = snapshot.error ?? "Unknown error";
               } else if (snapshot.hasData) {
                 error = snapshot.data;
               }
@@ -170,11 +204,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      error,
-                      softWrap: true,
-                      style: TextStyle(color: Theme.of(context).errorColor),
-                    ),
+                    _buildErrorMessage(context, error),
                     submitButton,
                   ],
                 );

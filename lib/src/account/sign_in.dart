@@ -42,7 +42,10 @@ class _SignInState extends State<SignIn> {
               TextFormField(
                 autocorrect: false,
                 autofocus: true,
-                decoration: const InputDecoration(hintText: "Email", prefixIcon: Icon(Icons.email)),
+                decoration: const InputDecoration(
+                  hintText: "Email",
+                  prefixIcon: Icon(Icons.email),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Email is required";
@@ -58,7 +61,10 @@ class _SignInState extends State<SignIn> {
               const SizedBox(height: 15.0),
               TextFormField(
                 autocorrect: false,
-                decoration: const InputDecoration(hintText: "Password", prefixIcon: Icon(Icons.lock)),
+                decoration: const InputDecoration(
+                  hintText: "Password",
+                  prefixIcon: Icon(Icons.lock),
+                ),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -76,14 +82,17 @@ class _SignInState extends State<SignIn> {
                 textInputAction: TextInputAction.done,
               ),
             ],
-          )
+          ),
         );
       },
       submitLabel: "Sign In",
       onSubmit: () async {
         if (email != null && password != null) {
-          final auth = await context.read<OpenHealthManager>().signIn(email!, password!);
-          return auth == null ? "Login failed (check your email and password)" : null;
+          final auth =
+              await context.read<OpenHealthManager>().signIn(email!, password!);
+          return auth == null
+              ? "Login failed (check your email and password)"
+              : null;
         } else {
           return "Email and password are required";
         }
@@ -93,8 +102,14 @@ class _SignInState extends State<SignIn> {
         return TextButton(
           child: const Text('Forgot password?'),
           onPressed: () {
-            Navigator.push<void>(context, MaterialPageRoute<void>(builder: (context) => const ResetPassword()));
-          },);
+            Navigator.push<void>(
+              context,
+              MaterialPageRoute<void>(
+                builder: (context) => const ResetPassword(),
+              ),
+            );
+          },
+        );
       },
     );
   }

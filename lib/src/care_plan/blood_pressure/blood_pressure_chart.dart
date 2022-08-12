@@ -42,7 +42,8 @@ enum _ScaleId {
 }
 
 class _ScalePosition {
-  const _ScalePosition(this.systolic, this.diastolic, { this.rightAlign = false, this.baselineAlign = true });
+  const _ScalePosition(this.systolic, this.diastolic,
+      {this.rightAlign = false, this.baselineAlign = true});
 
   // Either an index into the systolic ticks or < 0 to indicate 0
   final int systolic;
@@ -64,7 +65,8 @@ class _BloodPressureScaleLayout extends MultiChildLayoutDelegate {
     _ScalePosition(-1, 2, rightAlign: true)
   ];
 
-  _BloodPressureScaleLayout(this.padding, this.systolicTicks, this.diastolicTicks);
+  _BloodPressureScaleLayout(
+      this.padding, this.systolicTicks, this.diastolicTicks);
 
   // Padding simply specifies the amount to push the text off their anchor point. It is currently always implemented
   // symetrically.
@@ -75,16 +77,23 @@ class _BloodPressureScaleLayout extends MultiChildLayoutDelegate {
   @override
   void performLayout(Size size) {
     // Create the "padded size" for this
-    size = Size(size.width - padding.left - padding.right, size.height - padding.top - padding.bottom);
+    size = Size(size.width - padding.left - padding.right,
+        size.height - padding.top - padding.bottom);
     for (_ScaleId id in _ScaleId.values) {
       if (hasChild(id)) {
         final childSize = layoutChild(id, BoxConstraints.loose(size));
         // Grab the corresponding layout info
         final position = positionsById[id.index];
         // Find the anchor point
-        double x = size.width * (position.diastolic >= 0 ? diastolicTicks[position.diastolic] : 0.0);
+        double x = size.width *
+            (position.diastolic >= 0
+                ? diastolicTicks[position.diastolic]
+                : 0.0);
         // Systolic scale is inverted so 1.0 - value
-        double y = size.height * (position.systolic >= 0 ? (1.0 - systolicTicks[position.systolic]) : 1.0);
+        double y = size.height *
+            (position.systolic >= 0
+                ? (1.0 - systolicTicks[position.systolic])
+                : 1.0);
         if (position.rightAlign) {
           x -= childSize.width + padding.right;
         } else {
@@ -102,7 +111,8 @@ class _BloodPressureScaleLayout extends MultiChildLayoutDelegate {
 
   @override
   bool shouldRelayout(covariant MultiChildLayoutDelegate oldDelegate) {
-    return oldDelegate is _BloodPressureScaleLayout && padding != oldDelegate.padding;
+    return oldDelegate is _BloodPressureScaleLayout &&
+        padding != oldDelegate.padding;
   }
 }
 
@@ -114,7 +124,7 @@ class _BloodPressureScales extends StatelessWidget {
     required this.systolicValues,
     required this.diastolicValues,
     required this.systolicPositions,
-    required this.diastolicPositions
+    required this.diastolicPositions,
   }) : super(key: key);
 
   final TextStyle textStyle;
@@ -126,16 +136,39 @@ class _BloodPressureScales extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // This has to be a CustomMultiChildLayout
-    return CustomMultiChildLayout(delegate: _BloodPressureScaleLayout(const EdgeInsets.symmetric(horizontal: 2.0), systolicPositions, diastolicPositions),
+    return CustomMultiChildLayout(
+      delegate: _BloodPressureScaleLayout(
+        const EdgeInsets.symmetric(horizontal: 2.0),
+        systolicPositions,
+        diastolicPositions,
+      ),
       children: <Widget>[
         LayoutId(id: _ScaleId.scale0, child: Text("0", style: textStyle)),
-        LayoutId(id: _ScaleId.scaleSystolicTick1, child: Text("90", style: textStyle)),
-        LayoutId(id: _ScaleId.scaleSystolicTick2, child: Text("140", style: textStyle)),
-        LayoutId(id: _ScaleId.scaleSystolicTick3, child: Text("180", style: textStyle)),
-        LayoutId(id: _ScaleId.scaleDiastolicTick1, child: Text(diastolicValues[0].toString(), style: textStyle)),
-        LayoutId(id: _ScaleId.scaleDiastolicTick2, child: Text(diastolicValues[1].toString(), style: textStyle)),
-        LayoutId(id: _ScaleId.scaleDiastolicTick3, child: Text(diastolicValues[2].toString(), style: textStyle)),
-      ]
+        LayoutId(
+          id: _ScaleId.scaleSystolicTick1,
+          child: Text("90", style: textStyle),
+        ),
+        LayoutId(
+          id: _ScaleId.scaleSystolicTick2,
+          child: Text("140", style: textStyle),
+        ),
+        LayoutId(
+          id: _ScaleId.scaleSystolicTick3,
+          child: Text("180", style: textStyle),
+        ),
+        LayoutId(
+          id: _ScaleId.scaleDiastolicTick1,
+          child: Text(diastolicValues[0].toString(), style: textStyle),
+        ),
+        LayoutId(
+          id: _ScaleId.scaleDiastolicTick2,
+          child: Text(diastolicValues[1].toString(), style: textStyle),
+        ),
+        LayoutId(
+          id: _ScaleId.scaleDiastolicTick3,
+          child: Text(diastolicValues[2].toString(), style: textStyle),
+        ),
+      ],
     );
   }
 }
@@ -148,7 +181,7 @@ class BloodPressureChart extends StatelessWidget {
     required this.typeLabelStyle,
     required this.numericLabelStyle,
     required this.urgency,
-    required this.scale
+    required this.scale,
   }) : super(key: key);
 
   final BloodPressureObservation? bloodPressure;
@@ -172,11 +205,12 @@ class BloodPressureChart extends StatelessWidget {
             BoxShadow(
               color: Color.fromARGB(128, 0, 0, 0),
               offset: Offset(4, 4),
-              blurRadius: 4.0
+              blurRadius: 4.0,
             )
           ],
           borderRadius: BorderRadius.circular(5),
-          color: activeSlice == 3 ? RosieTheme.urgent : RosieTheme.inactiveUrgent,
+          color:
+              activeSlice == 3 ? RosieTheme.urgent : RosieTheme.inactiveUrgent,
         ),
       ),
       // Concern box
@@ -187,9 +221,11 @@ class BloodPressureChart extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
-            color: activeSlice == 2 ? RosieTheme.concern : RosieTheme.inactiveConcern,
-          )
-        )
+            color: activeSlice == 2
+                ? RosieTheme.concern
+                : RosieTheme.inactiveConcern,
+          ),
+        ),
       ),
       // Optimal box
       FractionallySizedBox(
@@ -199,9 +235,11 @@ class BloodPressureChart extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
-            color: activeSlice == 1 ? RosieTheme.optimal : RosieTheme.inactiveOptimal,
-          )
-        )
+            color: activeSlice == 1
+                ? RosieTheme.optimal
+                : RosieTheme.inactiveOptimal,
+          ),
+        ),
       ),
       // Low box? I guess
       FractionallySizedBox(
@@ -211,13 +249,23 @@ class BloodPressureChart extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
-            color: activeSlice == 0 ? RosieTheme.belowOptimal : RosieTheme.inactiveBelowOptimal,
-          )
-        )
+            color: activeSlice == 0
+                ? RosieTheme.belowOptimal
+                : RosieTheme.inactiveBelowOptimal,
+          ),
+        ),
       ),
       // Type labels
-      Positioned(left: 3, top: 2, child: Text("Systolic", style: typeLabelStyle)),
-      Positioned(right: 2, bottom: 2, child: Text("Diastolic", style: typeLabelStyle)),
+      Positioned(
+        left: 3,
+        top: 2,
+        child: Text("Systolic", style: typeLabelStyle),
+      ),
+      Positioned(
+        right: 2,
+        bottom: 2,
+        child: Text("Diastolic", style: typeLabelStyle),
+      ),
       // Numeric scales are handled in their own widget
       _BloodPressureScales(
         textStyle: numericLabelStyle,
@@ -225,7 +273,7 @@ class BloodPressureChart extends StatelessWidget {
         diastolicValues: scale.diastolicRange,
         systolicPositions: systolicPositions,
         diastolicPositions: diastolicPositions,
-      )
+      ),
     ];
     if (bp != null) {
       // If bp exists, add it
@@ -237,8 +285,9 @@ class BloodPressureChart extends StatelessWidget {
         highlightColor: RosieTheme.urgencyPalette[activeSlice],
       ));
     }
-    return Stack(alignment: AlignmentDirectional.bottomStart,
-      children: children
+    return Stack(
+      alignment: AlignmentDirectional.bottomStart,
+      children: children,
     );
   }
 }
@@ -249,7 +298,8 @@ class _BloodPressureCalloutLayout extends SingleChildLayoutDelegate {
   final double x;
   final double y;
 
-  @override Offset getPositionForChild(Size size, Size childSize) {
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
     // TODO: Position properly within the chart
     // This is technically wrong for now because the actual position depends
     // on where the point is in the child.
@@ -276,7 +326,7 @@ class _BloodPressureValue extends StatelessWidget {
     required this.urgency,
     required this.maxSystolic,
     required this.maxDiastolic,
-    required this.highlightColor
+    required this.highlightColor,
   }) : super(key: key);
 
   final BloodPressureObservation bloodPressure;
@@ -289,25 +339,26 @@ class _BloodPressureValue extends StatelessWidget {
   Widget build(BuildContext context) {
     // This handles positioning the actual callout box
     final x = math.min(bloodPressure.diastolic / maxDiastolic.toDouble(), 1.0);
-    final y = 1.0 - math.min(bloodPressure.systolic / maxSystolic.toDouble(), 1.0);
+    final y =
+        1.0 - math.min(bloodPressure.systolic / maxSystolic.toDouble(), 1.0);
     return CustomSingleChildLayout(
       delegate: _BloodPressureCalloutLayout(x, y),
       child: _BloodPressureCallout(
         bloodPressure: bloodPressure,
         urgency: urgency,
         highlightColor: highlightColor,
-      )
+      ),
     );
   }
 }
 
 class _BloodPressureCallout extends StatelessWidget {
-  const _BloodPressureCallout({
-    Key? key,
-    required this.bloodPressure,
-    required this.urgency,
-    required this.highlightColor
-  }) : super(key: key);
+  const _BloodPressureCallout(
+      {Key? key,
+      required this.bloodPressure,
+      required this.urgency,
+      required this.highlightColor})
+      : super(key: key);
 
   final BloodPressureObservation bloodPressure;
   final BPChartUrgency urgency;
@@ -316,8 +367,9 @@ class _BloodPressureCallout extends StatelessWidget {
   Widget _buildText(BuildContext context) {
     final highlightStyle = RosieTheme.font(color: highlightColor, fontSize: 30);
     final formattedBP = TextSpan(
-      text: "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()}",
-      style: highlightStyle
+      text:
+          "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()}",
+      style: highlightStyle,
     );
     List<TextSpan> text = [];
     if (urgency.index >= 3) {
@@ -332,13 +384,16 @@ class _BloodPressureCallout extends StatelessWidget {
       text.add(const TextSpan(text: "\nYour blood pressure was\n"));
       if (urgency.outdated) {
         text.add(TextSpan(text: "good, but", style: highlightStyle));
-        text.add(const TextSpan(text: "\nnow it\u2019s out of date. You should check it every year."));
+        text.add(const TextSpan(
+          text: "\nnow it\u2019s out of date. You should check it every year.",
+        ));
       } else {
         text.add(TextSpan(text: "good", style: highlightStyle));
         text.add(const TextSpan(text: "."));
       }
     }
-    final textWidget = Text.rich(TextSpan(children: text), style: RosieTheme.comicFont(), softWrap: true);
+    final textWidget = Text.rich(TextSpan(children: text),
+        style: RosieTheme.comicFont(), softWrap: true);
     if (urgency.emergency) {
       // Slightly different
       return Column(
@@ -351,14 +406,11 @@ class _BloodPressureCallout extends StatelessWidget {
                 context: context,
                 builder: (context) {
                   return const RosieDialog(
-                    children: [
-                      BloodPressureHelp(emergency: true)
-                    ]
-                  );
-                }
+                      children: [BloodPressureHelp(emergency: true)]);
+                },
               );
             },
-          )
+          ),
         ],
       );
     } else {
@@ -377,10 +429,10 @@ class _BloodPressureCallout extends StatelessWidget {
             color: Color.fromARGB(128, 0, 0, 0),
             offset: Offset(4, 4),
             blurRadius: 4,
-          )
-        ]
+          ),
+        ],
       ),
-      child: _buildText(context)
+      child: _buildText(context),
     );
   }
 }
