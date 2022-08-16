@@ -201,14 +201,19 @@ class BloodPressureChart extends StatelessWidget {
       // Base box fills the entire thing
       Container(
         decoration: BoxDecoration(
-          boxShadow: const [
+          /* boxShadow: const [
             BoxShadow(
               color: Color.fromARGB(128, 0, 0, 0),
               offset: Offset(4, 4),
               blurRadius: 4.0,
             )
           ],
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(5), */
+          borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(5),
+              bottomRight: Radius.circular(5),
+              topLeft: Radius.circular(5),
+              bottomLeft: Radius.circular(5)),
           color:
               activeSlice == 3 ? RosieTheme.urgent : RosieTheme.inactiveUrgent,
         ),
