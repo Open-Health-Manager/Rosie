@@ -42,6 +42,7 @@ class RosieTheme {
 
   static const Color backgroundTop = Colors.white;
   static const Color backgroundBottom = Color(0xFF428CE3);
+
   static const Color inputBackground = Color(0xFFE7E0EC);
   static const Color dialogBackground = Color(0xFFE1E3E9);
   static const Color error = Color(0xFF880000);
@@ -160,44 +161,49 @@ ColorScheme createRosieColorScheme({required Brightness brightness}) {
 ThemeData createRosieTheme({brightness = Brightness.light}) {
   // Intentionally ignore the given brightness for now and ALWAYS do light mode
   return ThemeData(
-    colorScheme: createRosieColorScheme(brightness: Brightness.light),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ButtonStyle(
-        backgroundColor:
-            MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
-        foregroundColor:
-            MaterialStateProperty.all<Color>(RosieTheme.onButtonColor),
-        shape: MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder()),
-      ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
+      colorScheme: createRosieColorScheme(brightness: Brightness.light),
+      elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-      backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
-      foregroundColor: MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
-      side: MaterialStateProperty.all<BorderSide>(
-          const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
-      shape: MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder()),
-    )),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Color.fromARGB(255, 231, 224, 236),
-      selectedItemColor: Color.fromARGB(255, 29, 25, 43),
-      unselectedItemColor: Color.fromARGB(255, 31, 31, 31),
-    ),
-    inputDecorationTheme: const InputDecorationTheme(
-      filled: true,
-      focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: RosieTheme.accent, width: 2)),
-      focusColor: RosieTheme.accent,
-      hoverColor: Color(0x141C1B1F),
-      fillColor: RosieTheme.inputBackground,
-      labelStyle: TextStyle(color: RosieTheme.accent),
-    ),
-    textSelectionTheme: TextSelectionThemeData(
-      cursorColor: RosieTheme.accent,
-      selectionColor: RosieTheme.accent.withAlpha(128),
-      selectionHandleColor: RosieTheme.accent,
-    ),
-  );
+          backgroundColor:
+              MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
+          foregroundColor:
+              MaterialStateProperty.all<Color>(RosieTheme.onButtonColor),
+          shape:
+              MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder()),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+          style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+        foregroundColor:
+            MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
+        side: MaterialStateProperty.all<BorderSide>(
+            const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
+        shape: MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder()),
+      )),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Color.fromARGB(255, 231, 224, 236),
+        selectedItemColor: Color.fromARGB(255, 29, 25, 43),
+        unselectedItemColor: Color.fromARGB(255, 31, 31, 31),
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        filled: true,
+        focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: RosieTheme.accent, width: 2)),
+        focusColor: RosieTheme.accent,
+        hoverColor: Color(0x141C1B1F),
+        fillColor: RosieTheme.inputBackground,
+        labelStyle: TextStyle(color: RosieTheme.accent),
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: RosieTheme.accent,
+        selectionColor: RosieTheme.accent.withAlpha(128),
+        selectionHandleColor: RosieTheme.accent,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ));
 }
 
 BoxDecoration createRosieScreenBoxDecoration() {

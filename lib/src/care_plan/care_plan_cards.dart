@@ -110,18 +110,16 @@ class CarePlanCards extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                          Scaffold(
-                            appBar: AppBar(),
-                            body: Container(
-                              decoration: createRosieScreenBoxDecoration(),
-                              child: const SafeArea(child: BloodPressureVisualizationScreen())
-                            )
-                          )
-                      )
-                    );
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Scaffold(
+                                appBar: AppBar(title: Text(title)),
+                                body: Container(
+                                    decoration:
+                                        createRosieScreenBoxDecoration(),
+                                    child: const SafeArea(
+                                        child:
+                                            BloodPressureVisualizationScreen())))));
                   },
                   style: ElevatedButton.styleFrom(
                       primary: const Color(0xFF6750A4),
