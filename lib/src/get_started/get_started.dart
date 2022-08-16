@@ -33,7 +33,7 @@ class GetStarted extends StatelessWidget {
               style: GoogleFonts.ubuntu(fontSize: 24.0),
             ),
             const SizedBox(height: 20),
-            const SizedBox(width: 238, height: 214, child: Placeholder()),
+            // const SizedBox(width: 238, height: 214, child: Placeholder()),
             const Expanded(child: SizedBox()),
             RosieTextBalloon.text(
               "Looks like you don\u2019t have any health data sources yet. Connect your health data to have a more complete view of your own health.",
