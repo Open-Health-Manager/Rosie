@@ -122,6 +122,7 @@ class _RosieAppState extends State<RosieApp> {
               value: patientData,
               child: MaterialApp(
                 title: 'Rosie',
+                debugShowCheckedModeBanner: false,
                 theme: createRosieTheme(),
                 darkTheme: createRosieTheme(brightness: Brightness.dark),
                 home: const _RosieHome(),
