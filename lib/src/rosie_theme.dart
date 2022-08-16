@@ -23,14 +23,23 @@ class RosieTheme {
   static const Color blush = Color.fromARGB(255, 242, 109, 178);
   static const Color buttonColor = accent;
   static const Color onButtonColor = Colors.white;
-  static const Color belowOptimal = Color.fromARGB(255, 60, 126, 205);
+  /* static const Color belowOptimal = Color.fromARGB(255, 60, 126, 205);
   static const Color optimal = Color.fromARGB(255, 97, 78, 222);
   static const Color concern = Color.fromARGB(255, 175, 54, 174);
   static const Color urgent = Color.fromARGB(255, 205, 25, 133);
   static const Color inactiveBelowOptimal = Color.fromARGB(255, 22, 46, 75);
   static const Color inactiveOptimal = Color.fromARGB(255, 32, 26, 74);
   static const Color inactiveConcern = Color.fromARGB(255, 84, 39, 85);
-  static const Color inactiveUrgent = Color.fromARGB(255, 68, 8, 44);
+  static const Color inactiveUrgent = Color.fromARGB(255, 68, 8, 44); */
+  static const Color belowOptimal = Color.fromARGB(255, 234, 202, 210);
+  static const Color optimal = Color.fromARGB(255, 238, 173, 190);
+  static const Color concern = Color.fromARGB(255, 243, 146, 170);
+  static const Color urgent = Color.fromARGB(255, 248, 119, 151);
+  static const Color inactiveBelowOptimal = Color.fromARGB(255, 234, 202, 210);
+  static const Color inactiveOptimal = Color.fromARGB(255, 238, 173, 190);
+  static const Color inactiveConcern = Color.fromARGB(255, 243, 146, 170);
+  static const Color inactiveUrgent = Color.fromARGB(255, 248, 119, 151);
+
   static const Color backgroundTop = Colors.white;
   static const Color backgroundBottom = Color(0xFF428CE3);
   static const Color inputBackground = Color(0xFFE7E0EC);

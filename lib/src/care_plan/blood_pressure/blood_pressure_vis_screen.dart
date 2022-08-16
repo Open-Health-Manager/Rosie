@@ -184,9 +184,13 @@ class _BloodPressureVisualizationState
       {loading = false}) {
     Widget chart = BloodPressureChart(
       bloodPressure: bloodPressure,
-      typeLabelStyle: RosieTheme.comicFont(color: Colors.white, fontSize: 16),
+      /* typeLabelStyle: RosieTheme.comicFont(color: Colors.white, fontSize: 16),
       numericLabelStyle:
-          RosieTheme.comicFont(color: Colors.white, fontSize: 20, height: 1.0),
+          RosieTheme.comicFont(color: Colors.white, fontSize: 20, height: 1.0), */
+      typeLabelStyle: RosieTheme.comicFont(
+          color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+      numericLabelStyle:
+          RosieTheme.comicFont(color: Colors.black, fontSize: 16),
       scale: widget.scale,
       urgency: urgency,
     );
