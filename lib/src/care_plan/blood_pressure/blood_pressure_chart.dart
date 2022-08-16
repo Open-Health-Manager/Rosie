@@ -224,6 +224,11 @@ class BloodPressureChart extends StatelessWidget {
             color: activeSlice == 2
                 ? RosieTheme.concern
                 : RosieTheme.inactiveConcern,
+            border: const Border(
+                top: BorderSide(width: 1.0, color: Colors.white),
+                bottom: BorderSide(width: 1.0, color: Colors.white),
+                left: BorderSide(width: 1.0, color: Colors.white),
+                right: BorderSide(width: 1.0, color: Colors.white)),
           ),
         ),
       ),
@@ -238,6 +243,11 @@ class BloodPressureChart extends StatelessWidget {
             color: activeSlice == 1
                 ? RosieTheme.optimal
                 : RosieTheme.inactiveOptimal,
+            border: const Border(
+                top: BorderSide(width: 1.0, color: Colors.white),
+                bottom: BorderSide(width: 1.0, color: Colors.white),
+                left: BorderSide(width: 1.0, color: Colors.white),
+                right: BorderSide(width: 1.0, color: Colors.white)),
           ),
         ),
       ),
@@ -252,6 +262,11 @@ class BloodPressureChart extends StatelessWidget {
             color: activeSlice == 0
                 ? RosieTheme.belowOptimal
                 : RosieTheme.inactiveBelowOptimal,
+            border: const Border(
+                top: BorderSide(width: 1.0, color: Colors.white),
+                bottom: BorderSide(width: 1.0, color: Colors.white),
+                left: BorderSide(width: 1.0, color: Colors.white),
+                right: BorderSide(width: 1.0, color: Colors.white)),
           ),
         ),
       ),
