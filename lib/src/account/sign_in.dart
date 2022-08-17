@@ -37,53 +37,57 @@ class _SignInState extends State<SignIn> {
       title: "Sign In",
       formBuilder: (BuildContext context) {
         return AutofillGroup(
-          child: Column(
-            children: [
-              TextFormField(
-                autocorrect: false,
-                autofocus: true,
-                decoration: const InputDecoration(hintText: "Email", prefixIcon: Icon(Icons.email)),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Email is required";
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  email = value;
-                },
-                autofillHints: const [AutofillHints.email],
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 15.0),
-              TextFormField(
-                autocorrect: false,
-                decoration: const InputDecoration(hintText: "Password", prefixIcon: Icon(Icons.lock)),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Password cannot be blank";
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  password = value;
-                },
-                onEditingComplete: () {
-                  Actions.invoke(context, const SubmitIntent());
-                },
-                autofillHints: const [AutofillHints.password],
-                textInputAction: TextInputAction.done,
-              ),
-            ],
-          )
-        );
+            child: Column(
+          children: [
+            TextFormField(
+              autocorrect: false,
+              autofocus: true,
+              decoration: const InputDecoration(
+                  hintText: "Email", prefixIcon: Icon(Icons.email)),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Email is required";
+                }
+                return null;
+              },
+              onChanged: (value) {
+                email = value;
+              },
+              autofillHints: const [AutofillHints.email],
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 15.0),
+            TextFormField(
+              autocorrect: false,
+              decoration: const InputDecoration(
+                  hintText: "Password", prefixIcon: Icon(Icons.lock)),
+              obscureText: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Password cannot be blank";
+                }
+                return null;
+              },
+              onChanged: (value) {
+                password = value;
+              },
+              onEditingComplete: () {
+                Actions.invoke(context, const SubmitIntent());
+              },
+              autofillHints: const [AutofillHints.password],
+              textInputAction: TextInputAction.done,
+            ),
+          ],
+        ));
       },
-      submitLabel: "Sign In",
+      submitLabel: "Confirm",
       onSubmit: () async {
         if (email != null && password != null) {
-          final auth = await context.read<OpenHealthManager>().signIn(email!, password!);
-          return auth == null ? "Login failed (check your email and password)" : null;
+          final auth =
+              await context.read<OpenHealthManager>().signIn(email!, password!);
+          return auth == null
+              ? "Login failed (check your email and password)"
+              : null;
         } else {
           return "Email and password are required";
         }
@@ -91,10 +95,14 @@ class _SignInState extends State<SignIn> {
       afterFormBuilder: (BuildContext context) {
         // A link to retrieve the password
         return TextButton(
-          child: const Text('Forgot password?'),
+          child: const Text('Retrieve account or password?'),
           onPressed: () {
-            Navigator.push<void>(context, MaterialPageRoute<void>(builder: (context) => const ResetPassword()));
-          },);
+            Navigator.push<void>(
+                context,
+                MaterialPageRoute<void>(
+                    builder: (context) => const ResetPassword()));
+          },
+        );
       },
     );
   }

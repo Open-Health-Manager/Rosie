@@ -22,6 +22,7 @@ import 'account_screen.dart';
 import 'verify_account.dart';
 import '../../data_use_agreement/data_use_agreement.dart';
 import '../open_health_manager/open_health_manager.dart';
+import '../account/sign_in.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key, required this.dataUseAgreement}) : super(key: key);
@@ -227,34 +228,35 @@ class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     return AccountScreenForm(
-        title: "Create an Account",
-        formBuilder: _buildForm,
-        submitLabel: "Confirm",
-        onSubmit: () async {
-          // currentState being null would indicate an actual error in the code
-          if (_formKey.currentState!.validate()) {
-            // It doesn't seem likely this can change during load but go ahead and
-            // make it immutable anyway
-            final email = _email.text;
-            await context.read<OpenHealthManager>().createAccount(
-                email, _password.text,
-                firstName: _firstName.text,
-                lastName: _lastName.text,
-                dataUseAgreement: widget.dataUseAgreement,
-                duaAccepted: _agreesToTerms,
-                ageAttested: _assertsAge);
-            // Ensure the view is still mounted
-            if (!mounted) return null;
-            // If here, we need to push on to the verify account page
-            // TODO: Should this reset the nav stack?
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => VerifyAccountScreen(email: email)));
-            return null;
-          } else {
-            return "Please correct the above errors and try again";
-          }
-        });
+      title: "Create an Account",
+      formBuilder: _buildForm,
+      submitLabel: "Confirm",
+      onSubmit: () async {
+        // currentState being null would indicate an actual error in the code
+        if (_formKey.currentState!.validate()) {
+          // It doesn't seem likely this can change during load but go ahead and
+          // make it immutable anyway
+          final email = _email.text;
+          await context.read<OpenHealthManager>().createAccount(
+              email, _password.text,
+              firstName: _firstName.text,
+              lastName: _lastName.text,
+              dataUseAgreement: widget.dataUseAgreement,
+              duaAccepted: _agreesToTerms,
+              ageAttested: _assertsAge);
+          // Ensure the view is still mounted
+          if (!mounted) return null;
+          // If here, we need to push on to the verify account page
+          // TODO: Should this reset the nav stack?
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => VerifyAccountScreen(email: email)));
+          return null;
+        } else {
+          return "Please correct the above errors and try again";
+        }
+      },
+    );
   }
 }
