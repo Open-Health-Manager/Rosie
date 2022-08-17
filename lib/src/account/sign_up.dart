@@ -22,6 +22,7 @@ import 'account_screen.dart';
 import 'verify_account.dart';
 import '../../data_use_agreement/data_use_agreement.dart';
 import '../open_health_manager/open_health_manager.dart';
+import '../account/sign_in.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key, required this.dataUseAgreement}) : super(key: key);

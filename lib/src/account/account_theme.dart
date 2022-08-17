@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 
 class AccountThemePalette {
   static const Color boxColor = Color(0xFFFEF2F5);
-  static const Color background = Color(0xFFFA99AF);
+  static const Color background = Colors.white;
   static const Color textColor = Color(0xFF1F201D);
 }
 

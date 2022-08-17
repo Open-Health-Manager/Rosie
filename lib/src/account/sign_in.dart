@@ -85,7 +85,7 @@ class _SignInState extends State<SignIn> {
           ),
         );
       },
-      submitLabel: "Sign In",
+      submitLabel: "Confirm",
       onSubmit: () async {
         if (email != null && password != null) {
           final auth =
@@ -100,7 +100,7 @@ class _SignInState extends State<SignIn> {
       afterFormBuilder: (BuildContext context) {
         // A link to retrieve the password
         return TextButton(
-          child: const Text('Forgot password?'),
+          child: const Text('Retrieve account or password?'),
           onPressed: () {
             Navigator.push<void>(
               context,
