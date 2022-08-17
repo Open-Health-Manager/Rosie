@@ -23,7 +23,8 @@ class RosieExpression {
   final String assetPath;
 
   // Neutral expression.
-  static const neutral = RosieExpression("assets/rosie/neutral.png");
+  //static const neutral = RosieExpression("assets/rosie/neutral.png");
+  static const neutral = RosieExpression("assets/rosie/neutral-pink.png");
   static const surprised = RosieExpression("assets/rosie/surprised.png");
   static const cheeksNeutral =
       RosieExpression("assets/rosie/cheeks-neutral.png");
@@ -124,7 +125,8 @@ class RosieTextBalloon extends StatelessWidget {
         // This is the "balloon"
         Container(
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 0xE1, 0xE3, 0xE9),
+            //color: const Color.fromARGB(255, 0xE1, 0xE3, 0xE9),
+            color: const Color.fromARGB(255, 254, 242, 245),
             borderRadius: BorderRadius.circular(5.0),
             boxShadow: const <BoxShadow>[
               BoxShadow(
