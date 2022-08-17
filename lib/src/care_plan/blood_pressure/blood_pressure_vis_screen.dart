@@ -163,7 +163,8 @@ class _BloodPressureVisualizationState
     if (urgency.index >= 3) {
       text = "Update your blood pressure now!";
       updateLabel = "Update now";
-      expression = RosieExpression.surprised;
+      //expression = RosieExpression.surprised;
+      expression = RosieExpression.neutral;
     } else {
       if (urgency.outdated) {
         text =
@@ -263,7 +264,8 @@ class _BloodPressureVisualizationState
                       )
                     ],
                   ),
-                  expression: RosieExpression.surprised,
+                  //expression: RosieExpression.surprised,
+                  expression: RosieExpression.neutral,
                   action: _createReloadAction("Retry", context, patientData),
                 );
               } else {
