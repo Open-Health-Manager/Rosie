@@ -385,54 +385,67 @@ class _BloodPressureCallout extends StatelessWidget {
   final Color highlightColor;
 
   Widget _buildText(BuildContext context) {
-    final highlightStyle = RosieTheme.font(color: highlightColor, fontSize: 30);
-    final formattedBP = TextSpan(
-      text:
-          "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()}",
-      style: highlightStyle,
-    );
+    final highlightStyle = RosieTheme.font(color: highlightColor, fontSize: 18);
+    final highlightGoodStyle = RosieTheme.font(
+        color: const Color.fromARGB(255, 54, 127, 56),
+        fontSize: 18,
+        fontWeight: FontWeight.bold);
+    final highlightEmergencyStyle = RosieTheme.font(
+        color: const Color.fromARGB(255, 185, 47, 37),
+        fontSize: 18,
+        fontWeight: FontWeight.bold);
+    final dateStyle = RosieTheme.font(color: Colors.grey, fontSize: 14);
+    DateTime? timeTaken = bloodPressure.taken;
+    String formattedTimeTaken =
+        "${timeTaken?.month}-${timeTaken?.day}-${timeTaken?.year}";
+
     List<TextSpan> text = [];
     if (urgency.index >= 3) {
-      text.add(const TextSpan(text: "At "));
-      text.add(formattedBP);
-      text.add(const TextSpan(text: " your blood pressure is\n"));
-      text.add(TextSpan(text: "an emergency", style: highlightStyle));
-      text.add(const TextSpan(text: "\nfor your immediate health!"));
+      text.add(TextSpan(
+          text:
+              "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()} high\n",
+          style: highlightEmergencyStyle));
+      text.add(TextSpan(text: formattedTimeTaken, style: dateStyle));
     } else {
       // For now, always use the same text, I guess
-      text.add(formattedBP);
-      text.add(const TextSpan(text: "\nYour blood pressure was\n"));
       if (urgency.outdated) {
         text.add(TextSpan(text: "good, but", style: highlightStyle));
         text.add(const TextSpan(
           text: "\nnow it\u2019s out of date. You should check it every year.",
         ));
       } else {
-        text.add(TextSpan(text: "good", style: highlightStyle));
-        text.add(const TextSpan(text: "."));
+        text.add(TextSpan(
+            text:
+                "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()} good\n",
+            style: highlightGoodStyle));
+        text.add(TextSpan(text: formattedTimeTaken, style: dateStyle));
       }
     }
     final textWidget = Text.rich(TextSpan(children: text),
         style: RosieTheme.comicFont(), softWrap: true);
     if (urgency.emergency) {
+      //return textWidget;
       // Slightly different
-      return Column(
-        children: <Widget>[
-          textWidget,
-          ElevatedButton(
-            child: const Text("Get Help!"),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return const RosieDialog(
-                      children: [BloodPressureHelp(emergency: true)]);
+      return SizedBox(
+          height: 75,
+          child: Column(
+            children: <Widget>[
+              textWidget,
+              const SizedBox(height: 10),
+              ElevatedButton(
+                child: const Text("Get Help!"),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return const RosieDialog(
+                          children: [BloodPressureHelp(emergency: true)]);
+                    },
+                  );
                 },
-              );
-            },
-          ),
-        ],
-      );
+              ),
+            ],
+          ));
     } else {
       return textWidget;
     }
@@ -442,12 +455,14 @@ class _BloodPressureCallout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10),
-      decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 226, 235, 244),
-        boxShadow: <BoxShadow>[
+      decoration: BoxDecoration(
+        //color: Color.fromARGB(255, 226, 235, 244),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10.0),
+        boxShadow: const <BoxShadow>[
           BoxShadow(
             color: Color.fromARGB(128, 0, 0, 0),
-            offset: Offset(4, 4),
+            //offset: Offset(4, 4),
             blurRadius: 4,
           ),
         ],
