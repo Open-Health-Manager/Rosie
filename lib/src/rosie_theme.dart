@@ -34,12 +34,14 @@ class RosieTheme {
   static const Color inactiveConcern = Color.fromARGB(255, 84, 39, 85);
   static const Color inactiveUrgent = Color.fromARGB(255, 68, 8, 44); */
   static const Color belowOptimal = Color.fromARGB(255, 234, 202, 210);
-  static const Color optimal = Color.fromARGB(255, 238, 173, 190);
-  static const Color concern = Color.fromARGB(255, 243, 146, 170);
+  static const Color optimal = Colors.white;
+  //static const Color concern = Color.fromARGB(255, 243, 146, 170);
+  static const Color concern = Color.fromARGB(255, 234, 202, 210);
   static const Color urgent = Color.fromARGB(255, 248, 119, 151);
   static const Color inactiveBelowOptimal = Color.fromARGB(255, 234, 202, 210);
-  static const Color inactiveOptimal = Color.fromARGB(255, 238, 173, 190);
-  static const Color inactiveConcern = Color.fromARGB(255, 243, 146, 170);
+  static const Color inactiveOptimal = Colors.white;
+  //static const Color inactiveConcern = Color.fromARGB(255, 243, 146, 170);
+  static const Color inactiveConcern = Color.fromARGB(255, 234, 202, 210);
   static const Color inactiveUrgent = Color.fromARGB(255, 248, 119, 151);
 
   static const Color backgroundTop = Colors.white;
