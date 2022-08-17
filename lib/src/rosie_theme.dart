@@ -17,12 +17,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 
 class RosieTheme {
-  static const Color accent = Color(0xFF6750A4);
+  //static const Color accent = Color(0xFF6750A4);
+  static const Color accent = Color.fromARGB(255, 250, 153, 175);
   static const Color primary = Color.fromARGB(255, 109, 211, 233);
   static const Color shadow = Color.fromARGB(255, 49, 181, 206);
   static const Color blush = Color.fromARGB(255, 242, 109, 178);
   static const Color buttonColor = accent;
-  static const Color onButtonColor = Colors.white;
+  //static const Color onButtonColor = Colors.white;
+  static const Color onButtonColor = Colors.black;
   /* static const Color belowOptimal = Color.fromARGB(255, 60, 126, 205);
   static const Color optimal = Color.fromARGB(255, 97, 78, 222);
   static const Color concern = Color.fromARGB(255, 175, 54, 174);
@@ -168,18 +170,29 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
               MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
           foregroundColor:
               MaterialStateProperty.all<Color>(RosieTheme.onButtonColor),
-          shape:
-              MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder()),
+          shape: MaterialStateProperty.all<OutlinedBorder>(
+              //const StadiumBorder()
+              RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  side: const BorderSide(color: Colors.black, width: 0.5))),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
           style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+        //backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+        backgroundColor: MaterialStateProperty.all<Color>(
+          const Color.fromARGB(255, 254, 242, 245),
+        ),
         foregroundColor:
-            MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
-        side: MaterialStateProperty.all<BorderSide>(
-            const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
-        shape: MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder()),
+            // MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
+            MaterialStateProperty.all<Color>(Colors.black),
+        //side: MaterialStateProperty.all<BorderSide>(
+        //const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
+        shape: MaterialStateProperty.all<OutlinedBorder>(
+            //const StadiumBorder()
+            RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                side: const BorderSide(color: Colors.black, width: 0.5))),
       )),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Color.fromARGB(255, 231, 224, 236),
@@ -193,7 +206,8 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
         focusColor: RosieTheme.accent,
         hoverColor: Color(0x141C1B1F),
         fillColor: RosieTheme.inputBackground,
-        labelStyle: TextStyle(color: RosieTheme.accent),
+        //labelStyle: TextStyle(color: RosieTheme.accent),
+        labelStyle: TextStyle(color: Colors.black),
       ),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: RosieTheme.accent,

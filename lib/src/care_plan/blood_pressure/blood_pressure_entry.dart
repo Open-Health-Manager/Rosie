@@ -82,7 +82,8 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
             children: <Widget>[
               Text(
                 "on ${DateFormat.yMd().format(_entryDate)}",
-                style: RosieTheme.comicFont(color: RosieTheme.accent),
+                //style: RosieTheme.comicFont(color: RosieTheme.accent),
+                style: RosieTheme.comicFont(color: RosieTheme.fontColor),
               ),
               const Icon(Icons.edit_outlined, size: 14),
             ],

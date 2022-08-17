@@ -174,7 +174,8 @@ class _BloodPressureVisualizationState
       text,
       action:
           _createUpdateAction(updateLabel, context, patientData, bloodPressure),
-      actionPosition: RosieActionPosition.after,
+      //actionPosition: RosieActionPosition.after,
+      actionPosition: RosieActionPosition.below,
       expression: expression,
     );
   }
@@ -187,8 +188,7 @@ class _BloodPressureVisualizationState
       /* typeLabelStyle: RosieTheme.comicFont(color: Colors.white, fontSize: 16),
       numericLabelStyle:
           RosieTheme.comicFont(color: Colors.white, fontSize: 20, height: 1.0), */
-      typeLabelStyle: RosieTheme.comicFont(
-          color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+      typeLabelStyle: RosieTheme.comicFont(color: Colors.black, fontSize: 16),
       numericLabelStyle:
           RosieTheme.comicFont(color: Colors.black, fontSize: 16),
       scale: widget.scale,
