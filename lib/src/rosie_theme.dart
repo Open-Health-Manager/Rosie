@@ -209,7 +209,7 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
         hoverColor: Color(0x141C1B1F),
         fillColor: RosieTheme.inputBackground,
         //labelStyle: TextStyle(color: RosieTheme.accent),
-        labelStyle: TextStyle(color: Colors.black),
+        labelStyle: TextStyle(color: Colors.black, fontSize: 14),
       ),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: RosieTheme.accent,

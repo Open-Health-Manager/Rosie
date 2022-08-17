@@ -110,7 +110,7 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Text("Enter your blood pressure", style: RosieTheme.font(fontSize: 20)),
+        Text("Enter your blood pressure", style: RosieTheme.font(fontSize: 16)),
         _createEntryFields(context),
         ButtonBar(
           children: <Widget>[
@@ -121,7 +121,8 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
                   context: context,
                   builder: (context) {
                     return const RosieDialog(
-                      expression: RosieExpression.surprised,
+                      //expression: RosieExpression.surprised,
+                      expression: RosieExpression.neutral,
                       children: [
                         // For right now, this is never an "emergency" when
                         // showing the help, that's only ever accessed via the
