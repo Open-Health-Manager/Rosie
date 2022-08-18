@@ -27,8 +27,9 @@ class BloodPressureHelp extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Text(
-          // emergency ? "How can I help?" : "Let's get some help!",
-          "Here are some helpful options to check your blood pressure:",
+          emergency
+              ? "Let's get some help!"
+              : "Here are some helpful options to check your blood pressure:",
           style: RosieTheme.font(fontSize: 18),
         ),
         const SizedBox(height: 15),
@@ -43,13 +44,15 @@ class BloodPressureHelp extends StatelessWidget {
     if (emergency) {
       return <Widget>[
         ElevatedButton(
-          child: const Text("Find an emergency room near you"),
+          child: const Text("Find an emergency room"),
           onPressed: () {},
         ),
+        const SizedBox(height: 15),
         ElevatedButton(
           child: const Text("Call your emegency contact"),
           onPressed: () {},
         ),
+        const SizedBox(height: 15),
         ElevatedButton(child: const Text("Call 911"), onPressed: () {}),
       ];
     } else {
@@ -98,6 +101,7 @@ class BloodPressureHelp extends StatelessWidget {
     if (emergency) {
       return Wrap(
         crossAxisAlignment: WrapCrossAlignment.end,
+        runSpacing: 10.0, // gap between lines
         children: <Widget>[
           OutlinedButton(
             child: const Text("Why is this an emergency?"),
