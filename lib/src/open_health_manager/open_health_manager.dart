@@ -486,25 +486,16 @@ class OpenHealthManager with ChangeNotifier {
     return client.send(request);
   }
 
-  /// Sends a request, parsing the response as a JSON object and returning that JSON object.
-  ///
-  /// This wraps [send] and therefore may throw [http.ClientException]. If the response cannot be parsed as JSON, this
-  /// will throw a [FormatException]. If it can be parsed but does not contain a JSON object, it will throw a
-  /// [InvalidResponseException]. If the server response is an error, this will throw a [ServerErrorException]. If the
-  /// server indicates that the session has expired, this will reset [authData] to `null` and presently resolve. In the
-  /// future it may trigger a method to handle logging back in.
-  Future<Map<String, dynamic>> sendJsonRequest(http.BaseRequest request) async {
+  /// Sends a request, including some basic error processing. If the server response is an error, this will throw a
+  /// [ServerErrorException]. If the server indicates that the session has expired, this will reset [authData] to `null`
+  /// and presently resolve. In the future it may trigger a method to handle logging back in.
+  Future<http.Response> sendRequest(http.BaseRequest request) async {
     final streamedResponse = await send(request);
     final response = await http.Response.fromStream(streamedResponse);
     _log.finer('Received response $response');
     if (response.statusCode >= 200 && response.statusCode < 299) {
-      final parsed = json.decode(response.body);
-      if (parsed is Map<String, dynamic>) {
-        return parsed;
-      } else {
-        throw const InvalidResponseException(
-            'Expected a JSON object response.');
-      }
+      // Success: return as-is
+      return response;
     } else if (response.statusCode == 401) {
       _log.info(
           'Received 401 Not Authorized response, invalidating session (if set)');
@@ -514,6 +505,33 @@ class OpenHealthManager with ChangeNotifier {
     } else {
       throw ServerErrorException.fromResponse(
           response, 'Server returned an error');
+    }
+  }
+
+  /// Sends a request, parsing the response as a JSON object and returning that JSON object.
+  ///
+  /// This wraps [send] and therefore may throw [http.ClientException]. If the response cannot be parsed as JSON, this
+  /// will throw a [FormatException]. If it can be parsed but does not contain a JSON object, it will throw a
+  /// [InvalidResponseException]. If the server response is an error, this will throw a [ServerErrorException]. If the
+  /// server indicates that the session has expired, this will reset [authData] to `null` and presently resolve. In the
+  /// future it may trigger a method to handle logging back in.
+  Future<Map<String, dynamic>> sendJsonRequest(http.BaseRequest request) async {
+    final response = await sendRequest(request);
+    final parsed = json.decode(response.body);
+    if (parsed is Map<String, dynamic>) {
+      return parsed;
+    } else {
+      throw const InvalidResponseException('Expected a JSON object response.');
+    }
+  }
+
+  Future<List<dynamic>> sendJsonArrayRequest(http.BaseRequest request) async {
+    final response = await sendRequest(request);
+    final parsed = json.decode(response.body);
+    if (parsed is List<dynamic>) {
+      return parsed;
+    } else {
+      throw const InvalidResponseException('Expected a JSON array response.');
     }
   }
 
