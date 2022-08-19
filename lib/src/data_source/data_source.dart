@@ -21,16 +21,17 @@ import "health_kit_data_source.dart";
 Stream<DataSource> lookUpDataSources() {
   // This function may eventually become async later when a "proper" method for hooking into data sources is provided.
   // For now it's static.
-  final availableSources = [ HealthKitDataSource() ];
+  final availableSources = [HealthKitDataSource()];
   return Stream.fromIterable(availableSources);
 }
 
 /// Base class for data sources
 abstract class DataSource {
-  DataSource(this.name, { this.description = "" });
+  DataSource(this.name, {this.description = ""});
 
   /// The name for the data source
   final String name;
+
   /// The description for the data source.
   final String description;
 

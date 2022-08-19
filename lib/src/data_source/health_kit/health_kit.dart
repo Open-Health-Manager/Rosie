@@ -21,7 +21,7 @@ import 'package:flutter/services.dart';
 enum FhirVersion {
   dstu2,
   r4,
-  unknown
+  unknown,
 }
 
 FhirVersion parseFhirVersion(String version) {
@@ -35,7 +35,11 @@ FhirVersion parseFhirVersion(String version) {
 
 /// Represents a resource from HealthKit
 class HealthKitResource {
-  const HealthKitResource({required this.resource, required this.fhirVersion, this.sourceUrl});
+  const HealthKitResource({
+    required this.resource,
+    required this.fhirVersion,
+    this.sourceUrl,
+  });
 
   final FhirVersion fhirVersion;
   final Uri? sourceUrl;
@@ -53,9 +57,14 @@ class HealthKitResource {
     if (sourceUrlJson is String) {
       try {
         sourceUrl = Uri.parse(sourceUrlJson);
-      } on FormatException catch(error, stackTrace) {
+      } on FormatException catch (error, stackTrace) {
         // Log but otherwise ignore
-        log("Unparseable URL", level: 800, error: error, stackTrace: stackTrace);
+        log(
+          "Unparseable URL",
+          level: 800,
+          error: error,
+          stackTrace: stackTrace,
+        );
       }
     }
     var resourceJson = jsonObject["resource"];
@@ -64,19 +73,32 @@ class HealthKitResource {
       try {
         final resource = json.decode(resourceJson);
         if (resource is Map<String, dynamic>) {
-          return HealthKitResource(fhirVersion: version, sourceUrl: sourceUrl, resource: resource);
+          return HealthKitResource(
+              fhirVersion: version, sourceUrl: sourceUrl, resource: resource);
         } else {
           // Log this but otherwise ignore it
-          log('Invalid object from FHIR record: expected JSON object, got ${resource.runtimeType}', level: 800);
+          log(
+            'Invalid object from FHIR record: expected JSON object, got ${resource.runtimeType}',
+            level: 800,
+          );
           return null;
         }
       } on FormatException catch (error, stackTrace) {
         // Log the error but otherwise ignore it
-        log('Error parsing FHIR record', level: 800, error: error, stackTrace: stackTrace);
+        log(
+          'Error parsing FHIR record',
+          level: 800,
+          error: error,
+          stackTrace: stackTrace,
+        );
         return null;
       }
     } else if (resourceJson is Map<String, dynamic>) {
-      return HealthKitResource(fhirVersion: version, sourceUrl: sourceUrl, resource: resourceJson);
+      return HealthKitResource(
+        fhirVersion: version,
+        sourceUrl: sourceUrl,
+        resource: resourceJson,
+      );
     }
     return null;
   }
@@ -119,21 +141,26 @@ class HealthKit {
   }
 
   static Future<List<String>> supportedClinicalTypes() async {
-    final supported = await platform.invokeListMethod<String>("supportedClinicalTypes");
+    final supported =
+        await platform.invokeListMethod<String>("supportedClinicalTypes");
     return supported ?? <String>[];
   }
 
   /// Starts a query on the given set of clinical records. This method is truly asynchronous: it is also asynchronous
   /// on the HealthKit side.
-  static Future<List<HealthKitResource>> queryClinicalRecords(String type) async {
-    final results = await platform.invokeListMethod<Map<dynamic, dynamic>>("queryClinicalRecords", type);
+  static Future<List<HealthKitResource>> queryClinicalRecords(
+      String type) async {
+    final results = await platform.invokeListMethod<Map<dynamic, dynamic>>(
+        "queryClinicalRecords", type);
     if (results == null) {
       // Just return an empty list
       return <HealthKitResource>[];
     }
-    return results.map<HealthKitResource?>(
-      (e) => HealthKitResource.fromJson(Map<String, dynamic>.from(e))
-    ).whereType<HealthKitResource>().toList(growable: false);
+    return results
+        .map<HealthKitResource?>(
+            (e) => HealthKitResource.fromJson(Map<String, dynamic>.from(e)))
+        .whereType<HealthKitResource>()
+        .toList(growable: false);
   }
 
   /// Attempts to query all known supported types.
@@ -142,8 +169,8 @@ class HealthKit {
     // With the list of types, create futures for each supported type
     final results = await Future.wait(
       supportedTypes.map<Future<List<HealthKitResource>>>(
-        (String type) => queryClinicalRecords(type)
-      )
+        (String type) => queryClinicalRecords(type),
+      ),
     );
     // Results is a list of lists, so flatten it
     return results.expand((e) => e).toList();

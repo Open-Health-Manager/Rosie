@@ -13,8 +13,7 @@
 // limitations under the License.
 
 import 'dart:developer';
-import 'package:fhir/r4.dart'
-    show Date, Patient, PatientGender, Resource;
+import 'package:fhir/r4.dart' show Date, Patient, PatientGender, Resource;
 import 'open_health_manager.dart';
 
 /// internal representation of FHIR Patient Resource
