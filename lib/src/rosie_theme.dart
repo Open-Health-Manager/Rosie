@@ -219,6 +219,7 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
+        elevation: 0,
       ));
 }
 
