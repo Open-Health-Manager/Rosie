@@ -46,9 +46,10 @@ class _CarePlanHomeState extends State<CarePlanHome> {
   @override
   Widget build(BuildContext context) {
     context.watch<PatientData>();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: SingleChildScrollView(
+    return Scaffold(
+      appBar: AppBar(title: const Text("Care Plan")),
+      body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: FutureBuilder<Map<String, dynamic>?>(
               builder: (context, snapshot) {
                 final List<CarePlanCards> cards = <CarePlanCards>[];
@@ -103,7 +104,7 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                     }
                 }
                 return Column(children: <Widget>[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   ...cards,
                   const SizedBox(height: 16)
                 ]);
