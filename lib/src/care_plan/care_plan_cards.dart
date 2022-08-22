@@ -63,9 +63,13 @@ class CarePlanCards extends StatelessWidget {
                 style: const TextStyle(color: Colors.black),
               ),
             ),
-            const SizedBox(
-              height: 170.0,
-              child: Placeholder(),
+            SizedBox(
+              height: 80, //170.0,
+              child: Image(
+                //Placeholder(),
+                image: AssetImage(imageReferenceText),
+                //fit: BoxFit.cover,
+              ),
             ),
             ListTile(
               title: Text(
