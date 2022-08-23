@@ -15,6 +15,7 @@
 // This provides the sign in process
 
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'account_screen.dart';
 import 'reset_password.dart';
@@ -140,11 +141,21 @@ class _SignInState extends State<SignIn> {
               },
             ),
             TextButton(
-              child: const Text(
-                'Need to Create An Account? Sign Up.',
-                style: TextStyle(
-                  decoration: TextDecoration.underline,
-                  color: Color(0xFF1F201D),
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(text: "Need to Create An Account? "),
+                    TextSpan(
+                      text: "Sign Up",
+                      style:
+                          const TextStyle(decoration: TextDecoration.underline),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          Navigator.pushNamed(context, "signUp");
+                        },
+                    ),
+                    const TextSpan(text: ".")
+                  ],
                 ),
               ),
               onPressed: () {
@@ -153,18 +164,6 @@ class _SignInState extends State<SignIn> {
             ),
           ],
         );
-
-        /* return TextButton(
-          child: const Text('Retrieve account or password?'),
-          onPressed: () {
-            Navigator.push<void>(
-              context,
-              MaterialPageRoute<void>(
-                builder: (context) => const ResetPassword(),
-              ),
-            );
-          },
-        ); */
       },
     );
   }

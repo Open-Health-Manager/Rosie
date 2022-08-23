@@ -298,17 +298,22 @@ class _SignUpState extends State<SignUp> {
                 Navigator.of(context).pop();
               },
             ),
-            TextButton(
-              child: const Text(
-                'Already Have An Account? Sign In.',
-                style: TextStyle(
-                  decoration: TextDecoration.underline,
-                  color: Color(0xFF1F201D),
-                ),
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: "Already Have An Account? "),
+                  TextSpan(
+                    text: "Sign In",
+                    style:
+                        const TextStyle(decoration: TextDecoration.underline),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.pushNamed(context, "signIn");
+                      },
+                  ),
+                  const TextSpan(text: ".")
+                ],
               ),
-              onPressed: () {
-                Navigator.pushNamed(context, "signIn");
-              },
             ),
           ],
         );
