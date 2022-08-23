@@ -145,7 +145,10 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
                     primary: Color(0xFFFA99AF),
                   ),
                   onPressed: submit,
-                  child: Text(widget.submitLabel));
+                  child: Text(
+                    widget.submitLabel,
+                    style: TextStyle(color: Color(0xFF1F201D)),
+                  ));
               String? error;
               if (snapshot.hasError) {
                 error = (snapshot.error ?? "Unknown error").toString();
