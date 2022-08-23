@@ -34,13 +34,19 @@ class _SignInState extends State<SignIn> {
   // new piece of code - create button bar, may need to add the underscore and call it from the build function as done in the blood_pressure_help
   Widget _createButtonBar(BuildContext context) {
     // Go back button is always the same
-    final goBack = OutlinedButton(
-      child: const Text("Back"),
+    final goBack = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        primary: Color(0xFFFA99AF),
+      ),
+      child: const Text(
+        "Back",
+        style: TextStyle(color: Color(0xFF1F201D)),
+      ),
       onPressed: () {
         Navigator.of(context).pop();
       },
     );
-    return Align(alignment: AlignmentDirectional.centerEnd, child: goBack);
+    return Align(alignment: AlignmentDirectional.center, child: goBack);
   }
 
   @override
@@ -112,19 +118,28 @@ class _SignInState extends State<SignIn> {
       afterFormBuilder: (BuildContext context) {
         // A link to retrieve the password
         return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              TextButton(
-                child: const Text('Retrieve account or password?'),
-                onPressed: () {
-                  Navigator.push<void>(
-                      context,
-                      MaterialPageRoute<void>(
-                          builder: (context) => const ResetPassword()));
-                },
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            _createButtonBar(context),
+            TextButton(
+              child: const Text(
+                'Retrieve account or password?',
+                style: TextStyle(
+                  decoration: TextDecoration.underline,
+                  color: Color(0xFF4C4D4A),
+                ),
               ),
-              _createButtonBar(context)
-            ]);
+              onPressed: () {
+                Navigator.push<void>(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const ResetPassword(),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
 
         /* return TextButton(
           child: const Text('Retrieve account or password?'),
