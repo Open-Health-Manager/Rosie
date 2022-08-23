@@ -283,17 +283,34 @@ class _SignUpState extends State<SignUp> {
         }
       },
       afterFormBuilder: (BuildContext context) {
-        return ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFEF2F5),
-          ),
-          child: const Text(
-            "Back",
-            style: TextStyle(color: Color(0xFF1F201D)),
-          ),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFEF2F5),
+              ),
+              child: const Text(
+                "Back",
+                style: TextStyle(color: Color(0xFF1F201D)),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Already Have An Account? Sign In.',
+                style: TextStyle(
+                  decoration: TextDecoration.underline,
+                  color: Color(0xFF1F201D),
+                ),
+              ),
+              onPressed: () {
+                Navigator.pushNamed(context, "signIn");
+              },
+            ),
+          ],
         );
       },
     );
