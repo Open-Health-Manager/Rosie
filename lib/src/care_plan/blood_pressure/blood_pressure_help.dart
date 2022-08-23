@@ -16,7 +16,8 @@ import 'package:flutter/material.dart';
 import '../../rosie_theme.dart';
 
 class BloodPressureHelp extends StatelessWidget {
-  const BloodPressureHelp({Key? key, required this.emergency}) : super(key: key);
+  const BloodPressureHelp({Key? key, required this.emergency})
+      : super(key: key);
 
   final bool emergency;
 
@@ -25,45 +26,66 @@ class BloodPressureHelp extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Text(emergency ? "How can I help?" : "Let's get some help!", style: RosieTheme.font(fontSize: 24)),
+        Text(
+          emergency
+              ? "Let's get some help!"
+              : "Here are some helpful options to check your blood pressure:",
+          style: RosieTheme.font(fontSize: 18),
+        ),
+        const SizedBox(height: 15),
         ..._createActionButtons(context),
         const SizedBox(height: 15),
-        _createButtonBar(context)
-      ]
+        _createButtonBar(context),
+      ],
     );
   }
 
   List<Widget> _createActionButtons(BuildContext context) {
     if (emergency) {
       return <Widget>[
-        ElevatedButton(child: const Text("Find an emergency room near you"), onPressed: () { }),
-        ElevatedButton(child: const Text("Call your emegency contact"), onPressed: () { }),
-        ElevatedButton(child: const Text("Call 911"), onPressed: () { })
+        ElevatedButton(
+          child: const Text("Find an emergency room"),
+          onPressed: () {},
+        ),
+        const SizedBox(height: 15),
+        ElevatedButton(
+          child: const Text("Call your emegency contact"),
+          onPressed: () {},
+        ),
+        const SizedBox(height: 15),
+        ElevatedButton(child: const Text("Call 911"), onPressed: () {}),
       ];
     } else {
-      final textStyle = RosieTheme.font(fontSize: 14);
       return <Widget>[
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(child: Text("Show me clinics nearby", style: textStyle)),
-            ElevatedButton(child: const Text("Clinics"), onPressed: () { })
-          ]
+            ElevatedButton(
+              child: const Text("Call a family member"),
+              onPressed: () {},
+            )
+          ],
         ),
+        const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(child: Text("Call family", style: textStyle)),
-            ElevatedButton(child: const Text("Call Family"), onPressed: () { })
-          ]
+            ElevatedButton(
+              child: const Text("Find a clinic nearby"),
+              onPressed: () {},
+            ),
+          ],
         ),
+        const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(child: Text("Learn how to check it", style: textStyle)),
-            ElevatedButton(child: const Text("Check It"), onPressed: () { })
-          ]
-        )
+            ElevatedButton(
+              child: const Text("Learn how to check it yourself"),
+              onPressed: () {},
+            ),
+          ],
+        ),
       ];
     }
   }
@@ -72,24 +94,24 @@ class BloodPressureHelp extends StatelessWidget {
     // Go back button is always the same
     final goBack = OutlinedButton(
       child: const Text("Go Back"),
-      onPressed: () { Navigator.of(context).pop(); },
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
     );
     if (emergency) {
       return Wrap(
         crossAxisAlignment: WrapCrossAlignment.end,
+        runSpacing: 10.0, // gap between lines
         children: <Widget>[
           OutlinedButton(
             child: const Text("Why is this an emergency?"),
-            onPressed: () { }
+            onPressed: () {},
           ),
-          goBack
-        ]
+          goBack,
+        ],
       );
     } else {
-      return Align(
-        alignment: AlignmentDirectional.centerEnd,
-        child: goBack
-      );
+      return Align(alignment: AlignmentDirectional.center, child: goBack);
     }
   }
 }

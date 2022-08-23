@@ -20,7 +20,6 @@ import 'package:provider/provider.dart';
 import 'comic.dart';
 import 'comic_page.dart';
 import 'onboarding_theme.dart';
-import 'signature_page.dart';
 import '../account/sign_in.dart';
 import '../account/sign_up.dart';
 import '../app_state.dart';
@@ -28,7 +27,7 @@ import '../app_state.dart';
 /// The onboarding UI. This provides the root of the system for navigating
 /// through the UI.
 class Onboarding extends StatefulWidget {
-  const Onboarding({Key? key}): super(key: key);
+  const Onboarding({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _OnboardingState();
@@ -47,34 +46,38 @@ class _OnboardingState extends State<Onboarding> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<OnboardingComic>(builder: (BuildContext context, AsyncSnapshot<OnboardingComic> snapshot) {
-      if (snapshot.connectionState == ConnectionState.done) {
-        final comic = snapshot.data;
-        if (comic != null) {
-          // Build the actual comic, we have the data we need
-          return _buildComic(context, comic);
+    return FutureBuilder<OnboardingComic>(
+      builder: (BuildContext context, AsyncSnapshot<OnboardingComic> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          final comic = snapshot.data;
+          if (comic != null) {
+            // Build the actual comic, we have the data we need
+            return _buildComic(context, comic);
+          } else {
+            // Build an error page
+            return Scaffold(
+              body: Center(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      const TextSpan(text: "Unable to load comic data:\n"),
+                      _buildErrorMessage(context, snapshot.error),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
         } else {
-          // Build an error page
-          return Scaffold(
+          return const Scaffold(
             body: Center(
-              child: Text.rich(
-                TextSpan(children: [
-                  const TextSpan(text: "Unable to load comic data:\n"),
-                  _buildErrorMessage(context, snapshot.error)
-                ])
-              )
-            )
+              child: Text("Loading data use agreement..."),
+            ),
           );
         }
-      } else {
-        return const Scaffold(
-          body: Center(child:
-            Text("Loading data use agreement...")
-          )
-        );
-      }
-    },
-    future: _comicFuture);
+      },
+      future: _comicFuture,
+    );
   }
 
   TextSpan _buildErrorMessage(BuildContext context, Object? error) {
@@ -83,10 +86,18 @@ class _OnboardingState extends State<Onboarding> {
     }
     final stackTrace = (error is Error) ? error.stackTrace : null;
     if (stackTrace != null) {
-      return TextSpan(children: [
-        TextSpan(text: '$error\n'),
-        TextSpan(text: stackTrace.toString(), style: const TextStyle(fontFamily: "Courier", fontFamilyFallback: ["monospace"]))
-      ]);
+      return TextSpan(
+        children: [
+          TextSpan(text: '$error\n'),
+          TextSpan(
+            text: stackTrace.toString(),
+            style: const TextStyle(
+              fontFamily: "Courier",
+              fontFamilyFallback: ["monospace"],
+            ),
+          ),
+        ],
+      );
     } else {
       return TextSpan(text: error.toString());
     }
@@ -97,13 +108,16 @@ class _OnboardingState extends State<Onboarding> {
     return Theme(
       data: createOnboardingTheme(),
       // FIXME: Arrow directions should depend on language direction
-      child: Shortcuts(shortcuts: {
-          LogicalKeySet(LogicalKeyboardKey.arrowLeft): const PreviousPageIntent(),
-          LogicalKeySet(LogicalKeyboardKey.arrowRight): const NextPageIntent()
+      child: Shortcuts(
+        shortcuts: {
+          LogicalKeySet(LogicalKeyboardKey.arrowLeft):
+              const PreviousPageIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowRight): const NextPageIntent(),
         },
-        child: Actions(actions: {
+        child: Actions(
+          actions: {
             PreviousPageIntent: _PreviousPageAction(),
-            NextPageIntent: _NextPageAction(comic.pages.length)
+            NextPageIntent: _NextPageAction(comic.pages.length),
           },
           child: Navigator(
             initialRoute: "page",
@@ -118,15 +132,17 @@ class _OnboardingState extends State<Onboarding> {
                   } else if (settings.arguments is int) {
                     page = settings.arguments as int;
                   } else {
-                    throw Exception("Invalid page argument ${settings.arguments}");
+                    throw Exception(
+                        "Invalid page argument ${settings.arguments}");
                   }
                   // For comic pages, we want to build a special transition.
-                  return ComicPageRoute(builder: (context) => ComicPage.fromPage(comic.pages[page]), settings: settings);
-                case "signature":
-                  builder = (BuildContext context) => SignaturePage(dataUseAgreement: comic.dataUseAgreement);
-                  break;
+                  return ComicPageRoute(
+                    builder: (context) => ComicPage.fromPage(comic.pages[page]),
+                    settings: settings,
+                  );
                 case "signUp":
-                  builder = (BuildContext context) => SignUp(dataUseAgreement: comic.dataUseAgreement);
+                  builder = (BuildContext context) =>
+                      SignUp(dataUseAgreement: comic.dataUseAgreement);
                   break;
                 case "signIn":
                   // When accessed via this route, this is not the initial login, so flag that
@@ -137,19 +153,22 @@ class _OnboardingState extends State<Onboarding> {
                   throw Exception("Unknown route ${settings.name}");
               }
               // Everything else uses the platform default
-              return MaterialPageRoute<void>(builder: builder, settings: settings);
+              return MaterialPageRoute<void>(
+                builder: builder,
+                settings: settings,
+              );
             },
-
-          )
-        )
-      )
+          ),
+        ),
+      ),
     );
   }
 }
 
 /// Represents a route to a specific page within the comic.
 class ComicPageRoute<T> extends PageRoute<T> {
-  ComicPageRoute({required this.builder, RouteSettings? settings}) : super(settings: settings);
+  ComicPageRoute({required this.builder, RouteSettings? settings})
+      : super(settings: settings);
 
   final WidgetBuilder builder;
 
@@ -164,7 +183,8 @@ class ComicPageRoute<T> extends PageRoute<T> {
   String? get barrierLabel => null;
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
     return builder(context);
   }
 
@@ -177,16 +197,23 @@ class ComicPageRoute<T> extends PageRoute<T> {
   Duration get transitionDuration => const Duration(milliseconds: 300);
 
   @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation, Widget child) {
     if (_flipPage) {
-      return ComicPageFlipTransition(animation: animation, secondaryAnimation: secondaryAnimation, child: child);
+      return ComicPageFlipTransition(
+        animation: animation,
+        secondaryAnimation: secondaryAnimation,
+        child: child,
+      );
     } else {
       final PageTransitionsTheme theme = Theme.of(context).pageTransitionsTheme;
-      return theme.buildTransitions<T>(this, context, animation, secondaryAnimation, child);
+      return theme.buildTransitions<T>(
+          this, context, animation, secondaryAnimation, child);
     }
   }
 
-  @override void didChangeNext(Route? nextRoute) {
+  @override
+  void didChangeNext(Route? nextRoute) {
     // Flip the page when the page is null (this is now the top) or the next
     // route is also a comic page.
     _flipPage = nextRoute == null || nextRoute is ComicPageRoute;

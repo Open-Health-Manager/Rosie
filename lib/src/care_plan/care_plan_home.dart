@@ -46,26 +46,26 @@ class _CarePlanHomeState extends State<CarePlanHome> {
   @override
   Widget build(BuildContext context) {
     context.watch<PatientData>();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: SingleChildScrollView(
-        child: FutureBuilder<Map<String, dynamic>?>(
-          builder: (context, snapshot) {
-            final List<CarePlanCards> cards = <CarePlanCards>[];
-            switch (snapshot.connectionState) {
-              case ConnectionState.none:
-                cards.add(
-                  CarePlanCards(
-                    title: 'Blood Pressure',
-                    heading: 'Blood Pressure Screening',
-                    subheading: 'Annual',
-                    screeningText: 'Based on your ',
-                    patientInfoText: 'current info ',
-                    patientInfoOnTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PatientInfo()),
+    return Scaffold(
+      appBar: AppBar(title: const Text("Care Plan")),
+      body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: FutureBuilder<Map<String, dynamic>?>(
+              builder: (context, snapshot) {
+                final List<CarePlanCards> cards = <CarePlanCards>[];
+                switch (snapshot.connectionState) {
+                  case ConnectionState.none:
+                    cards.add(CarePlanCards(
+                      title: 'Blood Pressure',
+                      heading: 'Blood Pressure Screening',
+                      subheading: 'Annual',
+                      screeningText: 'Based on your ',
+                      patientInfoText: 'current info ',
+                      patientInfoOnTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const PatientInfo()),
                         );
                         triggerAPICall();
                       },
@@ -76,10 +76,10 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                       imageReferenceText:
                           'assets/care_plan/hypertension-in-adults-screening.png',
                     ));
-                  break;
-              case ConnectionState.waiting:
-                // When loading, show that
-                /*cards.add(const CarePlanCards(
+                    break;
+                  case ConnectionState.waiting:
+                    // When loading, show that
+                    /*cards.add(const CarePlanCards(
                   title: 'Calling API',
                   heading: 'Calling API',
                   subheading: '',
@@ -91,27 +91,25 @@ class _CarePlanHomeState extends State<CarePlanHome> {
                   imageReferenceText:
                       'assets/care_plan/lung-cancer-screening.png',
                 ));*/
-                return Row(children: const [
-                  CircularProgressIndicator(),
-                  SizedBox(width: 8),
-                  Flexible(flex: 1, child: Text("Loading..."))
-                ]);
-                // break;
-              case ConnectionState.active:
-              case ConnectionState.done:
-                if (snapshot.data != null) {
-                  _createCards(cards, snapshot.data!);
+                    return Row(children: const [
+                      CircularProgressIndicator(),
+                      SizedBox(width: 8),
+                      Flexible(flex: 1, child: Text("Loading..."))
+                    ]);
+                  // break;
+                  case ConnectionState.active:
+                  case ConnectionState.done:
+                    if (snapshot.data != null) {
+                      _createCards(cards, snapshot.data!);
+                    }
                 }
-            }
-            return Column(children: <Widget>[
-              const SizedBox(height: 16),
-              ...cards,
-              const SizedBox(height: 16)
-            ]);
-          },
-          future: _taskforceAPIFuture
-        )
-      ),
+                return Column(children: <Widget>[
+                  const SizedBox(height: 8),
+                  ...cards,
+                  const SizedBox(height: 16)
+                ]);
+              },
+              future: _taskforceAPIFuture)),
     );
   }
 
@@ -119,43 +117,41 @@ class _CarePlanHomeState extends State<CarePlanHome> {
     for (final rec in data["specificRecommendations"]) {
       if (rec["title"].startsWith("Hypertension in Adults: Screening")) {
         // put hypertension first if present
-        cards.insert(0, CarePlanCards(
-          title: 'Blood Pressure',
-          heading: 'Blood Pressure Screening',
-          subheading: 'Annual',
-          screeningText: 'Based on your ',
-          patientInfoText: 'current info ',
-          patientInfoOnTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      const PatientInfo()),
-            );
-            setState(() => triggerAPICall());
-          },
-          recommendationText:
-              'you should get your blood pressure checked at least once a year.',
-          dataServicesHeading: 'US Preventative Services',
-          dataServicesSubHeading:
-              'Preventative Task Force',
-          imageReferenceText:
-              'assets/care_plan/hypertension-in-adults-screening.png',
-        ));
+        cards.insert(
+            0,
+            CarePlanCards(
+              title: 'Blood Pressure',
+              heading: 'Blood Pressure Screening',
+              subheading: 'Annual',
+              screeningText: 'Based on your ',
+              patientInfoText: 'current info ',
+              patientInfoOnTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PatientInfo()),
+                );
+                setState(() => triggerAPICall());
+              },
+              recommendationText:
+                  'you should get your blood pressure checked at least once a year.',
+              dataServicesHeading: 'US Preventative Services',
+              dataServicesSubHeading: 'Preventative Task Force',
+              imageReferenceText:
+                  'assets/care_plan/hypertension-in-adults-screening.png',
+            ));
       } else {
         cards.add(CarePlanCards(
           title: rec["title"] ?? "",
           heading: rec["title"] ?? "",
           subheading: '',
-          screeningText:
-              (rec["text"] ?? "").replaceAll("<br>", ""),
+          screeningText: (rec["text"] ?? "").replaceAll("<br>", ""),
           patientInfoText: "",
           patientInfoOnTap: null,
           recommendationText: "",
           dataServicesHeading: 'US Preventative Services',
           dataServicesSubHeading: 'Preventative Task Force',
           imageReferenceText:
-              'assets/care_plan/lung-cancer-screening.png',
+              'assets/care_plan/hypertension-in-adults-screening.png',
         ));
       }
     }

@@ -55,23 +55,31 @@ class CarePlanCards extends StatelessWidget {
             ListTile(
               title: Text(
                 heading,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                     fontWeight: FontWeight.bold, color: Colors.black),
               ),
               subtitle: Text(
                 subheading,
+                textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.black),
               ),
             ),
-            const SizedBox(
-              height: 170.0,
-              child: Placeholder(),
+            SizedBox(
+              height: 80, //170.0,
+              child: Image(
+                //Placeholder(),
+                image: AssetImage(imageReferenceText),
+                //fit: BoxFit.cover,
+              ),
             ),
             ListTile(
               title: Text(
                 dataServicesHeading,
                 style: const TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.bold),
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               subtitle: Text(
                 dataServicesSubHeading,
@@ -98,36 +106,31 @@ class CarePlanCards extends StatelessWidget {
               ),
             ),
             ButtonBar(
-              alignment: MainAxisAlignment.start,
+              alignment: MainAxisAlignment.center,
               children: [
-                ElevatedButton(
+                OutlinedButton(
                   onPressed: () {/* ... */},
-                  style: ElevatedButton.styleFrom(
-                      primary: Colors.white, shape: const StadiumBorder()),
-                  child: const Text('Remind Later',
-                      style: TextStyle(color: Color(0xFF6750A4))),
+                  child: const Text(
+                    'Remind Later',
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                          Scaffold(
-                            appBar: AppBar(),
-                            body: Container(
-                              decoration: createRosieScreenBoxDecoration(),
-                              child: const SafeArea(child: BloodPressureVisualizationScreen())
-                            )
-                          )
-                      )
-                    );
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Scaffold(
+                                appBar: AppBar(title: Text(title)),
+                                body: Container(
+                                    decoration:
+                                        createRosieScreenBoxDecoration(),
+                                    child: const SafeArea(
+                                        child:
+                                            BloodPressureVisualizationScreen())))));
                   },
-                  style: ElevatedButton.styleFrom(
-                      primary: const Color(0xFF6750A4),
-                      shape: const StadiumBorder()),
-                  child: Text('Update $title',
-                      style: const TextStyle(color: Colors.white)),
+                  child: Text(
+                      //'Update $title',
+                      title == 'Blood Pressure' ? 'Update $title' : 'Update'),
                 )
               ],
             )

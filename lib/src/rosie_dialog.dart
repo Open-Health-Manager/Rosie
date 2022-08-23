@@ -18,9 +18,14 @@ import 'rosie_theme.dart';
 
 /// This provides a Rosie dialog - this is almost identical to a SimpleDialog but with a few style changes.
 class RosieDialog extends StatelessWidget {
-  const RosieDialog({Key? key, this.title, this.children, this.expression, this.rosieImage}) :
-    assert(expression == null || rosieImage == null),
-    super(key: key);
+  const RosieDialog({
+    Key? key,
+    this.title,
+    this.children,
+    this.expression,
+    this.rosieImage,
+  })  : assert(expression == null || rosieImage == null),
+        super(key: key);
 
   final RosieExpression? expression;
   final Widget? rosieImage;
@@ -29,24 +34,25 @@ class RosieDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Widget rosie = expression?.build() ?? (rosieImage ?? RosieExpression.neutral.build());
+    final Widget rosie =
+        expression?.build() ?? (rosieImage ?? RosieExpression.neutral.build());
     // Children are placed in a column
     final List<Widget> content = [
       if (title != null) Text(title!, style: RosieTheme.font(fontSize: 24)),
-      if (children != null) Flexible(
-        child: SingleChildScrollView(
-          child: ListBody(children: children!)
-        )
-      )
+      if (children != null)
+        Flexible(
+          child: SingleChildScrollView(child: ListBody(children: children!)),
+        ),
     ];
     final Widget body = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: content);
+      children: content,
+    );
     return Dialog(
       alignment: Alignment.center,
       backgroundColor: Colors.transparent,
-      child: RosieTextBalloon(body: body, rosieImage: rosie)
+      child: RosieTextBalloon(body: body, rosieImage: rosie),
     );
   }
 }

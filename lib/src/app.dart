@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
 import 'app_config.dart';
@@ -28,18 +27,24 @@ import 'rosie_theme.dart';
 
 const defaultServerUrl = "http://localhost:8080/";
 
-OpenHealthManager _createDefaultHealthManager() => OpenHealthManager.forServerURL(Uri.parse(defaultServerUrl));
+final log = Logger('Rosie');
+
+OpenHealthManager _createDefaultHealthManager() =>
+    OpenHealthManager.forServerURL(Uri.parse(defaultServerUrl));
 
 OpenHealthManager _createOpenHealthManager(AppConfig config) {
   try {
     final healthManager = OpenHealthManager.fromConfig(config.config);
-    log("Successfully loaded configuration, end point is ${healthManager.fhirBase}");
+    log.config(
+        "Successfully loaded configuration, end point is ${healthManager.fhirBase}");
     return healthManager;
   } catch (error, stackTrace) {
-    log("Invalid JSON configuration, defaulting to $defaultFhirBase", error: error, stackTrace: stackTrace, level: 900);
+    log.severe("Invalid JSON configuration, defaulting to $defaultFhirBase",
+        error, stackTrace);
   }
   return _createDefaultHealthManager();
 }
+
 class RosieApp extends StatefulWidget {
   const RosieApp({Key? key}) : super(key: key);
 
@@ -50,8 +55,13 @@ class RosieApp extends StatefulWidget {
 class _RosieAppState extends State<RosieApp> {
   /// Application configuration data
   AppConfig? _config;
+
+  /// Application state.
+  AppState? _appState;
+
   /// The health manager - provides API access.
   OpenHealthManager? _healthManager;
+
   /// Patient data manager.
   PatientData? _patientData;
 
@@ -59,14 +69,38 @@ class _RosieAppState extends State<RosieApp> {
   initState() {
     super.initState();
     // Start loading our configuration.
-    AppConfig.fromAssetBundle(rootBundle).then((config) {
-      setState(() {
-        _config = config;
-        // Next attempt to create the rest
-        final manager = _createOpenHealthManager(config);
-        _healthManager = manager;
-        _patientData = PatientData(manager);
-      });
+    _loadApp().catchError((error) {
+      // Not much can be done with errors here other than to log them
+      log.severe("Error while initializing app - things may not work properly!",
+          error);
+    });
+  }
+
+  Future<void> _loadApp() async {
+    final appState = AppState();
+    final config = await AppConfig.fromAssetBundle(rootBundle);
+    final manager = _createOpenHealthManager(config);
+    // With the config loaded, attempt to restore the session
+    manager.authData =
+        await AuthData.readFromSecureStorage(appState.secureStorage);
+    // Also add a listener so that any future changes to AuthData will be stored
+    manager.addListener(() {
+      // For now, always assume the auth data has changed, and attempt to save it
+      final authData = manager.authData;
+      if (authData == null) {
+        // Delete the auth key. Note that this is async.
+        appState.secureStorage.delete(key: "auth");
+      } else {
+        // Otherwise, attempt to write the new one
+        authData.writeToSecureStorage(appState.secureStorage);
+      }
+    });
+    // Once that's done, set our local values.
+    setState(() {
+      _config = config;
+      _appState = appState;
+      _healthManager = manager;
+      _patientData = PatientData(manager);
     });
   }
 
@@ -78,8 +112,8 @@ class _RosieAppState extends State<RosieApp> {
     if (manager != null && patientData != null) {
       // Otherwise, we have what we need to create providers, which need to be above the MaterialApp to ensure they're
       // accessible on all routes.
-      return ChangeNotifierProvider(
-        create: (context) => AppState(),
+      return ChangeNotifierProvider.value(
+        value: _appState,
         child: Provider.value(
           value: _config,
           child: ChangeNotifierProvider<OpenHealthManager>.value(
@@ -88,13 +122,14 @@ class _RosieAppState extends State<RosieApp> {
               value: patientData,
               child: MaterialApp(
                 title: 'Rosie',
+                debugShowCheckedModeBanner: false,
                 theme: createRosieTheme(),
                 darkTheme: createRosieTheme(brightness: Brightness.dark),
-                home: const _RosieHome()
-              )
-            )
-          )
-        )
+                home: const _RosieHome(),
+              ),
+            ),
+          ),
+        ),
       );
     } else {
       // While still loading our config, present a simplified loading screen
@@ -102,8 +137,8 @@ class _RosieAppState extends State<RosieApp> {
         color: Colors.white,
         child: const Directionality(
           textDirection: TextDirection.ltr,
-          child: Center(child: Text("Rosie"))
-        )
+          child: Center(child: Text("Rosie")),
+        ),
       );
     }
   }

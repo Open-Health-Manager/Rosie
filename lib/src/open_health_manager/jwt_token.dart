@@ -91,12 +91,43 @@ class Token {
     return Token(header, payload);
   }
 
+  /// Gets a field that encodes a JWT NumericTime as a [DateTime].
+  DateTime? getDateTime(String field) {
+    var value = payload[field];
+    if (value is num) {
+      // it sounds like floating point is allowed by the spec?
+      return DateTime.fromMillisecondsSinceEpoch((value * 1000).toInt(), isUtc: true);
+    } else {
+      return null;
+    }
+  }
+
+  /// Determines when the JWT expires, assuming a valid "exp" claim exists. If the payload contains an invalid "exp" or
+  /// no "exp" at all, this returns null.
+  DateTime? get expirationTime => getDateTime("exp");
+
+  DateTime? get notBefore => getDateTime("nbf");
+
+  bool isValidTime([DateTime? time]) {
+    time ??= DateTime.now();
+    final before = notBefore;
+    if (before != null && before.isAfter(time)) {
+      return false;
+    }
+    final after = expirationTime;
+    if (after != null && after.isBefore(time)) {
+      return false;
+    }
+    // Otherwise, assume it's valid - note that this means JWTs with no exp or nbf claims are always valid
+    return true;
+  }
+
   /// Encodes the JWT into a String representation. As the generated JSON *may be different* from the source JSON (and
   /// the intended method for encoding the JSON), parsing and regenerating a token *may not create* the same text.
   ///
   /// If given an HMAC to sign, this will automatically use that on the generated header/payload text.
   ///
-  /// Note that this does **not** modify the header! If given an invalid Hmac based on the JWT header within the token,
+  /// Note that this does **not** modify the header! If given an invalid [Hmac] based on the JWT header within the token,
   /// this will happily encode a junk token.
   String encoded([Hmac? hmac]) {
     final body = '${base64UrlEncodeString(json.encode(header))}.${base64UrlEncodeString(json.encode(payload))}';
@@ -108,7 +139,7 @@ class Token {
     }
   }
 
-  /// Returns the string representation of the JWT.
+  /// Returns a string representation of the JWT.
   @override
   String toString() {
     return '[Header: $header, Payload: $payload]';

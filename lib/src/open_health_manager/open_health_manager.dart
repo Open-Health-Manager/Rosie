@@ -13,13 +13,17 @@
 // limitations under the License.
 
 import 'dart:convert';
-import 'dart:developer';
-import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:fhir/r4.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 import '../../data_use_agreement/data_use_agreement.dart';
 import 'jwt_token.dart' as jwt;
 import 'transaction_manager.dart';
+
+/// Logger for open_health_manager messages
+final _log = Logger('rosie:open_health_manager');
 
 class InternalException implements Exception {
   const InternalException(this.message);
@@ -33,12 +37,51 @@ class InternalException implements Exception {
 
 /// Indicates the server raised an error.
 class ServerErrorException implements Exception {
-  const ServerErrorException(this.statusCode, this.reasonPhrase, this.message);
-  ServerErrorException.fromResponse(http.Response response, String message) : this(response.statusCode, response.reasonPhrase, message);
+  const ServerErrorException(
+    this.statusCode,
+    this.reasonPhrase,
+    this.message,
+    this.responseBody,
+  );
+
+  /// Creates an exception from the given error. This will attempt to
+  ServerErrorException.fromResponse(
+    http.Response response,
+    String message,
+  ) : this(
+          response.statusCode,
+          response.reasonPhrase,
+          message,
+          response.body,
+        );
 
   final String message;
   final int statusCode;
   final String? reasonPhrase;
+  final String? responseBody;
+
+  /// Attempts to decode the response body as a JSON object. If there is no
+  /// response body, this returns `null`. This uses [json.decode] and may raise
+  /// a [FormatException].
+  dynamic get responseObject {
+    // Do not ask me why Dart requires this to be sure the _final_ property won't change
+    final body = responseBody;
+    return body == null ? null : json.decode(body);
+  }
+
+  static Future<ServerErrorException> fromStreamedResponse(
+    http.StreamedResponse streamedResponse,
+    String message,
+  ) async {
+    try {
+      final response = await http.Response.fromStream(streamedResponse);
+      return ServerErrorException.fromResponse(response, message);
+    } on http.ClientException catch (_) {
+      // Ignore this, as it likely happened when reading the response body
+      return ServerErrorException(streamedResponse.statusCode,
+          streamedResponse.reasonPhrase, message, null);
+    }
+  }
 
   @override
   String toString() {
@@ -82,8 +125,9 @@ class InvalidResourceException implements Exception {
 /// Thrown when an attempt is made to execute a method that requires the authentication state to be different than what
 /// it currently is.
 class AuthenticationStateError extends Error {
-  AuthenticationStateError(this.message, {this.loginRequired=true}) : super();
+  AuthenticationStateError(this.message, {this.loginRequired = true}) : super();
   final String message;
+
   /// Indicates whether the error was caused by the login missing when required (true), or the login existing when not
   /// required (false). For example, creating a new account can only be done when logged out.
   final bool loginRequired;
@@ -114,9 +158,11 @@ String _sanitizeBearerToken(String token) {
 
 /// Authentication information. This contains the JWT token used for authenticating requests with the server.
 class AuthData {
-  AuthData(this.id, this.username, String token) : bearerToken = _sanitizeBearerToken(token);
+  AuthData(this.id, this.username, String token)
+      : bearerToken = _sanitizeBearerToken(token);
   final Id id;
   final String username;
+
   /// The bearer token. This always starts with the text "Bearer ".
   final String bearerToken;
 
@@ -127,13 +173,60 @@ class AuthData {
     return MessageHeader(
       // TODO: Id
       eventUri: FhirUri("urn:mitre:healthmanager:pdr"),
-      source: MessageHeaderSource(endpoint: FhirUrl(endpoint ?? "urn:mitre:rosie")),
+      source:
+          MessageHeaderSource(endpoint: FhirUrl(endpoint ?? "urn:mitre:rosie")),
       extension_: <FhirExtension>[
         FhirExtension(
-          url: FhirUri("https://github.com/Open-Health-Manager/patient-data-receipt-ig/StructureDefinition/AccountExtension"),
-          valueString: username)
-      ]
+            url: FhirUri(
+                "https://github.com/Open-Health-Manager/patient-data-receipt-ig/StructureDefinition/AccountExtension"),
+            valueString: username),
+      ],
     );
+  }
+
+  Future<void> writeToSecureStorage(FlutterSecureStorage storage,
+      [String key = "auth"]) {
+    return storage.write(key: "auth", value: toJson());
+  }
+
+  /// Returns a string containing a JSON representation of this auth data.
+  String toJson() {
+    return json.encode(<String, String>{
+      "id": id.toString(),
+      "username": username,
+      "token": token
+    });
+  }
+
+  factory AuthData.fromJson(json) {
+    if (json is Map<String, dynamic>) {
+      final id = json["id"];
+      final username = json["username"];
+      final token = json["token"];
+      if (id is String && username is String && token is String) {
+        return AuthData(Id(id), username, token);
+      } else {
+        throw const FormatException("Invalid JSON: missing required key");
+      }
+    } else {
+      throw const FormatException("Invalid JSON: not a JSON object");
+    }
+  }
+
+  static Future<AuthData?> readFromSecureStorage(FlutterSecureStorage storage,
+      [String key = "auth"]) async {
+    final jsonData = await storage.read(key: key);
+    if (jsonData == null) {
+      return null;
+    }
+    // Otherwise, try and parse it
+    try {
+      return AuthData.fromJson(json.decode(jsonData));
+    } on FormatException catch (error) {
+      // Handle these by returning null
+      _log.config("Unable to decode stored authentication data.", error);
+      return null;
+    }
   }
 }
 
@@ -141,13 +234,18 @@ class AuthData {
 /// This also holds on to the authentication information.
 class OpenHealthManager with ChangeNotifier {
   /// Create a new OpenHealthManager instance with the given configuration options.
-  OpenHealthManager({required this.serverUrl, required this.fhirBase, http.Client? client}) :
-    client = client ?? http.Client();
+  OpenHealthManager({
+    required this.serverUrl,
+    required this.fhirBase,
+    http.Client? client,
+  }) : client = client ?? http.Client();
 
   /// Creates the OpenHealthManager for a single server.
-  OpenHealthManager.forServerURL(this.serverUrl, {http.Client? client}) :
-    fhirBase = serverUrl.resolve('fhir/'),
-    client = client ?? http.Client();
+  OpenHealthManager.forServerURL(
+    this.serverUrl, {
+    http.Client? client,
+  })  : fhirBase = serverUrl.resolve('fhir/'),
+        client = client ?? http.Client();
 
   /// The base URI for the backend server.
   final Uri serverUrl;
@@ -190,22 +288,26 @@ class OpenHealthManager with ChangeNotifier {
       final Uri serverUrl;
       try {
         serverUrl = Uri.parse(ohmConfig);
-      } on FormatException catch(_) {
-        throw InvalidConfigError('Could not parse URL "$ohmConfig" as a valid URI');
+      } on FormatException catch (_) {
+        throw InvalidConfigError(
+            'Could not parse URL "$ohmConfig" as a valid URI');
       }
       return OpenHealthManager.forServerURL(serverUrl);
     } else {
       // In the future this may also accept a map of more specific values
-      throw InvalidConfigError('Invalid value for key "openHealthManager": $ohmConfig');
+      throw InvalidConfigError(
+          'Invalid value for key "openHealthManager": $ohmConfig');
     }
   }
 
   /// Attempts to sign in. Returns `null` if the sign in attempt failed. Raises an exception on communication failure.
   Future<AuthData?> signIn(String email, String password) async {
     if (_authData != null) {
-      throw AuthenticationStateError("Cannot login while currently logged in", loginRequired: false);
+      throw AuthenticationStateError("Cannot login while currently logged in",
+          loginRequired: false);
     }
-    final jsonData = await postJsonObject(serverUrl.resolve("api/authenticate"), <String, dynamic>{
+    final jsonData = await postJsonObject(
+        serverUrl.resolve("api/authenticate"), <String, dynamic>{
       "username": email,
       "password": password,
       // Currently always false, unclear if it matters
@@ -215,9 +317,11 @@ class OpenHealthManager with ChangeNotifier {
     final token = jsonData["id_token"];
     if (token is! String) {
       // Missing or otherwise invalid
-      throw const InvalidResponseException('Missing or invalid "id_token" from server');
+      throw const InvalidResponseException(
+          'Missing or invalid "id_token" from server');
     }
     final auth = AuthData(_getIdFromJWT(token), email, token);
+    // Set authData through the setter so listeners get fired
     authData = auth;
     return auth;
   }
@@ -239,11 +343,13 @@ class OpenHealthManager with ChangeNotifier {
       final parsedToken = jwt.Token.parse(token);
       final id = parsedToken.payload['patient'];
       if (id is! String) {
-        throw const InvalidResponseException('Missing or invalid "patient" in JWT payload');
+        throw const InvalidResponseException(
+            'Missing or invalid "patient" in JWT payload');
       }
       return Id(id);
-    } on FormatException catch(error) {
-      throw InvalidResponseException('Invalid JWT from server: ${error.message}');
+    } on FormatException catch (error) {
+      throw InvalidResponseException(
+          'Invalid JWT from server: ${error.message}');
     }
   }
 
@@ -254,23 +360,25 @@ class OpenHealthManager with ChangeNotifier {
   /// and refuse to continue.
   Future<void> createAccount(
     String email,
-    String password,
-    {
-      required DataUseAgreement dataUseAgreement,
-      required bool duaAccepted,
-      required bool ageAttested,
-      String? firstName,
-      String? lastName
-    }
-  ) async {
+    String password, {
+    required DataUseAgreement dataUseAgreement,
+    required bool duaAccepted,
+    required bool ageAttested,
+    String? firstName,
+    String? lastName,
+  }) async {
     if (_authData != null) {
-      throw AuthenticationStateError("Cannot create an account while currently logged in", loginRequired: false);
+      throw AuthenticationStateError(
+          "Cannot create an account while currently logged in",
+          loginRequired: false);
     }
     if (!duaAccepted) {
-      throw ArgumentError.value(duaAccepted, "duaAccepted", "Use must accept data use agreement");
+      throw ArgumentError.value(
+          duaAccepted, "duaAccepted", "Use must accept data use agreement");
     }
     if (!ageAttested) {
-      throw ArgumentError.value(duaAccepted, "ageAttested", "Use must indicate they are 18 or older");
+      throw ArgumentError.value(
+          duaAccepted, "ageAttested", "Use must indicate they are 18 or older");
     }
     // The way this currently works involves first creating the account and then automatically attempting to log in to
     // the newly created account.
@@ -298,7 +406,8 @@ class OpenHealthManager with ChangeNotifier {
     request.body = json.encode(requestJson);
     final response = await client.send(request);
     if (response.statusCode != 201) {
-      throw ServerErrorException(response.statusCode, response.reasonPhrase, 'Error creating account');
+      throw await ServerErrorException.fromStreamedResponse(
+          response, 'Error creating account');
     }
     // If here, the account was created successfully
   }
@@ -308,13 +417,15 @@ class OpenHealthManager with ChangeNotifier {
   /// A success doesn't necessarily mean an email was sent - attempting to reset accounts that do not exist will also
   /// receive a success response. It just means the server received and handled the request.
   Future<void> requestPasswordReset(String email) async {
-    final request = http.Request('POST', serverUrl.resolve("api/account/reset-password/init"));
+    final request = http.Request(
+        'POST', serverUrl.resolve("api/account/reset-password/init"));
     request.headers['Content-type'] = 'text/plain; charset=UTF-8';
     // JSON body is just the email as a JSON string
     request.body = email;
     final response = await client.send(request);
     if (response.statusCode != 200) {
-      throw ServerErrorException(response.statusCode, response.reasonPhrase, 'Error resetting password');
+      throw await ServerErrorException.fromStreamedResponse(
+          response, 'Error resetting password');
     }
   }
 
@@ -339,16 +450,16 @@ class OpenHealthManager with ChangeNotifier {
       throw AuthenticationStateError("No current session");
     }
     final uri = fhirBase.resolve("Patient/$patientId");
-    log("targetURI: $uri");
     final jsonObject = await getJsonObject(uri);
     return Patient.fromJson(jsonObject);
   }
 
   /// Attempts to query a given resource.
   ///
-  /// This method will raise a [NotAuthenticatedError] if invoked when [isSignedIn] is false. For a list of valid query
+  /// This method will raise a [AuthenticationStateError] if invoked when [isSignedIn] is false. For a list of valid query
   /// parameters, see the [FHIR documentation](https://hl7.org/fhir/R4/search.html).
-  Future<Bundle> queryResource(String name, [Map<String, dynamic>? query]) async {
+  Future<Bundle> queryResource(String name,
+      [Map<String, dynamic>? query]) async {
     final patientId = _authData?.id.toString();
     if (patientId == null) {
       throw AuthenticationStateError("No current session");
@@ -366,38 +477,57 @@ class OpenHealthManager with ChangeNotifier {
   /// Core method for sending HTTP requests. This will add any necessary authentication headers to the request before
   /// sending it. See [http.Client.send] for details about the underlying method used. If an error prevents the request
   /// from being sent, an [http.ClientException] may be raised.
+  ///
+  /// This does not handle error response from the server - in fact, it doesn't even see them, as the Future will
+  /// resolve with the StreamedResponse before the error can be parsed.
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     // If we have a bearer token, set it
     final authData = _authData;
     if (authData != null) {
       request.headers['Authorization'] = authData.bearerToken;
     }
+    _log.finer('Sending request $request');
     return client.send(request);
   }
 
   /// Sends a request, parsing the response as a JSON object and returning that JSON object.
   ///
   /// This wraps [send] and therefore may throw [http.ClientException]. If the response cannot be parsed as JSON, this
-  /// will throw a [FormatException]. IF it can be parsed but does not contain a JSON object, it will throw a
-  /// [InvalidResponseException]. If the server response is an error, this will throw a [ServerErrorException].
+  /// will throw a [FormatException]. If it can be parsed but does not contain a JSON object, it will throw a
+  /// [InvalidResponseException]. If the server response is an error, this will throw a [ServerErrorException]. If the
+  /// server indicates that the session has expired, this will reset [authData] to `null` and presently resolve. In the
+  /// future it may trigger a method to handle logging back in.
   Future<Map<String, dynamic>> sendJsonRequest(http.BaseRequest request) async {
     final streamedResponse = await send(request);
     final response = await http.Response.fromStream(streamedResponse);
+    _log.finer('Received response $response');
     if (response.statusCode >= 200 && response.statusCode < 299) {
       final parsed = json.decode(response.body);
       if (parsed is Map<String, dynamic>) {
         return parsed;
       } else {
-        throw const InvalidResponseException('Expected a JSON object response.');
+        throw const InvalidResponseException(
+            'Expected a JSON object response.');
       }
+    } else if (response.statusCode == 401) {
+      _log.info(
+          'Received 401 Not Authorized response, invalidating session (if set)');
+      // For now, ignore the actual response, just invalidate the token
+      authData = null;
+      throw ServerErrorException.fromResponse(response, 'Session is invalid');
     } else {
-      throw ServerErrorException.fromResponse(response, 'Server returned an error');
+      throw ServerErrorException.fromResponse(
+          response, 'Server returned an error');
     }
   }
 
   /// Send a JSON object and receive a JSON object in response. This wraps [sendJsonRequest] and generates a
   /// [http.Request] containing the given object as the HTTP body.
-  Future<Map<String, dynamic>> sendJsonObject(String method, Uri uri, Map<String, dynamic> object) {
+  Future<Map<String, dynamic>> sendJsonObject(
+    String method,
+    Uri uri,
+    Map<String, dynamic> object,
+  ) {
     final request = http.Request(method, uri);
     request.headers['Content-Type'] = 'application/json; charset=UTF-8';
     request.body = json.encode(object);
@@ -407,7 +537,10 @@ class OpenHealthManager with ChangeNotifier {
   /// Sends a GET query to a specific FHIR resource and retrieve a parsed JSON object.
   ///
   /// This does not attempt to compartmentalize to a given patient.
-  Future<Map<String, dynamic>> getJsonObjectFromResource(String resource, [Map<String, dynamic>? queryParameters]) {
+  Future<Map<String, dynamic>> getJsonObjectFromResource(
+    String resource, [
+    Map<String, dynamic>? queryParameters,
+  ]) {
     Uri uri = fhirBase.resolve(resource);
     if (queryParameters != null) {
       uri = uri.replace(queryParameters: queryParameters);
@@ -428,44 +561,51 @@ class OpenHealthManager with ChangeNotifier {
 
   /// Helper method for POSTing a JSON object to the server and receiving a JSON object as a response. This wraps
   /// [sendJsonRequest] and can throw exceptions it can.
-  Future<Map<String, dynamic>> postJsonObject(Uri url, Map<String, dynamic> object) {
+  Future<Map<String, dynamic>> postJsonObject(
+    Uri url,
+    Map<String, dynamic> object,
+  ) {
     return sendJsonObject('POST', url, object);
   }
 
   /// Helper method for PUTting a JSON object to the server and receiving a JSON object as a response. This wraps
   /// [sendJsonRequest] and can throw exceptions it can.
-  Future<Map<String, dynamic>> putJsonObject(Uri url, Map<String, dynamic> object) {
+  Future<Map<String, dynamic>> putJsonObject(
+    Uri url,
+    Map<String, dynamic> object,
+  ) {
     return sendJsonObject('PUT', url, object);
   }
 
   /// Sends a process message with the given set of resources.
-  Future<Map<String, dynamic>> sendProcessMessage(Iterable<Map<String, dynamic>> resources, {String? fhirVersion, String? endpoint}) {
+  Future<Map<String, dynamic>> sendProcessMessage(
+    Iterable<Map<String, dynamic>> resources, {
+    String? fhirVersion,
+    String? endpoint,
+  }) {
     final authData = _authData;
     if (authData == null) {
-      throw AuthenticationStateError("Cannot post message when not authenticated");
+      throw AuthenticationStateError(
+          "Cannot post message when not authenticated");
     }
     // Build a bundle based on that
     final bundle = <String, dynamic>{
       "resourceType": "Bundle",
       "type": "message",
-      "entry": <Map<String, dynamic>> [
+      "entry": <Map<String, dynamic>>[
         <String, dynamic>{
           "resource": authData.createHeader(endpoint: endpoint).toJson()
         },
         ...resources.map<Map<String, dynamic>>((resource) {
           // Create an individual entry
-          return <String, dynamic>{
-            "resource": resource
-          };
+          return <String, dynamic>{"resource": resource};
         })
       ]
     };
     var uri = fhirBase.resolve("\$process-message");
-    log('Sending process message: ${json.encode(bundle)}', level: 800);
+    _log.fine('Sending process message: ${json.encode(bundle)}');
     if (fhirVersion != null) {
-      uri = uri.replace(queryParameters: {
-        "fhir_version": fhirVersion
-      });
+      uri = uri.replace(queryParameters: {"fhir_version": fhirVersion});
     }
     return postJsonObject(uri, bundle);
   }
@@ -477,7 +617,8 @@ class OpenHealthManager with ChangeNotifier {
   Future<Map<String, dynamic>> postResource(Resource resource) {
     final resourceType = resource.resourceTypeString;
     if (resourceType == null) {
-      throw const InvalidResourceException("Cannot post resources without a type (they are invalid)");
+      throw const InvalidResourceException(
+          "Cannot post resources without a type (they are invalid)");
     }
     return postJsonObjectToResource(resourceType, resource.toJson());
   }
@@ -505,16 +646,23 @@ class OpenHealthManager with ChangeNotifier {
     return putJsonObjectToResourceId(
         resourceType, resourceId, resource.toJson());
   }
+
   /// Helper method for posting a JSON object to a specific FHIR resource on the server, and receiving a JSON object as
   /// a response.
-  Future<Map<String, dynamic>> postJsonObjectToResource(String resource, Map<String, dynamic> object) {
+  Future<Map<String, dynamic>> postJsonObjectToResource(
+    String resource,
+    Map<String, dynamic> object,
+  ) {
     return postJsonObject(fhirBase.resolve(resource), object);
   }
 
   /// Helper method for putting a JSON object to a specific FHIR resource on the server, and receiving a JSON object as
   /// a response.
   Future<Map<String, dynamic>> putJsonObjectToResourceId(
-      String resource, String id, Map<String, dynamic> object) {
+    String resource,
+    String id,
+    Map<String, dynamic> object,
+  ) {
     return putJsonObject(fhirBase.resolve("$resource/$id"), object);
   }
 }
