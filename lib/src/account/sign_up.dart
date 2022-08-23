@@ -301,17 +301,25 @@ class _SignUpState extends State<SignUp> {
             Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(text: "Already Have An Account? "),
+                  const TextSpan(
+                    text: "Already Have An Account? ",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   TextSpan(
                     text: "Sign In",
-                    style:
-                        const TextStyle(decoration: TextDecoration.underline),
+                    style: const TextStyle(
+                      decoration: TextDecoration.underline,
+                      fontWeight: FontWeight.bold,
+                    ),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
                         Navigator.pushNamed(context, "signIn");
                       },
                   ),
-                  const TextSpan(text: ".")
+                  const TextSpan(
+                    text: ".",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  )
                 ],
               ),
             ),

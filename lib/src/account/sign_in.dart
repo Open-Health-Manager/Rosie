@@ -140,27 +140,29 @@ class _SignInState extends State<SignIn> {
                 );
               },
             ),
-            TextButton(
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    const TextSpan(text: "Need to Create An Account? "),
-                    TextSpan(
-                      text: "Sign Up",
-                      style:
-                          const TextStyle(decoration: TextDecoration.underline),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () {
-                          Navigator.pushNamed(context, "signUp");
-                        },
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(
+                      text: "Need to Create An Account? ",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(
+                    text: "Sign Up",
+                    style: const TextStyle(
+                      decoration: TextDecoration.underline,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const TextSpan(text: ".")
-                  ],
-                ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.pushNamed(context, "signUp");
+                      },
+                  ),
+                  const TextSpan(
+                    text: ".",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  )
+                ],
               ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
             ),
           ],
         );
