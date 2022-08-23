@@ -131,16 +131,23 @@ class _SignInState extends State<SignIn> {
                 },
               ),
               Text.rich(TextSpan(children: [
-                const TextSpan(text: "Need to Create An Account? "),
+                const TextSpan(
+                  text: "Need to Create An Account? ",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 TextSpan(
                     text: "Sign Up",
-                    style:
-                        const TextStyle(decoration: TextDecoration.underline),
+                    style: const TextStyle(
+                        decoration: TextDecoration.underline,
+                        fontWeight: FontWeight.bold),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
                         Navigator.pushNamed(context, "signUp");
                       }),
-                const TextSpan(text: ".")
+                const TextSpan(
+                  text: ".",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                )
               ])),
             ]);
       },
