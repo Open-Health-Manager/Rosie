@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'account_screen.dart';
 import 'reset_password.dart';
+import 'sign_up.dart';
 import '../open_health_manager/open_health_manager.dart';
 
 class SignIn extends StatefulWidget {
@@ -36,7 +37,7 @@ class _SignInState extends State<SignIn> {
     // Go back button is always the same
     final goBack = ElevatedButton(
       style: ElevatedButton.styleFrom(
-        primary: Color(0xFFFA99AF),
+        primary: Color(0xFFFEF2F5),
       ),
       child: const Text(
         "Back",
@@ -136,6 +137,18 @@ class _SignInState extends State<SignIn> {
                     builder: (context) => const ResetPassword(),
                   ),
                 );
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Need to Create An Account? Sign Up.',
+                style: TextStyle(
+                  decoration: TextDecoration.underline,
+                  color: Color(0xFF1F201D),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
               },
             ),
           ],

@@ -79,6 +79,20 @@ class _ResetPasswordState extends State<ResetPassword> {
           return "Email is required";
         }
       },
+      afterFormBuilder: (BuildContext context) {
+        return ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFEF2F5),
+          ),
+          child: const Text(
+            "Back",
+            style: TextStyle(color: Color(0xFF1F201D)),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
     );
   }
 }
@@ -108,7 +122,9 @@ class PasswordResetSent extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.popUntil(
-                    context, (route) => route.settings.name == "signIn");
+                  context,
+                  (route) => route.settings.name == "signIn",
+                );
               },
               child: const Text('Return to Sign In'),
             ),

@@ -282,6 +282,20 @@ class _SignUpState extends State<SignUp> {
           return "Please correct the above errors and try again";
         }
       },
+      afterFormBuilder: (BuildContext context) {
+        return ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFEF2F5),
+          ),
+          child: const Text(
+            "Back",
+            style: TextStyle(color: Color(0xFF1F201D)),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
     );
   }
 }
