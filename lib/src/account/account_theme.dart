@@ -22,6 +22,18 @@ class AccountThemePalette {
 
 ThemeData createAccountTheme() {
   return ThemeData(
+      checkboxTheme: CheckboxThemeData(
+        fillColor: MaterialStateColor.resolveWith(
+          (states) {
+            if (states.contains(MaterialState.selected)) {
+              return AccountThemePalette
+                  .textColor; // the color when checkbox is selected;
+            }
+            return AccountThemePalette
+                .textColor; //the color when checkbox is unselected;
+          },
+        ),
+      ),
       brightness: Brightness.dark,
       appBarTheme:
           const AppBarTheme(backgroundColor: Colors.white, elevation: 0.0),
