@@ -43,7 +43,7 @@ class _SignInState extends State<SignIn> {
                 autocorrect: false,
                 autofocus: true,
                 decoration: const InputDecoration(
-                  hintText: "Email",
+                  hintText: "Email Address",
                   prefixIcon: Icon(Icons.email),
                 ),
                 validator: (value) {

@@ -46,7 +46,7 @@ class _ResetPasswordState extends State<ResetPassword> {
                 autocorrect: false,
                 autofocus: true,
                 decoration: const InputDecoration(
-                  hintText: "Email",
+                  hintText: "Email Address",
                   prefixIcon: Icon(Icons.email),
                 ),
                 validator: (value) {
