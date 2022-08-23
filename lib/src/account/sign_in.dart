@@ -43,7 +43,7 @@ class _SignInState extends State<SignIn> {
               autocorrect: false,
               autofocus: true,
               decoration: const InputDecoration(
-                  hintText: "Email", prefixIcon: Icon(Icons.email)),
+                  hintText: "Email Address", prefixIcon: Icon(Icons.email)),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return "Email is required";
