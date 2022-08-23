@@ -34,49 +34,63 @@ class _ResetPasswordState extends State<ResetPassword> {
   @override
   Widget build(BuildContext context) {
     return AccountScreenForm(
-      title: "Retrieve Account",
-      formBuilder: (BuildContext context) {
-        return AutofillGroup(
-            child: Column(
-          children: [
-            const Text(
-                "Enter your email to get an email with password reset instructions."),
-            const SizedBox(height: 15.0),
-            TextFormField(
-              autocorrect: false,
-              autofocus: true,
-              decoration: const InputDecoration(
-                  hintText: "Email Address", prefixIcon: Icon(Icons.email)),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return "Email is required";
-                }
-                return null;
-              },
-              onChanged: (value) {
-                email = value;
-              },
-              autofillHints: const [AutofillHints.email],
-              textInputAction: TextInputAction.next,
-            ),
-          ],
-        ));
-      },
-      submitLabel: "Recover Account",
-      onSubmit: () async {
-        if (email != null) {
-          await context.read<OpenHealthManager>().requestPasswordReset(email!);
-          if (!mounted) return null;
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const PasswordResetSent()));
-          return null;
-        } else {
-          return "Email is required";
-        }
-      },
-    );
+        title: "Retrieve Account",
+        formBuilder: (BuildContext context) {
+          return AutofillGroup(
+              child: Column(
+            children: [
+              const Text(
+                  "Enter your email to get an email with password reset instructions."),
+              const SizedBox(height: 15.0),
+              TextFormField(
+                autocorrect: false,
+                autofocus: true,
+                decoration: const InputDecoration(
+                    hintText: "Email Address", prefixIcon: Icon(Icons.email)),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Email is required";
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  email = value;
+                },
+                autofillHints: const [AutofillHints.email],
+                textInputAction: TextInputAction.next,
+              ),
+            ],
+          ));
+        },
+        submitLabel: "Recover Account",
+        onSubmit: () async {
+          if (email != null) {
+            await context
+                .read<OpenHealthManager>()
+                .requestPasswordReset(email!);
+            if (!mounted) return null;
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const PasswordResetSent()));
+            return null;
+          } else {
+            return "Email is required";
+          }
+        },
+        afterFormBuilder: (BuildContext context) {
+          return ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Color(0xFFFEF2F5),
+              ),
+              child: const Text(
+                "Back",
+                style: TextStyle(color: Color(0xFF1F201D)),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              });
+        });
   }
 }
 
@@ -100,7 +114,7 @@ class PasswordResetSent extends StatelessWidget {
             onPressed: () {
               // Attempt to open the email app
             },
-            child: const Text('Open Email'))
+            child: const Text('Open Email')),
       ]);
     });
   }
