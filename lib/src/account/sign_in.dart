@@ -123,22 +123,47 @@ class _SignInState extends State<SignIn> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             _createButtonBar(context),
-            TextButton(
-              child: const Text(
-                'Retrieve account or password?',
-                style: TextStyle(
-                  decoration: TextDecoration.underline,
-                  color: Color(0xFF4C4D4A),
-                ),
-              ),
-              onPressed: () {
-                Navigator.push<void>(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (context) => const ResetPassword(),
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(
+                    text: "",
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                );
-              },
+                  TextSpan(
+                    text: "Retrieve account or password?",
+                    style: const TextStyle(
+                      color: Color(0xFF4C4D4A),
+                      decoration: TextDecoration.underline,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.push<void>(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (context) => const ResetPassword(),
+                            ));
+                      },
+                  ),
+                  const TextSpan(
+                    text: "",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+            const Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Need to Create An Account? ",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
             Text.rich(
               TextSpan(
