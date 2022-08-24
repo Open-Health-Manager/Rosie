@@ -198,17 +198,16 @@ class PatientInfoState extends State<PatientInfo> {
   }
   */
 
-  Widget _buildTextField({
-    required String label,
-    TextEditingController? controller,
-    TextInputType? keyboardType,
-    List<TextInputFormatter>? inputFormatters,
-    String? Function(String?)? validator,
-    void Function(String)? onChanged,
-    void Function(String?)? onSaved,
-    void Function()? onTap,
-    double? paddingTop
-  }) {
+  Widget _buildTextField(
+      {required String label,
+      TextEditingController? controller,
+      TextInputType? keyboardType,
+      List<TextInputFormatter>? inputFormatters,
+      String? Function(String?)? validator,
+      void Function(String)? onChanged,
+      void Function(String?)? onSaved,
+      void Function()? onTap,
+      double? paddingTop}) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, paddingTop ?? 20, 20, 0),
       child: TextFormField(
@@ -218,7 +217,9 @@ class PatientInfoState extends State<PatientInfo> {
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
         onTap: onTap,
-        decoration: InputDecoration(labelText: label, ),
+        decoration: InputDecoration(
+          labelText: label,
+        ),
         validator: validator,
         onSaved: onSaved,
         onChanged: onChanged,
@@ -244,9 +245,8 @@ class PatientInfoState extends State<PatientInfo> {
           Provider.of<PatientData>(context, listen: false)
               .patientDemographics
               .value
-              ?.updateDateOfBirth((value == null)
-                  ? null
-                  : DateFormat('MM/dd/yy').parse(value));
+              ?.updateDateOfBirth(
+                  (value == null) ? null : DateFormat('MM/dd/yy').parse(value));
         }
       },
       onChanged: (value) {
@@ -255,65 +255,62 @@ class PatientInfoState extends State<PatientInfo> {
     );
   }
 
-  Widget _buildDropdown({
-    String? value,
-    List<DropdownMenuItem<String>>? items,
-    String? label,
-    String? Function(String?)? validator,
-    void Function(String?)? onSaved,
-    void Function(String?)? onChanged
-  }) {
+  Widget _buildDropdown(
+      {String? value,
+      List<DropdownMenuItem<String>>? items,
+      String? label,
+      String? Function(String?)? validator,
+      void Function(String?)? onSaved,
+      void Function(String?)? onChanged}) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        items: items,
-        style: const TextStyle(color: Colors.black),
-        iconEnabledColor: Colors.black,
-        iconDisabledColor: Colors.black,
-        dropdownColor: Colors.blueGrey,
-        decoration: InputDecoration(
-          labelText: label,
-        ),
-        validator: validator,
-        onSaved: onSaved,
-        onChanged: onChanged,
-      )
-    );
+        padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
+        child: DropdownButtonFormField<String>(
+          value: value,
+          items: items,
+          /*style: const TextStyle(color: Colors.black),
+          iconEnabledColor: Colors.black,
+          iconDisabledColor: Colors.black,
+          dropdownColor: Colors.blueGrey, */
+          decoration: InputDecoration(
+            labelText: label,
+          ),
+          validator: validator,
+          onSaved: onSaved,
+          onChanged: onChanged,
+        ));
   }
 
   Widget _buildSexAssignedAtBirthField(genderValue) {
     return _buildDropdown(
-      value: genderValue,
-      items: sexAtBirthOptions.map((String val) {
-        return DropdownMenuItem(
-          value: val,
-          child: Text(
-            val,
-          ),
-        );
-      }).toList(),
-      label: 'Sex at Birth',
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please select your Sex at Birth';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        //Provider.of<PatientData>(context, listen: false).gender = value!;
-        if (_genderDirty) {
-          Provider.of<PatientData>(context, listen: false)
-              .patientDemographics
-              .value
-              ?.updateGender(value);
-        }
-      },
-      onChanged: (value) {
-        //Provider.of<PatientData>(context, listen: false).gender = value!;
-        _genderDirty = true;
-      }
-    );
+        value: genderValue,
+        items: sexAtBirthOptions.map((String val) {
+          return DropdownMenuItem(
+            value: val,
+            child: Text(
+              val,
+            ),
+          );
+        }).toList(),
+        label: 'Sex at Birth',
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select your Sex at Birth';
+          }
+          return null;
+        },
+        onSaved: (value) {
+          //Provider.of<PatientData>(context, listen: false).gender = value!;
+          if (_genderDirty) {
+            Provider.of<PatientData>(context, listen: false)
+                .patientDemographics
+                .value
+                ?.updateGender(value);
+          }
+        },
+        onChanged: (value) {
+          //Provider.of<PatientData>(context, listen: false).gender = value!;
+          _genderDirty = true;
+        });
   }
 
   /*
@@ -425,108 +422,105 @@ class PatientInfoState extends State<PatientInfo> {
 */
   Widget _buildPregnancyField() {
     return _buildDropdown(
-      value: '',
-      items: pregnancyOptions.map((String val) {
-        return DropdownMenuItem(
-          value: val,
-          child: Text(
-            val,
-          ),
-        );
-      }).toList(),
-      label: 'Pregnancy',
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please select your Pregnancy status';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
-        //value!;
-      },
-      onChanged: (value) {
-        //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
-        //value!;
-      }
-    );
+        value: '',
+        items: pregnancyOptions.map((String val) {
+          return DropdownMenuItem(
+            value: val,
+            child: Text(
+              val,
+            ),
+          );
+        }).toList(),
+        label: 'Pregnancy',
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select your Pregnancy status';
+          }
+          return null;
+        },
+        onSaved: (value) {
+          //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
+          //value!;
+        },
+        onChanged: (value) {
+          //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
+          //value!;
+        });
   }
 
   Widget _buildTobaccoUsageField(SmokingStatus displayValue) {
     return _buildDropdown(
-      value: displayValue.toPatientInfoString(),
-      items: tobaccoOptions.map((String val) {
-        return DropdownMenuItem(
-          value: val,
-          child: Text(
-            val,
-          ),
-        );
-      }).toList(),
-      label: 'Tobacco Usage',
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please select your Tobacco Usage status';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        if (_smokingStatusDirty) {
-          SmokingStatus theStatus = SmokingStatus.unknown;
-          switch (value) {
-            case '':
-              theStatus = SmokingStatus.unknown;
-              break;
-            case 'Never Smoked':
-              theStatus = SmokingStatus.neverSmoked;
-              break;
-            case 'Former Smoker':
-              theStatus = SmokingStatus.formerSmoker;
-              break;
-            case 'Current Smoker':
-              theStatus = SmokingStatus.currentSmoker;
-              break;
+        value: displayValue.toPatientInfoString(),
+        items: tobaccoOptions.map((String val) {
+          return DropdownMenuItem(
+            value: val,
+            child: Text(
+              val,
+            ),
+          );
+        }).toList(),
+        label: 'Tobacco Usage',
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select your Tobacco Usage status';
           }
+          return null;
+        },
+        onSaved: (value) {
+          if (_smokingStatusDirty) {
+            SmokingStatus theStatus = SmokingStatus.unknown;
+            switch (value) {
+              case '':
+                theStatus = SmokingStatus.unknown;
+                break;
+              case 'Never Smoked':
+                theStatus = SmokingStatus.neverSmoked;
+                break;
+              case 'Former Smoker':
+                theStatus = SmokingStatus.formerSmoker;
+                break;
+              case 'Current Smoker':
+                theStatus = SmokingStatus.currentSmoker;
+                break;
+            }
 
-          final obs = SmokingStatusObservation(theStatus);
+            final obs = SmokingStatusObservation(theStatus);
 
-          Provider.of<PatientData>(context, listen: false)
-              .addSmokingStatusObservation(obs, inBatch: true);
-        }
-      },
-      onChanged: (value) {
-        _smokingStatusDirty = true;
-      }
-    );
+            Provider.of<PatientData>(context, listen: false)
+                .addSmokingStatusObservation(obs, inBatch: true);
+          }
+        },
+        onChanged: (value) {
+          _smokingStatusDirty = true;
+        });
   }
 
   Widget _buildSexuallyActiveField() {
     return _buildDropdown(
-      value: '',
-      items: sexualActivityOptions.map((String val) {
-        return DropdownMenuItem(
-          value: val,
-          child: Text(
-            val,
-          ),
-        );
-      }).toList(),
-      label: 'Sexually Active',
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please select your Sexually Active status';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        //Provider.of<PatientData>(context, listen: false)
-        // .sexualActivityStatus = value!;
-      },
-      onChanged: (value) {
-        //Provider.of<PatientData>(context, listen: false)
-        // .sexualActivityStatus = value!;
-      }
-    );
+        value: '',
+        items: sexualActivityOptions.map((String val) {
+          return DropdownMenuItem(
+            value: val,
+            child: Text(
+              val,
+            ),
+          );
+        }).toList(),
+        label: 'Sexually Active',
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select your Sexually Active status';
+          }
+          return null;
+        },
+        onSaved: (value) {
+          //Provider.of<PatientData>(context, listen: false)
+          // .sexualActivityStatus = value!;
+        },
+        onChanged: (value) {
+          //Provider.of<PatientData>(context, listen: false)
+          // .sexualActivityStatus = value!;
+        });
   }
 
   @override
@@ -620,27 +614,23 @@ class PatientInfoState extends State<PatientInfo> {
                       alignment: MainAxisAlignment.end,
                       children: [
                         ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                                primary: const Color(0xFF6750A4),
-                                shape: const StadiumBorder()),
-                            onPressed: () {
-                              _formKey.currentState!.save();
-                              PatientData ptData = Provider.of<PatientData>(
-                                  context,
-                                  listen: false);
-                              if (_dateOfBirthDirty || _genderDirty) {
-                                ptData.updatePatientDemographics(inBatch: true);
-                              }
-                              if (_formIsdirty()) {
-                                ptData.postCurrentTransaction();
-                              }
-                              Navigator.pop(context);
-                            },
-                            child: const Text(
-                              'Submit',
-                              style: TextStyle(color: Colors.white),
-                            ),
+                          onPressed: () {
+                            _formKey.currentState!.save();
+                            PatientData ptData = Provider.of<PatientData>(
+                                context,
+                                listen: false);
+                            if (_dateOfBirthDirty || _genderDirty) {
+                              ptData.updatePatientDemographics(inBatch: true);
+                            }
+                            if (_formIsdirty()) {
+                              ptData.postCurrentTransaction();
+                            }
+                            Navigator.pop(context);
+                          },
+                          child: const Text(
+                            'Submit',
                           ),
+                        ),
                       ],
                     ),
                   )
