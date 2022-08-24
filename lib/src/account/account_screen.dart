@@ -194,7 +194,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
                   ));
               String? error;
               if (snapshot.hasError) {
-                error = snapshot.error ?? "Unknown error";
+                //error = snapshot.error ?? "Unknown error";
               } else if (snapshot.hasData) {
                 error = snapshot.data;
               }
