@@ -34,6 +34,8 @@ import HealthKit
                 self?.supportedClinicalTypes(result: result)
             case "queryClinicalRecords":
                 self?.queryClinicalRecords(call: call, result: result)
+            case "getPatientCharacteristicData":
+                self?.getPatientCharacteristicData(call: call, result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -52,6 +54,16 @@ import HealthKit
                     types.insert(clinicalType)
                 }
             }
+            // add characteristic types
+            guard   
+                let dateOfBirth = HKObjectType.characteristicType(forIdentifier: .dateOfBirth),
+                let biologicalSex = HKObjectType.characteristicType(forIdentifier: .biologicalSex)
+            else { 
+                result(FlutterError(code: "HealthKitError", message: "data type not available", details: nil))
+                return
+            }
+            types.insert(dateOfBirth)
+            types.insert(biologicalSex)
             healthStore.requestAuthorization(toShare: nil, read: types, completion: { success, error in
                 // The result happens in a background thread, but we want to invoke Flutter only from the main thread, so:
                 DispatchQueue.main.async {
@@ -111,6 +123,44 @@ import HealthKit
             result(healthKitNotSupported())
         }
     }
+
+    func getPatientCharacteristicData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if #available(iOS 12.0, *) {
+            let birthdayComponents = getDateOfBirthComponents()
+            let biologicalSex =  getBiologicalSex()
+            result([
+                "gender": getGenderCodeString(fromBiologicalSex: biologicalSex),
+                "dateOfBirth" : getFHIRDateString(fromDateComponents: birthdayComponents)
+            ])
+        } else {
+            result(healthKitNotSupported())
+        }
+    }
+
+    func getDateOfBirthComponents() -> DateComponents? {
+        if #available(iOS 12.0, *) {
+            do {
+                return try healthStore.dateOfBirthComponents()
+            } catch {
+                return nil
+            }
+        } else {
+            return nil
+        }
+    }
+
+    func getBiologicalSex() -> HKBiologicalSexObject? {
+        if #available(iOS 12.0, *) {
+            do {
+                return try healthStore.biologicalSex()
+            } catch {
+                return nil
+            }
+        } else {
+            return nil
+        }
+    }
+
 }
 
 // MARK: Utility functions
@@ -154,4 +204,27 @@ func extractJSON(fromClinicalRecord record: HKClinicalRecord) -> String? {
     // This call is an optional constructor: if it fails, it returns nil.
     // Fortunately if it fails, it should return nil.
     return String(data: fhirResource.data, encoding: .utf8)
+}
+
+@available(iOS 12.0, *)
+func getGenderCodeString(fromBiologicalSex biologicalSex: HKBiologicalSexObject?) -> String {
+    guard let biologicalSexEnum = biologicalSex?.biologicalSex else { return "" }
+    switch (biologicalSexEnum) {
+        case HKBiologicalSex.notSet: return ""
+        case HKBiologicalSex.female: return "female"
+        case HKBiologicalSex.male: return "male"
+        case HKBiologicalSex.other: return "other"
+        default: return ""
+    }
+}
+
+@available(iOS 12.0, *)
+func getFHIRDateString(fromDateComponents dateComponents: DateComponents?) -> String {
+    guard let dateYear = dateComponents?.year else { return "" }
+    guard let dateMonth = dateComponents?.month else { return "" }
+    guard let dateDay = dateComponents?.day else { return "" }
+    let dateMonthString = dateMonth > 10 ? "\(dateMonth)" : "0\(dateMonth)"
+    let dateDayString = dateDay > 10 ? "\(dateDay)" : "0\(dateDay)"
+    
+    return "\(dateYear)-\(dateMonthString)-\(dateDayString)"
 }

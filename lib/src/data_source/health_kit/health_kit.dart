@@ -16,7 +16,9 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:fhir/r4.dart';
 import 'package:flutter/services.dart';
+import 'package:rosie/src/open_health_manager/open_health_manager.dart';
 
 enum FhirVersion {
   dstu2,
@@ -163,8 +165,24 @@ class HealthKit {
         .toList(growable: false);
   }
 
+  static Future<HealthKitResource?> getPatientCharacteristicData(
+      Patient currentPatient) async {
+    final results =
+        await platform.invokeMapMethod("getPatientCharacteristicData");
+    if (results == null) {
+      // if no data, return nothing
+      return null;
+    }
+    return HealthKitResource(
+        fhirVersion: FhirVersion.r4,
+        sourceUrl: Uri.parse("urn:apple:health-kit"),
+        resource: getHealthKitPatientFHIRJSON(
+            Map<String, dynamic>.from(results), currentPatient));
+  }
+
   /// Attempts to query all known supported types.
-  static Future<List<HealthKitResource>> queryAllClinicalRecords() async {
+  static Future<List<HealthKitResource>> queryAllClinicalRecords(
+      OpenHealthManager healthManager) async {
     final supportedTypes = await supportedClinicalTypes();
     // With the list of types, create futures for each supported type
     final results = await Future.wait(
@@ -172,7 +190,36 @@ class HealthKit {
         (String type) => queryClinicalRecords(type),
       ),
     );
+    // need current patient to update it with new data from HealthKit
+    final currentPatient = await healthManager.queryPatient();
+    final patientData = await getPatientCharacteristicData(currentPatient);
     // Results is a list of lists, so flatten it
-    return results.expand((e) => e).toList();
+    final resourceList = results.expand((e) => e).toList();
+    if (patientData != null) {
+      resourceList.add(patientData);
+    }
+    return resourceList;
+  }
+
+  // Updates the current FHIR patient record with Health Kit
+  // data and returns the JSON representation
+  static Map<String, dynamic> getHealthKitPatientFHIRJSON(
+      Map<String, dynamic> healthKitCharacteristics, Patient currentPatient) {
+    final patientJSON = currentPatient.toJson();
+
+    // clean up JSON metadata and text
+    patientJSON.remove("meta");
+    patientJSON.remove("text");
+
+    // update gender and birthdate if information provided
+    // otherwise, leave existing data
+    if (healthKitCharacteristics["gender"] != "") {
+      patientJSON["gender"] = healthKitCharacteristics["gender"];
+    }
+    if (healthKitCharacteristics["dateOfBirth"] != "") {
+      patientJSON["birthDate"] = healthKitCharacteristics["dateOfBirth"];
+    }
+
+    return patientJSON;
   }
 }

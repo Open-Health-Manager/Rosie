@@ -14,6 +14,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rosie/src/open_health_manager/patient_data.dart';
 import 'health_kit.dart';
 import '../../open_health_manager/open_health_manager.dart';
 
@@ -59,7 +60,8 @@ class _SendHealthKitScreenState extends State<SendHealthKitScreen> {
 
   void loadRecords() {
     setState(() {
-      recordFuture = HealthKit.queryAllClinicalRecords().then((records) {
+      recordFuture =
+          HealthKit.queryAllClinicalRecords(healthManager).then((records) {
         setState(() {
           currentActivity = "Sending records to Open Health Manager...";
         });
@@ -88,6 +90,11 @@ class _SendHealthKitScreenState extends State<SendHealthKitScreen> {
         : () {
             loadRecords();
           };
+    if (uploadCount != null && uploadCount > 0) {
+      // if records were uploaded
+      // trigger a reload of the local data store
+      context.read<PatientData>().reloadAll();
+    }
     return Container(
       padding: const EdgeInsets.all(10),
       alignment: Alignment.center,

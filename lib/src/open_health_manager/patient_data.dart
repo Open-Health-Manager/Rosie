@@ -124,6 +124,12 @@ class PatientData extends ChangeNotifier {
     return await healthManager.querySmokingStatus();
   });
 
+  void reloadAll() {
+    patientDemographics.reload();
+    bloodPressure.reload();
+    smokingStatus.reload();
+  }
+
   /// Adds a blood pressure observation to the current data (even if it hasn't been loaded yet) and then attempts to
   /// write it to the backend.
   Future<void> addBloodPressureObservation(BloodPressureObservation obs,
