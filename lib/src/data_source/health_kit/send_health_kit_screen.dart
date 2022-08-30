@@ -14,9 +14,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rosie/src/open_health_manager/patient_data.dart';
 import 'health_kit.dart';
 import '../../open_health_manager/open_health_manager.dart';
+import '../../open_health_manager/patient_data.dart';
 
 class SendHealthKitScreen extends StatefulWidget {
   const SendHealthKitScreen({Key? key}) : super(key: key);
@@ -122,16 +122,18 @@ class _SendHealthKitScreenState extends State<SendHealthKitScreen> {
           ),
           if (loading) ...[
             const SizedBox(height: 20),
-            Row(children: <Widget>[
-              const CircularProgressIndicator(),
-              Expanded(
-                child: Text(
-                  currentActivity,
-                  style: theme.textTheme.bodyMedium,
-                  softWrap: true,
+            Row(
+              children: <Widget>[
+                const CircularProgressIndicator(),
+                Expanded(
+                  child: Text(
+                    currentActivity,
+                    style: theme.textTheme.bodyMedium,
+                    softWrap: true,
+                  ),
                 ),
-              ),
-            ])
+              ],
+            ),
           ],
           if (error != null) ...[
             const SizedBox(height: 20),
@@ -139,7 +141,7 @@ class _SendHealthKitScreenState extends State<SendHealthKitScreen> {
               "Error loading records: $error",
               style: theme.textTheme.bodyMedium?.apply(color: theme.errorColor),
               softWrap: true,
-            )
+            ),
           ],
         ],
       ),

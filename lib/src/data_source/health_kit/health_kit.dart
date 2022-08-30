@@ -18,7 +18,7 @@ import 'dart:developer';
 
 import 'package:fhir/r4.dart';
 import 'package:flutter/services.dart';
-import 'package:rosie/src/open_health_manager/open_health_manager.dart';
+import '../../open_health_manager/open_health_manager.dart';
 
 enum FhirVersion {
   dstu2,
