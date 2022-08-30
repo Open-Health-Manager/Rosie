@@ -5,15 +5,21 @@ import HealthKit
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
     @available(iOS 12.0, *)
-    static let supportedTypes = [
+    /// Supported clinical types. This is the list of types that are requested when approval is requested.
+    static let supportedClinicalTypes: [HKClinicalTypeIdentifier] = [
 //        // For now, only request access to vital sign records
-//        HKClinicalTypeIdentifier.allergyRecord,
-//        HKClinicalTypeIdentifier.conditionRecord,
-//        HKClinicalTypeIdentifier.immunizationRecord,
-//        HKClinicalTypeIdentifier.labResultRecord,
-//        HKClinicalTypeIdentifier.medicationRecord,
-//        HKClinicalTypeIdentifier.procedureRecord,
-        HKClinicalTypeIdentifier.vitalSignRecord
+//        .allergyRecord,
+//        .conditionRecord,
+//        .immunizationRecord,
+//        .labResultRecord,
+//        .medicationRecord,
+//        .procedureRecord,
+        .vitalSignRecord
+    ];
+    /// Supported characteristic types. This is the list of types that are requested when approval is requested.
+    static let supportedCharacteristicTypes: [HKCharacteristicTypeIdentifier] = [
+        .dateOfBirth,
+        .biologicalSex
     ];
     lazy var healthStore = HKHealthStore()
 
@@ -34,6 +40,8 @@ import HealthKit
                 self?.supportedClinicalTypes(result: result)
             case "queryClinicalRecords":
                 self?.queryClinicalRecords(call: call, result: result)
+            case "getPatientCharacteristicData":
+                self?.getPatientCharacteristicData(call: call, result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -45,11 +53,18 @@ import HealthKit
 
     func requestHealthKitAccess(result: @escaping FlutterResult) {
         if #available(iOS 12.0, *) {
-            // Create the sample types if possible
+            // Create the sample types
+            // Failures are only really possible if forIdentifier is given an invalid identifier, which is only really possible when created via deserialization (as they're ultimately just strings)
             var types = Set<HKObjectType>()
-            for type in AppDelegate.supportedTypes {
+            for type in AppDelegate.supportedClinicalTypes {
                 if let clinicalType = HKObjectType.clinicalType(forIdentifier: type) {
                     types.insert(clinicalType)
+                }
+            }
+            // Add characteristic types
+            for identifier in AppDelegate.supportedCharacteristicTypes {
+                if let characteristicType = HKObjectType.characteristicType(forIdentifier: identifier) {
+                    types.insert(characteristicType)
                 }
             }
             healthStore.requestAuthorization(toShare: nil, read: types, completion: { success, error in
@@ -68,10 +83,11 @@ import HealthKit
     }
 
     func supportedClinicalTypes(result: FlutterResult) {
+        // Wait, doesn't this collide with "supportedClinicalTypes"? Nope! This is "supportedClinicalTypes:result:", of course. Swift being based on Objective-C is fun.
         // For this, just create a list of strings
         if #available(iOS 12.0, *) {
             print("Building supported clinical types")
-            result(AppDelegate.supportedTypes.map { $0.rawValue })
+            result(AppDelegate.supportedClinicalTypes.map { $0.rawValue })
         } else {
             result([])
         }
@@ -111,6 +127,38 @@ import HealthKit
             result(healthKitNotSupported())
         }
     }
+
+    func getPatientCharacteristicData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if #available(iOS 12.0, *) {
+            let birthdayComponents = getDateOfBirthComponents()
+            let biologicalSex =  getBiologicalSex()
+            result([
+                "gender": getGenderCodeString(fromBiologicalSex: biologicalSex),
+                "dateOfBirth" : getFHIRDateString(fromDateComponents: birthdayComponents)
+            ])
+        } else {
+            result(healthKitNotSupported())
+        }
+    }
+
+    @available(iOS 12.0, *)
+    func getDateOfBirthComponents() -> DateComponents? {
+        do {
+            return try healthStore.dateOfBirthComponents()
+        } catch {
+            return nil
+        }
+    }
+
+    @available(iOS 12.0, *)
+    func getBiologicalSex() -> HKBiologicalSexObject? {
+        do {
+            return try healthStore.biologicalSex()
+        } catch {
+            return nil
+        }
+    }
+
 }
 
 // MARK: Utility functions
@@ -154,4 +202,27 @@ func extractJSON(fromClinicalRecord record: HKClinicalRecord) -> String? {
     // This call is an optional constructor: if it fails, it returns nil.
     // Fortunately if it fails, it should return nil.
     return String(data: fhirResource.data, encoding: .utf8)
+}
+
+@available(iOS 12.0, *)
+func getGenderCodeString(fromBiologicalSex biologicalSex: HKBiologicalSexObject?) -> String {
+    guard let biologicalSexEnum = biologicalSex?.biologicalSex else { return "" }
+    switch (biologicalSexEnum) {
+        case HKBiologicalSex.notSet: return ""
+        case HKBiologicalSex.female: return "female"
+        case HKBiologicalSex.male: return "male"
+        case HKBiologicalSex.other: return "other"
+        default: return ""
+    }
+}
+
+@available(iOS 12.0, *)
+func getFHIRDateString(fromDateComponents dateComponents: DateComponents?) -> String {
+    guard let dateYear = dateComponents?.year else { return "" }
+    guard let dateMonth = dateComponents?.month else { return "" }
+    guard let dateDay = dateComponents?.day else { return "" }
+    let dateMonthString = dateMonth > 10 ? "\(dateMonth)" : "0\(dateMonth)"
+    let dateDayString = dateDay > 10 ? "\(dateDay)" : "0\(dateDay)"
+    
+    return "\(dateYear)-\(dateMonthString)-\(dateDayString)"
 }
