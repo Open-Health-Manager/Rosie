@@ -139,6 +139,7 @@
 			buildPhases = (
 				81F55D2AC3938EBD0D185943 /* [CP] Check Pods Manifest.lock */,
 				9740EEB61CF901F6004384FC /* Run Script */,
+				2EDE763828BD1CBD00B9E12A /* Create Rosie Icon */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
@@ -203,6 +204,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		2EDE763828BD1CBD00B9E12A /* Create Rosie Icon */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Rosie-ios-icon.svg",
+			);
+			name = "Create Rosie Icon";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "zsh \"$SRCROOT/export_app_icons.sh\" \"$SRCROOT/Rosie-ios-icon.svg\" \"$SRCROOT/Runner/Assets.xcassets/AppIcon.appiconset\"\n";
+		};
 		3B06AD1E1E4923F5004D2608 /* Thin Binary */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
