@@ -427,7 +427,7 @@ class _BloodPressureCallout extends StatelessWidget {
       //return textWidget;
       // Slightly different
       return SizedBox(
-          height: 75,
+          height: 95,
           child: Column(
             children: <Widget>[
               textWidget,
