@@ -173,13 +173,9 @@ class AuthData {
     return MessageHeader(
       // TODO: Id
       eventUri: FhirUri("urn:mitre:healthmanager:pdr"),
-      source:
-          MessageHeaderSource(endpoint: FhirUrl(endpoint ?? "urn:mitre:rosie")),
-      extension_: <FhirExtension>[
-        FhirExtension(
-            url: FhirUri(
-                "https://github.com/Open-Health-Manager/patient-data-receipt-ig/StructureDefinition/AccountExtension"),
-            valueString: username),
+      source: MessageHeaderSource(endpoint: FhirUrl("urn:apple:health-kit")),
+      focus: <Reference>[
+        Reference(reference: "Patient/${id.value}"),
       ],
     );
   }
