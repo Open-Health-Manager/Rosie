@@ -101,11 +101,8 @@ class FHIRClient {
 
 extension PatientConsentsQuerying on OpenHealthManager {
   /// Loads a part of the list of patient consent data.
-  Future<List<PatientConsent>> getPatientConsents({
-    int page = 0,
-    int size = 20,
-  }) async {
-    final url = serverUrl.resolve('api/fhir-patient-consents?page=$page&size=$size&eagerload=true');
+  Future<List<PatientConsent>> getPatientConsents() async {
+    final url = serverUrl.resolve('api/fhir-patient-consents');
     final list = await sendJsonArrayRequest(Request('GET', url));
     return list.map((json) => PatientConsent.fromJson(json)).toList();
   }
@@ -124,10 +121,9 @@ extension PatientConsentsQuerying on OpenHealthManager {
     final clients = await getFHIRClients();
     print('Got ${clients.length} clients');
     // Next, get the existing consents
-    // final consents = await getPatientConsents();
-    // print('Got ${consents.length} existing consents');
-    // Consents appear to be broken.
-    final consents = <PatientConsent>[];
+    final consents = await getPatientConsents();
+    print('Got ${consents.length} existing consents');
+    // final consents = <PatientConsent>[];
     final existingConsents = Map.fromEntries(
         consents.map((consent) => MapEntry(consent.client.uri, consent)));
     return clients.map<PatientConsent>((client) {
