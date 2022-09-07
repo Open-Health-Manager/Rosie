@@ -75,8 +75,10 @@ class HealthKitResource {
       try {
         final resource = json.decode(resourceJson);
         if (resource is Map<String, dynamic>) {
-          return HealthKitResource(
-              fhirVersion: version, sourceUrl: sourceUrl, resource: resource);
+          if (version == FhirVersion.r4) {
+            return HealthKitResource(
+                fhirVersion: version, sourceUrl: sourceUrl, resource: resource);
+          }
         } else {
           // Log this but otherwise ignore it
           log(
@@ -96,13 +98,28 @@ class HealthKitResource {
         return null;
       }
     } else if (resourceJson is Map<String, dynamic>) {
-      return HealthKitResource(
-        fhirVersion: version,
-        sourceUrl: sourceUrl,
-        resource: resourceJson,
-      );
+      if (version == FhirVersion.r4) {
+        return HealthKitResource(
+          fhirVersion: version,
+          sourceUrl: sourceUrl,
+          resource: resourceJson,
+        );
+      }
     }
     return null;
+  }
+
+  static HealthKitResource? fromCategory(Map<String, dynamic> jsonObject) {
+    Map<String, dynamic> binaryResource = <String, dynamic>{};
+    binaryResource["resourceType"] = "Binary";
+    binaryResource["contentType"] = "application/json";
+    final bytes = utf8.encode(jsonEncode(jsonObject));
+    final base64Str = base64.encode(bytes);
+    binaryResource["data"] = base64Str;
+    return HealthKitResource(
+        fhirVersion: FhirVersion.r4,
+        sourceUrl: Uri.parse("urn:apple:health-kit"),
+        resource: binaryResource);
   }
 }
 
@@ -145,6 +162,12 @@ class HealthKit {
   static Future<List<String>> supportedClinicalTypes() async {
     final supported =
         await platform.invokeListMethod<String>("supportedClinicalTypes");
+    return supported ?? <String>[];
+  }
+
+  static Future<List<String>> supportedCategoryTypes() async {
+    final supported =
+        await platform.invokeListMethod<String>("supportedCategoryTypes");
     return supported ?? <String>[];
   }
 
@@ -193,11 +216,21 @@ class HealthKit {
     // need current patient to update it with new data from HealthKit
     final currentPatient = await healthManager.queryPatient();
     final patientData = await getPatientCharacteristicData(currentPatient);
+    // category types
+    final supportedCatTypes = await supportedCategoryTypes();
+    // With the list of types, create futures for each supported type
+    final categoryResults = await Future.wait(
+      supportedCatTypes.map<Future<List<HealthKitResource>>>(
+        (String type) => queryCategoryData(type),
+      ),
+    );
     // Results is a list of lists, so flatten it
     final resourceList = results.expand((e) => e).toList();
     if (patientData != null) {
       resourceList.add(patientData);
     }
+    final categoryList = categoryResults.expand((e) => e).toList();
+    resourceList.addAll(categoryList);
     return resourceList;
   }
 
@@ -221,5 +254,19 @@ class HealthKit {
     }
 
     return patientJSON;
+  }
+
+  static Future<List<HealthKitResource>> queryCategoryData(String type) async {
+    final results = await platform.invokeListMethod<Map<dynamic, dynamic>>(
+        "queryCategoryData", type);
+    if (results == null) {
+      // Just return an empty list
+      return <HealthKitResource>[];
+    }
+    return results
+        .map<HealthKitResource?>(
+            (e) => HealthKitResource.fromCategory(Map<String, dynamic>.from(e)))
+        .whereType<HealthKitResource>()
+        .toList(growable: false);
   }
 }
