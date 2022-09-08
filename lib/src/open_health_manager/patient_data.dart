@@ -105,8 +105,11 @@ class CachedData<T> {
   }
 }
 
-/// The PatientData class provides access to patient data stored within the backend. Patient data is loaded via the
-/// OpenHealthManager instance given.
+/// The PatientData class provides access to patient data stored within the
+/// backend. Patient data is loaded via the [OpenHealthManager] instance given.
+/// Instances of this class should only be created while the underlying
+/// OpenHealthManager is signed in - the methods that pull patient data all
+/// require an existing session.
 class PatientData extends ChangeNotifier {
   PatientData(this.healthManager);
 
