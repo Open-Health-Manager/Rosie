@@ -81,7 +81,7 @@ class BloodPressureHelp extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
-              child: const Text("Learn how to check it yourself"),
+              child: const Text("Learn to check it yourself"),
               onPressed: () {},
             ),
           ],
