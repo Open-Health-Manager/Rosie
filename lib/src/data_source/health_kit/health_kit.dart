@@ -71,22 +71,10 @@ class HealthKitResource {
     }
     var resourceJson = jsonObject["resource"];
     // Resource will be a string that needs to be parsed as JSON
+    Map<String, dynamic> resource;
     if (resourceJson is String) {
       try {
-        final resource = json.decode(resourceJson);
-        if (resource is Map<String, dynamic>) {
-          if (version == FhirVersion.r4) {
-            return HealthKitResource(
-                fhirVersion: version, sourceUrl: sourceUrl, resource: resource);
-          }
-        } else {
-          // Log this but otherwise ignore it
-          log(
-            'Invalid object from FHIR record: expected JSON object, got ${resource.runtimeType}',
-            level: 800,
-          );
-          return null;
-        }
+        resource = json.decode(resourceJson);
       } on FormatException catch (error, stackTrace) {
         // Log the error but otherwise ignore it
         log(
@@ -98,27 +86,60 @@ class HealthKitResource {
         return null;
       }
     } else if (resourceJson is Map<String, dynamic>) {
-      if (version == FhirVersion.r4) {
-        return HealthKitResource(
-          fhirVersion: version,
-          sourceUrl: sourceUrl,
-          resource: resourceJson,
-        );
-      }
+      resource = resourceJson;
+    } else {
+      // Log this but otherwise ignore it
+      log(
+        'Invalid object from FHIR record: expected JSON object, got ${resourceJson.runtimeType}',
+        level: 800,
+      );
+      return null;
     }
+
+    if (version == FhirVersion.r4) {
+      return HealthKitResource(
+          fhirVersion: version, sourceUrl: sourceUrl, resource: resource);
+    } else if (version == FhirVersion.dstu2) {
+      return fromFhirDstu2(resource, sourceUrlJson, version);
+    }
+
     return null;
   }
 
-  static HealthKitResource? fromCategory(Map<String, dynamic> jsonObject) {
+  static HealthKitResource? fromFhirDstu2(Map<String, dynamic> resourceJson,
+      String sourceUrl, FhirVersion version) {
+    var blacklist = [
+      //can't be handled by DSTU2 to R4 HAPI converter
+      'AllergyIntolerance',
+      'Immunization',
+      'MedicationOrder',
+      'MedicationRequest',
+      'Procedure'
+    ];
+    if (blacklist.any((item) =>
+        item.toLowerCase() ==
+        resourceJson['resourceType'].toString().toLowerCase())) {
+      return null;
+    }
+    return fromNonFhirR4(resourceJson, sourceUrl, version);
+  }
+
+  static HealthKitResource? fromNonFhirR4(
+      Map<String, dynamic> jsonObject, String sourceUrl, FhirVersion version) {
     Map<String, dynamic> binaryResource = <String, dynamic>{};
     binaryResource["resourceType"] = "Binary";
-    binaryResource["contentType"] = "application/json";
+    if (version == FhirVersion.dstu2) {
+      binaryResource["contentType"] = "application/fhir+json";
+    } else {
+      binaryResource["contentType"] = "application/json";
+    }
+
     final bytes = utf8.encode(jsonEncode(jsonObject));
     final base64Str = base64.encode(bytes);
     binaryResource["data"] = base64Str;
     return HealthKitResource(
         fhirVersion: FhirVersion.r4,
-        sourceUrl: Uri.parse("urn:apple:health-kit"),
+        sourceUrl: Uri.parse(sourceUrl),
         resource: binaryResource);
   }
 }
@@ -264,8 +285,10 @@ class HealthKit {
       return <HealthKitResource>[];
     }
     return results
-        .map<HealthKitResource?>(
-            (e) => HealthKitResource.fromCategory(Map<String, dynamic>.from(e)))
+        .map<HealthKitResource?>((e) => HealthKitResource.fromNonFhirR4(
+            Map<String, dynamic>.from(e),
+            "urn:apple:health-kit",
+            FhirVersion.unknown))
         .whereType<HealthKitResource>()
         .toList(growable: false);
   }

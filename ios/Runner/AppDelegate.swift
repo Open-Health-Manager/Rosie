@@ -14,6 +14,7 @@ import HealthKit
         .medicationRecord,
         .procedureRecord,
         .vitalSignRecord
+        // .coverage - skip, required ios 15
     ];
     /// Supported characteristic types. This is the list of types that are requested when approval is requested.
     static let supportedCharacteristicTypes: [HKCharacteristicTypeIdentifier] = [

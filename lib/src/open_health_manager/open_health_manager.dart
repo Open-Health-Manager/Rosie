@@ -584,6 +584,12 @@ class OpenHealthManager with ChangeNotifier {
       throw AuthenticationStateError(
           "Cannot post message when not authenticated");
     }
+
+    // avoids 422 error from API
+    if (resources.isEmpty) {
+      throw const InvalidResourceException("No records avalable.");
+    }
+
     // Build a bundle based on that
     final bundle = <String, dynamic>{
       "resourceType": "Bundle",
