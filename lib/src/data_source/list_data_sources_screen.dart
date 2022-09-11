@@ -16,8 +16,10 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../open_health_manager/open_health_manager.dart';
 import '../open_health_manager/consents.dart';
+import '../open_health_manager/open_health_manager.dart';
+import '../open_health_manager/patient_data.dart';
+import 'health_kit_data_source.dart';
 
 class _DataSourceDescription extends StatelessWidget {
   const _DataSourceDescription({Key? key, required this.dataSource})
@@ -50,26 +52,93 @@ class _DataSourceDescription extends StatelessWidget {
   }
 }
 
-class _DataSourceTile extends StatelessWidget {
+class _DataSourceTile extends StatefulWidget {
   const _DataSourceTile({Key? key, required this.consent}) : super(key: key);
 
   final PatientConsent consent;
 
+  @override
+  State<StatefulWidget> createState() => _DataSourceTileState();
+}
+
+class _DataSourceTileState extends State<_DataSourceTile> {
+  Future? _changeFuture;
+  bool _currentApprove = false;
+
+  /// The most up-to-date version of the consent, as retrieved from the server.
+  late PatientConsent _currentConsent;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentApprove = widget.consent.approve;
+    _currentConsent = widget.consent;
+  }
+
   Widget _createSwitch(BuildContext context) {
-    if (Platform.isIOS || Platform.isMacOS) {
-      return CupertinoSwitch(
-        value: consent.approve,
-        onChanged: changeApproval,
-      );
+    if (_changeFuture == null) {
+      // Show the switch if it's not changing
+      if (Platform.isIOS || Platform.isMacOS) {
+        return CupertinoSwitch(
+          value: _currentApprove,
+          onChanged: changeApproval,
+        );
+      } else {
+        return Switch(
+          value: _currentApprove,
+          onChanged: changeApproval,
+        );
+      }
     } else {
-      return Switch(
-        value: consent.approve,
-        onChanged: changeApproval,
+      // If the future is ongoing, show a progress spinner
+      return const CircularProgressIndicator(
+        semanticsLabel: 'Sending change',
       );
     }
   }
 
-  void changeApproval(bool newValue) {}
+  void changeApproval(bool newValue) {
+    setState(() {
+      final future = _updateApproval(newValue);
+      _changeFuture = future.then((result) {
+        // These changes don't modify the widget's state so do them now - well,
+        // sort of, the _currentApprove is used to indicate the switch state,
+        // but that will happen later.
+        _currentApprove = result.approve;
+        _currentConsent = result;
+        // FIXME: This works short term but a better method of finding
+        // "post-approve UI" needs to be designed.
+        // For now, if the URI for the client sent is HealthKit, trigger that
+        if (widget.consent.client.uri ==
+            'https://developer.apple.com/health-fitness/') {
+          if (mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => Scaffold(
+                  appBar: AppBar(title: const Text("Connect to HealthKit")),
+                  body: const HealthKitConnectionScreen(),
+                ),
+              ),
+            );
+          }
+        }
+      }).whenComplete(() {
+        // Ensure that no matter what happens, the _changeFuture is unset
+        setState(() {
+          _changeFuture = null;
+        });
+      });
+    });
+  }
+
+  Future<PatientConsent> _updateApproval(bool approve) async {
+    final patientData = context.read<PatientData>();
+    final healthManager = context.read<OpenHealthManager>();
+    // First, grab the account information
+    final account = await patientData.account.get();
+    return await healthManager.updatePatientConsent(
+        _currentConsent, account, approve);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +161,8 @@ class _DataSourceTile extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 2, 0),
-                child: _DataSourceDescription(dataSource: consent.client),
+                child:
+                    _DataSourceDescription(dataSource: widget.consent.client),
               ),
             ),
             _createSwitch(context),
@@ -127,7 +197,9 @@ class _ListDataSourcesState extends State<ListDataSourcesScreen> {
           if (snapshot.connectionState == ConnectionState.done) {
             // Show the list
             if (snapshot.hasError) {
-              return Center(child: Text('Error fetching data sources: ${snapshot.error}'));
+              return Center(
+                  child:
+                      Text('Error fetching data sources: ${snapshot.error}'));
             } else {
               final consents = snapshot.data;
               if (consents == null || consents.isEmpty) {

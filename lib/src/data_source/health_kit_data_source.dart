@@ -28,7 +28,7 @@ class HealthKitDataSource extends DataSource {
 
   @override
   Widget createConnectionScreen(BuildContext context) {
-    return const _HealthKitConnectionScreen();
+    return const HealthKitConnectionScreen();
   }
 
   @override
@@ -38,15 +38,15 @@ class HealthKitDataSource extends DataSource {
   }
 }
 
-class _HealthKitConnectionScreen extends StatefulWidget {
-  const _HealthKitConnectionScreen({Key? key}) : super(key: key);
+class HealthKitConnectionScreen extends StatefulWidget {
+  const HealthKitConnectionScreen({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _HealthKitConnectionScreenState();
 }
 
 class _HealthKitConnectionScreenState
-    extends State<_HealthKitConnectionScreen> {
+    extends State<HealthKitConnectionScreen> {
   late Future<bool> _healthKitAvailable;
 
   @override

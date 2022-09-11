@@ -13,20 +13,38 @@
 // limitations under the License.
 
 import 'package:http/http.dart';
+import 'account.dart';
 import 'open_health_manager.dart';
 
+/// Patient consent object. Patient consents that represent database-backed
+/// objects **must** have an [id]. Patient consents that do not represent a
+/// database-backed object **must** have `null` for an `id`.
 class PatientConsent {
   const PatientConsent({
-    required this.id,
+    this.id,
     required this.approve,
     required this.fhirResource,
     required this.client,
   });
 
-  final String id;
+  /// The ID of the original entry. When `null`, this represents a consent that
+  /// **is not** stored within the database.
+  final String? id;
   final bool approve;
   final String fhirResource;
   final FHIRClient client;
+
+  Map<String, dynamic> toJson() {
+    var result = <String, dynamic>{
+      "approve": approve,
+      "fhirResource": fhirResource,
+      "client": client.toJson(),
+    };
+    if (id != null) {
+      result["id"] = id;
+    }
+    return result;
+  }
 
   static PatientConsent fromJson(dynamic jsonData) {
     if (jsonData is Map<String, dynamic>) {
@@ -66,6 +84,17 @@ class FHIRClient {
   final String uri;
   final String fhirOrganizationId;
   final String clientDirection;
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "displayName": displayName,
+      "uri": uri,
+      "fhirOrganizationId": fhirOrganizationId,
+      "clientDirection": clientDirection,
+    };
+  }
 
   static FHIRClient fromJson(dynamic jsonData) {
     if (jsonData is Map<String, dynamic>) {
@@ -132,12 +161,52 @@ extension PatientConsentsQuerying on OpenHealthManager {
         return existing;
       } else {
         return PatientConsent(
-          id: client.id.toString(),
+          id: null,
           approve: false,
           fhirResource: '',
           client: client,
         );
       }
     }).toList();
+  }
+
+  /// Updates a patient consent object with the given changes.
+  Future<PatientConsent> updatePatientConsent(
+    PatientConsent consent,
+    Account account,
+    bool approve,
+  ) async {
+    // This is almost identical depending on if the ID is null or not.
+    // If null, POST. If non-null, PUT.
+    var url = serverUrl.resolve('api/fhir-patient-consents');
+    final id = consent.id;
+    if (id != null) {
+      url = url.resolve(id);
+    }
+    final jsonData = <String, dynamic>{
+      "approve": approve,
+      "user": {"id": account.id},
+      "client": {"id": consent.client.id}
+    };
+    if (consent.id != null) {
+      jsonData["id"] = consent.id;
+    }
+    final result = await sendJsonObject(
+        consent.id == null ? 'POST' : 'PUT', url, jsonData);
+    // Currently, the result for POSTing returns an invalid client, so
+    // merge in the new values with the existing client info
+    final newId = result["id"];
+    final newApprove = result["approve"];
+    final newFhirResource = result["fhirResource"];
+    if (newId is String && newApprove is bool && newFhirResource is String) {
+      return PatientConsent(
+        id: newId,
+        approve: newApprove,
+        fhirResource: newFhirResource,
+        client: consent.client,
+      );
+    } else {
+      throw const FormatException('Invalid or missing ID from server');
+    }
   }
 }
