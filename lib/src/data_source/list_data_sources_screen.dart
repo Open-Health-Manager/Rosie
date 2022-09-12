@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -112,20 +111,22 @@ class _DataSourceTileState extends State<_DataSourceTile> {
         // but that will happen later.
         _currentApprove = result.approve;
         _currentConsent = result;
-        // FIXME: This works short term but a better method of finding
-        // "post-approve UI" needs to be designed.
-        // For now, if the URI for the client sent is HealthKit, trigger that
-        if (widget.consent.client.uri ==
-            'https://developer.apple.com/health-fitness/') {
-          if (mounted) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => Scaffold(
-                  appBar: AppBar(title: const Text("Connect to HealthKit")),
-                  body: const HealthKitConnectionScreen(),
+        if (result.approve) {
+          // FIXME: This works short term but a better method of finding
+          // "post-approve UI" needs to be designed.
+          // For now, if the URI for the client sent is HealthKit, trigger that
+          if (widget.consent.client.uri ==
+              'https://developer.apple.com/health-fitness/') {
+            if (mounted) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => Scaffold(
+                    appBar: AppBar(title: const Text("Connect to HealthKit")),
+                    body: const HealthKitConnectionScreen(),
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           }
         }
       }).whenComplete(() {

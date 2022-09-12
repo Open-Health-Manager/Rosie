@@ -178,11 +178,9 @@ extension PatientConsentsQuerying on OpenHealthManager {
   ) async {
     // This is almost identical depending on if the ID is null or not.
     // If null, POST. If non-null, PUT.
-    var url = serverUrl.resolve('api/fhir-patient-consents');
     final id = consent.id;
-    if (id != null) {
-      url = url.resolve(id);
-    }
+    final url = serverUrl.resolve(
+        'api/fhir-patient-consents${id == null ? '' : '/${Uri.encodeComponent(id)}'}');
     final jsonData = <String, dynamic>{
       "approve": approve,
       "user": {"id": account.id},
