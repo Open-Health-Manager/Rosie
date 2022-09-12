@@ -136,7 +136,10 @@ class PatientInfoState extends State<PatientInfo> {
       child: Text(
         'Preventative Health Check',
         style: TextStyle(
-            color: Colors.black, fontWeight: FontWeight.bold, fontSize: 30),
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: 30,
+        ),
       ),
     );
   }
@@ -164,10 +167,11 @@ class PatientInfoState extends State<PatientInfo> {
   void _selectDOBDate(BuildContext context, DateTime? dobValue) async {
     var initialDateOfBirth = (dobValue != null) ? dobValue : DateTime.now();
     final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: initialDateOfBirth,
-        firstDate: DateTime(1930, 8),
-        lastDate: DateTime(2100));
+      context: context,
+      initialDate: initialDateOfBirth,
+      firstDate: DateTime(1930, 8),
+      lastDate: DateTime(2100),
+    );
     if (picked != null) {
       String dateText =
           "${picked.toLocal().month}/${picked.toLocal().day}/${picked.toLocal().year}";
@@ -198,16 +202,17 @@ class PatientInfoState extends State<PatientInfo> {
   }
   */
 
-  Widget _buildTextField(
-      {required String label,
-      TextEditingController? controller,
-      TextInputType? keyboardType,
-      List<TextInputFormatter>? inputFormatters,
-      String? Function(String?)? validator,
-      void Function(String)? onChanged,
-      void Function(String?)? onSaved,
-      void Function()? onTap,
-      double? paddingTop}) {
+  Widget _buildTextField({
+    required String label,
+    TextEditingController? controller,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+    void Function(String)? onChanged,
+    void Function(String?)? onSaved,
+    void Function()? onTap,
+    double? paddingTop,
+  }) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, paddingTop ?? 20, 20, 0),
       child: TextFormField(
@@ -263,54 +268,56 @@ class PatientInfoState extends State<PatientInfo> {
       void Function(String?)? onSaved,
       void Function(String?)? onChanged}) {
     return Padding(
-        padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-        child: DropdownButtonFormField<String>(
-          value: value,
-          items: items,
-          /*style: const TextStyle(color: Colors.black),
+      padding: const EdgeInsets.fromLTRB(0, 20, 20, 0),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        items: items,
+        /*style: const TextStyle(color: Colors.black),
           iconEnabledColor: Colors.black,
           iconDisabledColor: Colors.black,
           dropdownColor: Colors.blueGrey, */
-          decoration: InputDecoration(
-            labelText: label,
-          ),
-          validator: validator,
-          onSaved: onSaved,
-          onChanged: onChanged,
-        ));
+        decoration: InputDecoration(
+          labelText: label,
+        ),
+        validator: validator,
+        onSaved: onSaved,
+        onChanged: onChanged,
+      ),
+    );
   }
 
   Widget _buildSexAssignedAtBirthField(genderValue) {
     return _buildDropdown(
-        value: genderValue,
-        items: sexAtBirthOptions.map((String val) {
-          return DropdownMenuItem(
-            value: val,
-            child: Text(
-              val,
-            ),
-          );
-        }).toList(),
-        label: 'Sex at Birth',
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please select your Sex at Birth';
-          }
-          return null;
-        },
-        onSaved: (value) {
-          //Provider.of<PatientData>(context, listen: false).gender = value!;
-          if (_genderDirty) {
-            Provider.of<PatientData>(context, listen: false)
-                .patientDemographics
-                .value
-                ?.updateGender(value);
-          }
-        },
-        onChanged: (value) {
-          //Provider.of<PatientData>(context, listen: false).gender = value!;
-          _genderDirty = true;
-        });
+      value: genderValue,
+      items: sexAtBirthOptions.map((String val) {
+        return DropdownMenuItem(
+          value: val,
+          child: Text(
+            val,
+          ),
+        );
+      }).toList(),
+      label: 'Sex at Birth',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select your Sex at Birth';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        //Provider.of<PatientData>(context, listen: false).gender = value!;
+        if (_genderDirty) {
+          Provider.of<PatientData>(context, listen: false)
+              .patientDemographics
+              .value
+              ?.updateGender(value);
+        }
+      },
+      onChanged: (value) {
+        //Provider.of<PatientData>(context, listen: false).gender = value!;
+        _genderDirty = true;
+      },
+    );
   }
 
   /*
@@ -422,105 +429,108 @@ class PatientInfoState extends State<PatientInfo> {
 */
   Widget _buildPregnancyField() {
     return _buildDropdown(
-        value: '',
-        items: pregnancyOptions.map((String val) {
-          return DropdownMenuItem(
-            value: val,
-            child: Text(
-              val,
-            ),
-          );
-        }).toList(),
-        label: 'Pregnancy',
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please select your Pregnancy status';
-          }
-          return null;
-        },
-        onSaved: (value) {
-          //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
-          //value!;
-        },
-        onChanged: (value) {
-          //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
-          //value!;
-        });
+      value: '',
+      items: pregnancyOptions.map((String val) {
+        return DropdownMenuItem(
+          value: val,
+          child: Text(
+            val,
+          ),
+        );
+      }).toList(),
+      label: 'Pregnancy',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select your Pregnancy status';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
+        //value!;
+      },
+      onChanged: (value) {
+        //Provider.of<PatientData>(context, listen: false).pregnancyStatus =
+        //value!;
+      },
+    );
   }
 
   Widget _buildTobaccoUsageField(SmokingStatus displayValue) {
     return _buildDropdown(
-        value: displayValue.toPatientInfoString(),
-        items: tobaccoOptions.map((String val) {
-          return DropdownMenuItem(
-            value: val,
-            child: Text(
-              val,
-            ),
-          );
-        }).toList(),
-        label: 'Tobacco Usage',
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please select your Tobacco Usage status';
+      value: displayValue.toPatientInfoString(),
+      items: tobaccoOptions.map((String val) {
+        return DropdownMenuItem(
+          value: val,
+          child: Text(
+            val,
+          ),
+        );
+      }).toList(),
+      label: 'Tobacco Usage',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select your Tobacco Usage status';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        if (_smokingStatusDirty) {
+          SmokingStatus theStatus = SmokingStatus.unknown;
+          switch (value) {
+            case '':
+              theStatus = SmokingStatus.unknown;
+              break;
+            case 'Never Smoked':
+              theStatus = SmokingStatus.neverSmoked;
+              break;
+            case 'Former Smoker':
+              theStatus = SmokingStatus.formerSmoker;
+              break;
+            case 'Current Smoker':
+              theStatus = SmokingStatus.currentSmoker;
+              break;
           }
-          return null;
-        },
-        onSaved: (value) {
-          if (_smokingStatusDirty) {
-            SmokingStatus theStatus = SmokingStatus.unknown;
-            switch (value) {
-              case '':
-                theStatus = SmokingStatus.unknown;
-                break;
-              case 'Never Smoked':
-                theStatus = SmokingStatus.neverSmoked;
-                break;
-              case 'Former Smoker':
-                theStatus = SmokingStatus.formerSmoker;
-                break;
-              case 'Current Smoker':
-                theStatus = SmokingStatus.currentSmoker;
-                break;
-            }
 
-            final obs = SmokingStatusObservation(theStatus);
+          final obs = SmokingStatusObservation(theStatus);
 
-            Provider.of<PatientData>(context, listen: false)
-                .addSmokingStatusObservation(obs, inBatch: true);
-          }
-        },
-        onChanged: (value) {
-          _smokingStatusDirty = true;
-        });
+          Provider.of<PatientData>(context, listen: false)
+              .addSmokingStatusObservation(obs, inBatch: true);
+        }
+      },
+      onChanged: (value) {
+        _smokingStatusDirty = true;
+      },
+    );
   }
 
   Widget _buildSexuallyActiveField() {
     return _buildDropdown(
-        value: '',
-        items: sexualActivityOptions.map((String val) {
-          return DropdownMenuItem(
-            value: val,
-            child: Text(
-              val,
-            ),
-          );
-        }).toList(),
-        label: 'Sexually Active',
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please select your Sexually Active status';
-          }
-          return null;
-        },
-        onSaved: (value) {
-          //Provider.of<PatientData>(context, listen: false)
-          // .sexualActivityStatus = value!;
-        },
-        onChanged: (value) {
-          //Provider.of<PatientData>(context, listen: false)
-          // .sexualActivityStatus = value!;
-        });
+      value: '',
+      items: sexualActivityOptions.map((String val) {
+        return DropdownMenuItem(
+          value: val,
+          child: Text(
+            val,
+          ),
+        );
+      }).toList(),
+      label: 'Sexually Active',
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select your Sexually Active status';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        //Provider.of<PatientData>(context, listen: false)
+        // .sexualActivityStatus = value!;
+      },
+      onChanged: (value) {
+        //Provider.of<PatientData>(context, listen: false)
+        // .sexualActivityStatus = value!;
+      },
+    );
   }
 
   @override
@@ -542,43 +552,45 @@ class PatientInfoState extends State<PatientInfo> {
                   _buildHeaderSubTextForm(),
                   _buildOptionalTextForm(),
                   FutureBuilder<PatientDemographics?>(
-                      builder: (context, snapshot) {
-                        DateTime? dobValue;
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.none:
-                            break;
-                          case ConnectionState.waiting:
-                            break;
-                          case ConnectionState.active:
-                          case ConnectionState.done:
-                            if (snapshot.data != null) {
-                              if (snapshot.data!.dateOfBirth != null) {
-                                dobValue = snapshot.data!.dateOfBirth;
-                              }
+                    builder: (context, snapshot) {
+                      DateTime? dobValue;
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.none:
+                          break;
+                        case ConnectionState.waiting:
+                          break;
+                        case ConnectionState.active:
+                        case ConnectionState.done:
+                          if (snapshot.data != null) {
+                            if (snapshot.data!.dateOfBirth != null) {
+                              dobValue = snapshot.data!.dateOfBirth;
                             }
-                        }
-                        return _builDOBField(dobValue);
-                      },
-                      future: _patientDemographicsFuture),
+                          }
+                      }
+                      return _builDOBField(dobValue);
+                    },
+                    future: _patientDemographicsFuture,
+                  ),
                   FutureBuilder<PatientDemographics?>(
-                      builder: (context, snapshot) {
-                        String genderValue = '';
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.none:
-                            break;
-                          case ConnectionState.waiting:
-                            break;
-                          case ConnectionState.active:
-                          case ConnectionState.done:
-                            if (snapshot.data != null) {
-                              if (snapshot.data!.gender != null) {
-                                genderValue = (snapshot.data!.gender as String);
-                              }
+                    builder: (context, snapshot) {
+                      String genderValue = '';
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.none:
+                          break;
+                        case ConnectionState.waiting:
+                          break;
+                        case ConnectionState.active:
+                        case ConnectionState.done:
+                          if (snapshot.data != null) {
+                            if (snapshot.data!.gender != null) {
+                              genderValue = (snapshot.data!.gender as String);
                             }
-                        }
-                        return _buildSexAssignedAtBirthField(genderValue);
-                      },
-                      future: _patientDemographicsFuture),
+                          }
+                      }
+                      return _buildSexAssignedAtBirthField(genderValue);
+                    },
+                    future: _patientDemographicsFuture,
+                  ),
                   //_buildHeightField(),
                   //_buildWeightField(),
                   //_buildBloodPressureLabel(),
@@ -587,26 +599,26 @@ class PatientInfoState extends State<PatientInfo> {
                   //_buildBloodPressureDateRecordedField(),
                   _buildPregnancyField(),
                   FutureBuilder<List<SmokingStatusObservation>>(
-                      builder: (context, snapshot) {
-                        SmokingStatus smokingStatusValue =
-                            SmokingStatus.unknown;
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.none:
-                            break;
-                          case ConnectionState.waiting:
-                            break;
-                          case ConnectionState.active:
-                          case ConnectionState.done:
-                            if (snapshot.data != null) {
-                              if (snapshot.data!.isNotEmpty) {
-                                smokingStatusValue =
-                                    snapshot.data!.last.smokingStatus;
-                              }
+                    builder: (context, snapshot) {
+                      SmokingStatus smokingStatusValue = SmokingStatus.unknown;
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.none:
+                          break;
+                        case ConnectionState.waiting:
+                          break;
+                        case ConnectionState.active:
+                        case ConnectionState.done:
+                          if (snapshot.data != null) {
+                            if (snapshot.data!.isNotEmpty) {
+                              smokingStatusValue =
+                                  snapshot.data!.last.smokingStatus;
                             }
-                        }
-                        return _buildTobaccoUsageField(smokingStatusValue);
-                      },
-                      future: _smokingStatusFuture),
+                          }
+                      }
+                      return _buildTobaccoUsageField(smokingStatusValue);
+                    },
+                    future: _smokingStatusFuture,
+                  ),
                   _buildSexuallyActiveField(),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
@@ -627,13 +639,11 @@ class PatientInfoState extends State<PatientInfo> {
                             }
                             Navigator.pop(context);
                           },
-                          child: const Text(
-                            'Submit',
-                          ),
+                          child: const Text('Submit'),
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

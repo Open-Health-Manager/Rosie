@@ -165,22 +165,24 @@ ColorScheme createRosieColorScheme({required Brightness brightness}) {
 ThemeData createRosieTheme({brightness = Brightness.light}) {
   // Intentionally ignore the given brightness for now and ALWAYS do light mode
   return ThemeData(
-      colorScheme: createRosieColorScheme(brightness: Brightness.light),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ButtonStyle(
-          backgroundColor:
-              MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
-          foregroundColor:
-              MaterialStateProperty.all<Color>(RosieTheme.onButtonColor),
-          shape: MaterialStateProperty.all<OutlinedBorder>(
-              //const StadiumBorder()
-              RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  side: const BorderSide(color: Colors.black, width: 0.5))),
+    colorScheme: createRosieColorScheme(brightness: Brightness.light),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor:
+            MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
+        foregroundColor:
+            MaterialStateProperty.all<Color>(RosieTheme.onButtonColor),
+        shape: MaterialStateProperty.all<OutlinedBorder>(
+          //const StadiumBorder()
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            side: const BorderSide(color: Colors.black, width: 0.5),
+          ),
         ),
       ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-          style: ButtonStyle(
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: ButtonStyle(
         //backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
         backgroundColor: MaterialStateProperty.all<Color>(
           const Color.fromARGB(255, 254, 242, 245),
@@ -191,36 +193,41 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
         //side: MaterialStateProperty.all<BorderSide>(
         //const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
         shape: MaterialStateProperty.all<OutlinedBorder>(
-            //const StadiumBorder()
-            RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                side: const BorderSide(color: Colors.black, width: 0.5))),
-      )),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color.fromARGB(255, 231, 224, 236),
-        selectedItemColor: Color.fromARGB(255, 29, 25, 43),
-        unselectedItemColor: Color.fromARGB(255, 31, 31, 31),
+          //const StadiumBorder()
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            side: const BorderSide(color: Colors.black, width: 0.5),
+          ),
+        ),
       ),
-      inputDecorationTheme: const InputDecorationTheme(
-        filled: true,
-        focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: RosieTheme.accent, width: 2)),
-        focusColor: RosieTheme.accent,
-        hoverColor: Color(0x141C1B1F),
-        fillColor: RosieTheme.inputBackground,
-        //labelStyle: TextStyle(color: RosieTheme.accent),
-        labelStyle: TextStyle(color: Colors.black, fontSize: 14),
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: Color.fromARGB(255, 231, 224, 236),
+      selectedItemColor: Color.fromARGB(255, 29, 25, 43),
+      unselectedItemColor: Color.fromARGB(255, 31, 31, 31),
+    ),
+    inputDecorationTheme: const InputDecorationTheme(
+      filled: true,
+      focusedBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: RosieTheme.accent, width: 2),
       ),
-      textSelectionTheme: TextSelectionThemeData(
-        cursorColor: RosieTheme.accent,
-        selectionColor: RosieTheme.accent.withAlpha(128),
-        selectionHandleColor: RosieTheme.accent,
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ));
+      focusColor: RosieTheme.accent,
+      hoverColor: Color(0x141C1B1F),
+      fillColor: RosieTheme.inputBackground,
+      //labelStyle: TextStyle(color: RosieTheme.accent),
+      labelStyle: TextStyle(color: Colors.black, fontSize: 14),
+    ),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: RosieTheme.accent,
+      selectionColor: RosieTheme.accent.withAlpha(128),
+      selectionHandleColor: RosieTheme.accent,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      elevation: 0,
+    ),
+  );
 }
 
 BoxDecoration createRosieScreenBoxDecoration() {

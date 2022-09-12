@@ -29,19 +29,19 @@ class CarePlanCards extends StatelessWidget {
   final Function()? patientInfoOnTap;
   final String recommendationText;
 
-  const CarePlanCards(
-      {Key? key,
-      required this.heading,
-      required this.subheading,
-      required this.screeningText,
-      required this.dataServicesHeading,
-      required this.dataServicesSubHeading,
-      required this.imageReferenceText,
-      required this.patientInfoText,
-      required this.patientInfoOnTap,
-      required this.recommendationText,
-      required this.title})
-      : super(key: key);
+  const CarePlanCards({
+    Key? key,
+    required this.heading,
+    required this.subheading,
+    required this.screeningText,
+    required this.dataServicesHeading,
+    required this.dataServicesSubHeading,
+    required this.imageReferenceText,
+    required this.patientInfoText,
+    required this.patientInfoOnTap,
+    required this.recommendationText,
+    required this.title,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +57,9 @@ class CarePlanCards extends StatelessWidget {
                 heading,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
               subtitle: Text(
                 subheading,
@@ -68,7 +70,6 @@ class CarePlanCards extends StatelessWidget {
             SizedBox(
               height: 80, //170.0,
               child: Image(
-                //Placeholder(),
                 image: AssetImage(imageReferenceText),
                 //fit: BoxFit.cover,
               ),
@@ -91,18 +92,21 @@ class CarePlanCards extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: RichText(
                 text: TextSpan(
-                    style: const TextStyle(color: Colors.black),
-                    children: <TextSpan>[
-                      TextSpan(text: screeningText),
-                      TextSpan(
-                          text: patientInfoText,
-                          style: const TextStyle(
-                              color: Color(0xFF6750A4),
-                              fontWeight: FontWeight.bold),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = patientInfoOnTap),
-                      TextSpan(text: recommendationText),
-                    ]),
+                  style: const TextStyle(color: Colors.black),
+                  children: <TextSpan>[
+                    TextSpan(text: screeningText),
+                    TextSpan(
+                      text: patientInfoText,
+                      style: const TextStyle(
+                        color: Color(0xFF6750A4),
+                        fontWeight: FontWeight.bold,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = patientInfoOnTap,
+                    ),
+                    TextSpan(text: recommendationText),
+                  ],
+                ),
               ),
             ),
             ButtonBar(
@@ -117,23 +121,26 @@ class CarePlanCards extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => Scaffold(
-                                appBar: AppBar(title: Text(title)),
-                                body: Container(
-                                    decoration:
-                                        createRosieScreenBoxDecoration(),
-                                    child: const SafeArea(
-                                        child:
-                                            BloodPressureVisualizationScreen())))));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Scaffold(
+                          appBar: AppBar(title: Text(title)),
+                          body: Container(
+                            decoration: createRosieScreenBoxDecoration(),
+                            child: const SafeArea(
+                              child: BloodPressureVisualizationScreen(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
                   },
                   child: Text(
                       //'Update $title',
                       title == 'Blood Pressure' ? 'Update $title' : 'Update'),
-                )
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),
