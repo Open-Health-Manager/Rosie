@@ -14,29 +14,8 @@
 
 import 'package:flutter/material.dart';
 
-import "data_source.dart";
 import 'health_kit/health_kit.dart';
 import 'health_kit/send_health_kit_screen.dart';
-
-class HealthKitDataSource extends DataSource {
-  HealthKitDataSource()
-      : super(
-          "Apple HealthKit",
-          description:
-              "Health data and clinical records stored within your local HealthKit profile.",
-        );
-
-  @override
-  Widget createConnectionScreen(BuildContext context) {
-    return const HealthKitConnectionScreen();
-  }
-
-  @override
-  Widget? createIcon(BuildContext context) {
-    // TODO: Pull HealthKit icon
-    return null;
-  }
-}
 
 class HealthKitConnectionScreen extends StatefulWidget {
   const HealthKitConnectionScreen({Key? key}) : super(key: key);

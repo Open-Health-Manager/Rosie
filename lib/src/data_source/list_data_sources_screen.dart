@@ -19,7 +19,7 @@ import '../app_config.dart';
 import '../open_health_manager/consents.dart';
 import '../open_health_manager/open_health_manager.dart';
 import '../open_health_manager/patient_data.dart';
-import 'health_kit_data_source.dart';
+import 'health_kit_connection_screen.dart';
 
 class _DataSourceDescription extends StatelessWidget {
   const _DataSourceDescription({Key? key, required this.dataSource})
