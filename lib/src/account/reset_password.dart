@@ -46,7 +46,7 @@ class _ResetPasswordState extends State<ResetPassword> {
                 autocorrect: false,
                 autofocus: true,
                 decoration: const InputDecoration(
-                  hintText: "Email",
+                  hintText: "Email Address",
                   prefixIcon: Icon(Icons.email),
                 ),
                 validator: (value) {
@@ -79,6 +79,20 @@ class _ResetPasswordState extends State<ResetPassword> {
           return "Email is required";
         }
       },
+      afterFormBuilder: (BuildContext context) {
+        return ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFEF2F5),
+          ),
+          child: const Text(
+            "Back",
+            style: TextStyle(color: Color(0xFF1F201D)),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
     );
   }
 }
@@ -102,15 +116,25 @@ class PasswordResetSent extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30.0),
-            const Text(
-                'Recovery email sent! Please check your email for instructions on how to reset your password. Once reset, you can'),
+            const Text('Recovery email sent!'),
             const SizedBox(height: 30.0),
             ElevatedButton(
               onPressed: () {
-                Navigator.popUntil(
-                    context, (route) => route.settings.name == "signIn");
+                // Attempt to open the email app
               },
-              child: const Text('Return to Sign In'),
+              child: const Text('Open Email'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFEF2F5),
+              ),
+              child: const Text(
+                "Back",
+                style: TextStyle(color: Color(0xFF1F201D)),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
           ],
         );

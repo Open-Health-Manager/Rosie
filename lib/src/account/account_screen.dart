@@ -184,9 +184,6 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
             case ConnectionState.done:
               // refactor so that styling is the same as other buttons
               final submitButton = ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: const Color(0xFFFA99AF),
-                ),
                 onPressed: submit,
                 child: Text(widget.submitLabel),
               );

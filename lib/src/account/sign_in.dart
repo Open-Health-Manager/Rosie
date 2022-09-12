@@ -15,6 +15,7 @@
 // This provides the sign in process
 
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'account_screen.dart';
 import 'reset_password.dart';
@@ -31,6 +32,24 @@ class _SignInState extends State<SignIn> {
   String? email;
   String? password;
 
+  // new piece of code - create button bar, may need to add the underscore and call it from the build function as done in the blood_pressure_help
+  Widget _createButtonBar(BuildContext context) {
+    // Go back button is always the same
+    final goBack = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFFEF2F5),
+      ),
+      child: const Text(
+        "Back",
+        style: TextStyle(color: Color(0xFF1F201D)),
+      ),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    return Align(alignment: AlignmentDirectional.center, child: goBack);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AccountScreenForm(
@@ -43,7 +62,7 @@ class _SignInState extends State<SignIn> {
                 autocorrect: false,
                 autofocus: true,
                 decoration: const InputDecoration(
-                  hintText: "Email",
+                  hintText: "Email Address",
                   prefixIcon: Icon(Icons.email),
                 ),
                 validator: (value) {
@@ -85,7 +104,7 @@ class _SignInState extends State<SignIn> {
           ),
         );
       },
-      submitLabel: "Sign In",
+      submitLabel: "Confirm",
       onSubmit: () async {
         if (email != null && password != null) {
           final auth =
@@ -99,16 +118,56 @@ class _SignInState extends State<SignIn> {
       },
       afterFormBuilder: (BuildContext context) {
         // A link to retrieve the password
-        return TextButton(
-          child: const Text('Forgot password?'),
-          onPressed: () {
-            Navigator.push<void>(
-              context,
-              MaterialPageRoute<void>(
-                builder: (context) => const ResetPassword(),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            _createButtonBar(context),
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: ""),
+                  TextSpan(
+                    text: "Retrieve account or password?",
+                    style: const TextStyle(
+                      color: Color(0xFF4C4D4A),
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.push<void>(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (context) => const ResetPassword(),
+                          ),
+                        );
+                      },
+                  ),
+                ],
               ),
-            );
-          },
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: "Need to Create An Account? "),
+                  TextSpan(
+                    text: "Sign Up",
+                    style: const TextStyle(
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.pushNamed(context, "signUp");
+                      },
+                  ),
+                  const TextSpan(
+                    text: ".",
+                  )
+                ],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
         );
       },
     );

@@ -22,6 +22,7 @@ import 'account_screen.dart';
 import 'verify_account.dart';
 import '../../data_use_agreement/data_use_agreement.dart';
 import '../open_health_manager/open_health_manager.dart';
+import '../account/sign_in.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key, required this.dataUseAgreement}) : super(key: key);
@@ -280,6 +281,44 @@ class _SignUpState extends State<SignUp> {
         } else {
           return "Please correct the above errors and try again";
         }
+      },
+      afterFormBuilder: (BuildContext context) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFEF2F5),
+              ),
+              child: const Text(
+                "Back",
+                style: TextStyle(color: Color(0xFF1F201D)),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: "Already Have An Account? "),
+                  TextSpan(
+                    text: "Sign In",
+                    style: const TextStyle(
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.pushNamed(context, "signIn");
+                      },
+                  ),
+                  const TextSpan(text: ".")
+                ],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
       },
     );
   }

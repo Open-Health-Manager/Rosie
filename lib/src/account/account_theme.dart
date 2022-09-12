@@ -15,9 +15,10 @@
 import 'package:flutter/material.dart';
 
 class AccountThemePalette {
-  static const Color boxColor = Color(0xFFFEF2F5);
-  static const Color background = Color(0xFFFA99AF);
-  static const Color textColor = Color(0xFF1F201D);
+  static const boxColor = Color(0xFFFEF2F5);
+  static const background = Colors.white;
+  static const primary = Color(0xFFFA99AF);
+  static const textColor = Color(0xFF1F201D);
 }
 
 ThemeData createAccountTheme() {
@@ -25,7 +26,26 @@ ThemeData createAccountTheme() {
     brightness: Brightness.dark,
     appBarTheme: const AppBarTheme(
       backgroundColor: AccountThemePalette.background,
+      foregroundColor: AccountThemePalette.primary,
       elevation: 0.0,
+    ),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: MaterialStateColor.resolveWith(
+        (states) {
+          if (states.contains(MaterialState.selected)) {
+            // the color when checkbox is selected
+            return AccountThemePalette.textColor;
+          }
+          // the color when checkbox is unselected
+          return AccountThemePalette.textColor;
+        },
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AccountThemePalette.primary,
+        foregroundColor: AccountThemePalette.textColor,
+      ),
     ),
     backgroundColor: AccountThemePalette.boxColor,
     inputDecorationTheme: const InputDecorationTheme(
