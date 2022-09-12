@@ -19,7 +19,12 @@ import 'health_kit/health_kit.dart';
 import 'health_kit/send_health_kit_screen.dart';
 
 class HealthKitDataSource extends DataSource {
-  HealthKitDataSource() : super("Apple HealthKit", description: "Health data and clinical records stored within your local HealthKit profile.");
+  HealthKitDataSource()
+      : super(
+          "Apple HealthKit",
+          description:
+              "Health data and clinical records stored within your local HealthKit profile.",
+        );
 
   @override
   Widget createConnectionScreen(BuildContext context) {
@@ -31,7 +36,6 @@ class HealthKitDataSource extends DataSource {
     // TODO: Pull HealthKit icon
     return null;
   }
-
 }
 
 class _HealthKitConnectionScreen extends StatefulWidget {
@@ -41,7 +45,8 @@ class _HealthKitConnectionScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _HealthKitConnectionScreenState();
 }
 
-class _HealthKitConnectionScreenState extends State<_HealthKitConnectionScreen> {
+class _HealthKitConnectionScreenState
+    extends State<_HealthKitConnectionScreen> {
   late Future<bool> _healthKitAvailable;
 
   @override
@@ -50,7 +55,8 @@ class _HealthKitConnectionScreenState extends State<_HealthKitConnectionScreen> 
     _healthKitAvailable = _requestHealthKitAccess();
   }
 
-  Widget _buildScreen(BuildContext context, String headline, String subtext, {showRetry = false}) {
+  Widget _buildScreen(BuildContext context, String headline, String subtext,
+      {showRetry = false}) {
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(10),
@@ -59,9 +65,9 @@ class _HealthKitConnectionScreenState extends State<_HealthKitConnectionScreen> 
         children: [
           Text(headline, style: theme.textTheme.headline4, softWrap: true),
           const SizedBox(height: 20),
-          Text(subtext, style: theme.textTheme.bodyMedium, softWrap: true)
+          Text(subtext, style: theme.textTheme.bodyMedium, softWrap: true),
         ],
-      )
+      ),
     );
   }
 
@@ -71,43 +77,43 @@ class _HealthKitConnectionScreenState extends State<_HealthKitConnectionScreen> 
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(future: _healthKitAvailable,
-      initialData: false,
-      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-        switch (snapshot.connectionState) {
-          case ConnectionState.none:
-          case ConnectionState.waiting:
-          case ConnectionState.active:
-            // In this case, data doesn't matter, display the text indicating loading is progressing
-            return _buildScreen(
-              context,
-              "Requesting HealthKit access...",
-              "iOS should ask for your permission to access HealthKit shortly."
-            );
-          case ConnectionState.done:
-            // Two cases in this case: it succeeded, or it failed.
-            // (== true because it could also == null, and nullable expressions
-            // cannot be used as a condition)
-            if (snapshot.data == true) {
-              return const SendHealthKitScreen();
-            } else {
-              if (snapshot.hasError) {
-                return _buildScreen(
-                  context,
-                  "Error Connecting to HealthKit",
-                  "An error prevented connecting to HealthKit:\n${snapshot.error}"
-                );
+    return FutureBuilder<bool>(
+        future: _healthKitAvailable,
+        initialData: false,
+        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+            case ConnectionState.waiting:
+            case ConnectionState.active:
+              // In this case, data doesn't matter, display the text indicating loading is progressing
+              return _buildScreen(
+                context,
+                "Requesting HealthKit access...",
+                "iOS should ask for your permission to access HealthKit shortly.",
+              );
+            case ConnectionState.done:
+              // Two cases in this case: it succeeded, or it failed.
+              // (== true because it could also == null, and nullable expressions
+              // cannot be used as a condition)
+              if (snapshot.data == true) {
+                return const SendHealthKitScreen();
               } else {
-                return _buildScreen(
-                  context,
-                  "HealthKit Not Connected",
-                  "Permission to access HealthKit was not granted, so HealthKit data cannot be loaded.",
-                  showRetry: true
-                );
+                if (snapshot.hasError) {
+                  return _buildScreen(
+                    context,
+                    "Error Connecting to HealthKit",
+                    "An error prevented connecting to HealthKit:\n${snapshot.error}",
+                  );
+                } else {
+                  return _buildScreen(
+                    context,
+                    "HealthKit Not Connected",
+                    "Permission to access HealthKit was not granted, so HealthKit data cannot be loaded.",
+                    showRetry: true,
+                  );
+                }
               }
-            }
-        }
-      }
-    );
+          }
+        });
   }
 }

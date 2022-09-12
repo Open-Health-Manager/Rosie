@@ -24,30 +24,38 @@ class _DataSourceDescription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(dataSource.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 2),
-          Text(dataSource.description,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.caption),
-          Expanded(child: Container()),
-          ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                    // When connecting to a data source, force it into a scaffold
-                    MaterialPageRoute(
-                        builder: (context) => Scaffold(
-                            appBar: AppBar(
-                                title: Text("Connect to ${dataSource.name}")),
-                            body: dataSource.createConnectionScreen(context))));
-              },
-              child: const Text("Connect"))
-        ]);
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          dataSource.name,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          dataSource.description,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.caption,
+        ),
+        Expanded(child: Container()),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              // When connecting to a data source, force it into a scaffold
+              MaterialPageRoute(
+                builder: (context) => Scaffold(
+                    appBar:
+                        AppBar(title: Text("Connect to ${dataSource.name}")),
+                    body: dataSource.createConnectionScreen(context)),
+              ),
+            );
+          },
+          child: const Text("Connect"),
+        ),
+      ],
+    );
   }
 }
 
@@ -115,19 +123,23 @@ class _ListDataSourcesState extends State<ListDataSourcesScreen> {
   Widget _buildDataSourceList(BuildContext context) {
     if (_lookingUp) {
       return Center(
-          child: Column(children: const [
-        CircularProgressIndicator(),
-        Text("Finding available data sources...")
-      ]));
+        child: Column(
+          children: const [
+            CircularProgressIndicator(),
+            Text("Finding available data sources..."),
+          ],
+        ),
+      );
     } else {
       // Otherwise, build the list!
       if (_dataSources.isEmpty) {
         return const Center(child: Text("No data sources."));
       } else {
         return ListView.builder(
-            itemBuilder: (context, index) =>
-                _DataSourceTile(dataSource: _dataSources[index]),
-            itemCount: _dataSources.length);
+          itemBuilder: (context, index) =>
+              _DataSourceTile(dataSource: _dataSources[index]),
+          itemCount: _dataSources.length,
+        );
       }
     }
   }
@@ -135,7 +147,8 @@ class _ListDataSourcesState extends State<ListDataSourcesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("Connect Data & Services")),
-        body: _buildDataSourceList(context));
+      appBar: AppBar(title: const Text("Connect Data & Services")),
+      body: _buildDataSourceList(context),
+    );
   }
 }

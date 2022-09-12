@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'health_kit.dart';
 import '../../open_health_manager/open_health_manager.dart';
+import '../../open_health_manager/patient_data.dart';
 
 class SendHealthKitScreen extends StatefulWidget {
   const SendHealthKitScreen({Key? key}) : super(key: key);
@@ -37,61 +38,113 @@ class _SendHealthKitScreenState extends State<SendHealthKitScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<HealthKitResource>>(builder: (context, snapshot) {
-      switch (snapshot.connectionState) {
-        case ConnectionState.none:
-          return buildBaseScreen(context);
-        case ConnectionState.waiting:
-        case ConnectionState.active:
-          return buildBaseScreen(context, loading: true);
-        case ConnectionState.done:
-          return buildBaseScreen(context, reload: true, uploadCount: snapshot.data?.length, error: snapshot.error);
-      }
-    }, future: recordFuture);
+    return FutureBuilder<List<HealthKitResource>>(
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+              return buildBaseScreen(context);
+            case ConnectionState.waiting:
+            case ConnectionState.active:
+              return buildBaseScreen(context, loading: true);
+            case ConnectionState.done:
+              return buildBaseScreen(
+                context,
+                reload: true,
+                uploadCount: snapshot.data?.length,
+                error: snapshot.error,
+              );
+          }
+        },
+        future: recordFuture);
   }
 
   void loadRecords() {
     setState(() {
-      recordFuture = HealthKit.queryAllClinicalRecords().then((records) {
+      recordFuture =
+          HealthKit.queryAllClinicalRecords(healthManager).then((records) {
         setState(() {
           currentActivity = "Sending records to Open Health Manager...";
         });
-        return healthManager.sendProcessMessage(records.map<Map<String, dynamic>>((e) => e.resource), fhirVersion: "dstu2", endpoint: "urn:apple:health-kit").then((_) => records);
+        return healthManager
+            .sendProcessMessage(
+              records.map<Map<String, dynamic>>((e) => e.resource),
+              fhirVersion: "dstu2",
+              endpoint: "urn:apple:health-kit",
+            )
+            .then((_) => records);
       });
       currentActivity = "Loading records from HealthKit...";
     });
   }
 
-  Widget buildBaseScreen(BuildContext context, {bool loading = false, bool reload = false, int? uploadCount, Object? error}) {
+  Widget buildBaseScreen(
+    BuildContext context, {
+    bool loading = false,
+    bool reload = false,
+    int? uploadCount,
+    Object? error,
+  }) {
     final theme = Theme.of(context);
-    final void Function()? onLoadPressed = loading ? null : () { loadRecords(); };
+    final void Function()? onLoadPressed = loading
+        ? null
+        : () {
+            loadRecords();
+          };
+    if (uploadCount != null && uploadCount > 0) {
+      // if records were uploaded
+      // trigger a reload of the local data store
+      context.read<PatientData>().reloadAll();
+    }
     return Container(
       padding: const EdgeInsets.all(10),
       alignment: Alignment.center,
       child: Column(
         children: [
-          Text("HealthKit Connected", style: theme.textTheme.headline4, softWrap: true),
+          Text(
+            "HealthKit Connected",
+            style: theme.textTheme.headline4,
+            softWrap: true,
+          ),
           const SizedBox(height: 20),
-          Text("HealthKit has been connected and data can now be loaded from it.", style: theme.textTheme.bodyMedium, softWrap: true),
+          Text(
+            "HealthKit has been connected and data can now be loaded from it.",
+            style: theme.textTheme.bodyMedium,
+            softWrap: true,
+          ),
           if (uploadCount != null) ...[
             const SizedBox(height: 20),
-            Text("Sent $uploadCount records")
+            Text("Sent $uploadCount records"),
           ],
           const SizedBox(height: 20),
-          ElevatedButton(onPressed: onLoadPressed, child: Text(reload ? "Reload Records" : "Load Records")),
+          ElevatedButton(
+            onPressed: onLoadPressed,
+            child: Text(reload ? "Reload Records" : "Load Records"),
+          ),
           if (loading) ...[
             const SizedBox(height: 20),
-            Row(children: <Widget>[
-              const CircularProgressIndicator(),
-              Expanded(child: Text(currentActivity, style: theme.textTheme.bodyMedium, softWrap: true))
-            ])
+            Row(
+              children: <Widget>[
+                const CircularProgressIndicator(),
+                Expanded(
+                  child: Text(
+                    currentActivity,
+                    style: theme.textTheme.bodyMedium,
+                    softWrap: true,
+                  ),
+                ),
+              ],
+            ),
           ],
           if (error != null) ...[
             const SizedBox(height: 20),
-            Text("Error loading records: $error", style: theme.textTheme.bodyMedium?.apply(color: theme.errorColor), softWrap: true)
-          ]
+            Text(
+              "Error loading records: $error",
+              style: theme.textTheme.bodyMedium?.apply(color: theme.errorColor),
+              softWrap: true,
+            ),
+          ],
         ],
-      )
+      ),
     );
   }
 }

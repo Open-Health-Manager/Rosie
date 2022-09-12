@@ -26,10 +26,13 @@ import 'patient_demographics.dart';
 enum LoadState {
   /// No data has been loaded
   unloaded,
+
   /// Data is presently being loaded
   loading,
+
   /// Loading has finished successfully
   done,
+
   /// Loading has finished but with an error that prevented a value from being loaded
   error
 }
@@ -58,29 +61,29 @@ class CachedData<T> {
   /// returns a Future that completes immediately (via [Future.value] or [Future.error]). If loading, returns the
   Future<T> get() {
     switch (_state) {
-    case LoadState.unloaded:
-      // Start the load:
-      final future = fetch();
-      // Assign our handlers
-      future.then((value) {
-        _value = value;
-        _state = LoadState.done;
-        _future = null;
-      }).catchError((error) {
-        _error = error;
-        _state = LoadState.error;
-        _future = null;
-      });
-      _future = future;
-      return future;
-    case LoadState.loading:
-      // Return the existing future:
-      // (It not existing in this case is an error)
-      return _future!;
-    case LoadState.done:
-      return Future.value(_value);
-    case LoadState.error:
-      return Future.error(_error);
+      case LoadState.unloaded:
+        // Start the load:
+        final future = fetch();
+        // Assign our handlers
+        future.then((value) {
+          _value = value;
+          _state = LoadState.done;
+          _future = null;
+        }).catchError((error) {
+          _error = error;
+          _state = LoadState.error;
+          _future = null;
+        });
+        _future = future;
+        return future;
+      case LoadState.loading:
+        // Return the existing future:
+        // (It not existing in this case is an error)
+        return _future!;
+      case LoadState.done:
+        return Future.value(_value);
+      case LoadState.error:
+        return Future.error(_error);
     }
   }
 
@@ -102,8 +105,11 @@ class CachedData<T> {
   }
 }
 
-/// The PatientData class provides access to patient data stored within the backend. Patient data is loaded via the
-/// OpenHealthManager instance given.
+/// The PatientData class provides access to patient data stored within the
+/// backend. Patient data is loaded via the [OpenHealthManager] instance given.
+/// Instances of this class should only be created while the underlying
+/// OpenHealthManager is signed in - the methods that pull patient data all
+/// require an existing session.
 class PatientData extends ChangeNotifier {
   PatientData(this.healthManager);
 
@@ -112,7 +118,8 @@ class PatientData extends ChangeNotifier {
   late final patientDemographics = CachedData<PatientDemographics?>(() async {
     return await healthManager.queryPatientDemographics();
   });
-  late final bloodPressure = CachedData<List<BloodPressureObservation>>(() async {
+  late final bloodPressure =
+      CachedData<List<BloodPressureObservation>>(() async {
     return await healthManager.queryBloodPressure();
   });
   late final smokingStatus =
@@ -120,9 +127,16 @@ class PatientData extends ChangeNotifier {
     return await healthManager.querySmokingStatus();
   });
 
+  void reloadAll() {
+    patientDemographics.reload();
+    bloodPressure.reload();
+    smokingStatus.reload();
+  }
+
   /// Adds a blood pressure observation to the current data (even if it hasn't been loaded yet) and then attempts to
   /// write it to the backend.
-  Future<void> addBloodPressureObservation(BloodPressureObservation obs, {bool inBatch = false}) async {
+  Future<void> addBloodPressureObservation(BloodPressureObservation obs,
+      {bool inBatch = false}) async {
     final List<BloodPressureObservation>? bps = bloodPressure.value;
     if (bps == null) {
       // Set a single value list

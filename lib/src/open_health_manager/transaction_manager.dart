@@ -41,13 +41,16 @@ class TransactionManager {
     BundleEntry theEntry = BundleEntry(
       resource: theResource,
       request: BundleRequest(
-          method: (theResource.id == null)
-              ? BundleRequestMethod.post
-              : BundleRequestMethod.put,
-          url: FhirUri(theResource.resourceTypeString! +
+        method: (theResource.id == null)
+            ? BundleRequestMethod.post
+            : BundleRequestMethod.put,
+        url: FhirUri(
+          theResource.resourceTypeString! +
               ((theResource.id == null || theResource.id!.value == null)
                   ? ""
-                  : "/${theResource.id!.value!}"))),
+                  : "/${theResource.id!.value!}"),
+        ),
+      ),
     );
     List<BundleEntry>? updatedEntryList = _updateBatch!.entry;
     if (updatedEntryList == null) {

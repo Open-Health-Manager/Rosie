@@ -20,13 +20,16 @@ import 'package:crypto/crypto.dart';
 /// passes it through the base encoder.)
 Uint8List base64UrlDecode(String s) {
   final String padded;
-  switch(s.length % 4) {
+  switch (s.length % 4) {
     case 0:
-      padded = s; break;
+      padded = s;
+      break;
     case 2:
-      padded = '$s=='; break;
+      padded = '$s==';
+      break;
     case 3:
-      padded = '$s='; break;
+      padded = '$s=';
+      break;
     // Only possible value for default is 1 but use default so the compiler
     // knows padded must be set
     default:
@@ -67,27 +70,31 @@ class Token {
     // Must be at least one '.'
     final headerEndIndex = encodedToken.indexOf('.');
     if (headerEndIndex < 0) {
-      throw FormatException('Invalid JWT token (no "." to mark end of header found)', encodedToken, 0);
+      throw FormatException(
+        'Invalid JWT token (no "." to mark end of header found)',
+        encodedToken,
+        0,
+      );
     }
-    final header = json.decode(
-      utf8.decode(
+    final header = json.decode(utf8.decode(
         base64UrlDecode(encodedToken.substring(0, headerEndIndex)),
-        allowMalformed: false
-      )
-    );
+        allowMalformed: false));
     // Make sure the header is an object
     if (header is! Map<String, dynamic>) {
-      throw FormatException('Unexpected header: not a JSON object', encodedToken, 0);
+      throw FormatException(
+        'Unexpected header: not a JSON object',
+        encodedToken,
+        0,
+      );
     }
     final payloadEndIndex = encodedToken.indexOf('.', headerEndIndex + 1);
     // In this case, -1 is actually valid: it means there is no signature, which
     // is only valid when the algorithm is "none", but is still allowed
-    final payload = json.decode(
-      utf8.decode(
-        base64UrlDecode(encodedToken.substring(headerEndIndex + 1, payloadEndIndex >= 0 ? payloadEndIndex : encodedToken.length)),
-        allowMalformed: false
-      )
-    );
+    final payload = json.decode(utf8.decode(
+      base64UrlDecode(encodedToken.substring(headerEndIndex + 1,
+          payloadEndIndex >= 0 ? payloadEndIndex : encodedToken.length)),
+      allowMalformed: false,
+    ));
     return Token(header, payload);
   }
 
@@ -96,7 +103,8 @@ class Token {
     var value = payload[field];
     if (value is num) {
       // it sounds like floating point is allowed by the spec?
-      return DateTime.fromMillisecondsSinceEpoch((value * 1000).toInt(), isUtc: true);
+      return DateTime.fromMillisecondsSinceEpoch((value * 1000).toInt(),
+          isUtc: true);
     } else {
       return null;
     }
@@ -130,7 +138,8 @@ class Token {
   /// Note that this does **not** modify the header! If given an invalid [Hmac] based on the JWT header within the token,
   /// this will happily encode a junk token.
   String encoded([Hmac? hmac]) {
-    final body = '${base64UrlEncodeString(json.encode(header))}.${base64UrlEncodeString(json.encode(payload))}';
+    final body =
+        '${base64UrlEncodeString(json.encode(header))}.${base64UrlEncodeString(json.encode(payload))}';
     if (hmac != null) {
       Digest signature = hmac.convert(utf8.encode(body));
       return '$body.${base64UrlEncode(signature.bytes)}';

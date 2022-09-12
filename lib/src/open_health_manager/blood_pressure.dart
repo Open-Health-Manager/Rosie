@@ -13,22 +13,28 @@
 // limitations under the License.
 
 import 'dart:developer';
-import 'package:fhir/r4.dart' show Code, CodeableConcept, Coding, Decimal,
-  FhirUri, Instant, Observation, ObservationComponent, Quantity, Reference;
+import 'package:fhir/r4.dart'
+    show
+        Code,
+        CodeableConcept,
+        Coding,
+        Decimal,
+        FhirUri,
+        Instant,
+        Observation,
+        ObservationComponent,
+        Quantity,
+        Reference;
 import 'open_health_manager.dart';
 import 'util.dart';
 
 // Known systolic codes by system.
 const systolicCoding = <String, List<String>>{
-  "http://loinc.org": [
-    "8480-6"
-  ]
+  "http://loinc.org": ["8480-6"]
 };
 // Known diastolic codes by system.
 const diastolicCoding = <String, List<String>>{
-  "http://loinc.org": [
-    "8462-4"
-  ]
+  "http://loinc.org": ["8462-4"]
 };
 
 /// An observation of a blood pressure reading.
@@ -53,19 +59,23 @@ class BloodPressureObservation {
         // Can't do anything without a quantity.
         continue;
       }
-      if (findCodingInConcept(component.code, matchesCodes(systolicCoding)) != null) {
+      if (findCodingInConcept(component.code, matchesCodes(systolicCoding)) !=
+          null) {
         // This component is a systolic value.
         systolic = convertToUnit(quantity, mmHg);
       }
-      if (findCodingInConcept(component.code, matchesCodes(diastolicCoding)) != null) {
+      if (findCodingInConcept(component.code, matchesCodes(diastolicCoding)) !=
+          null) {
         // This component is a diastolic value.
         diastolic = convertToUnit(quantity, mmHg);
       }
     }
     if (systolic != null && diastolic != null) {
-      return BloodPressureObservation(systolic, diastolic, observation.effectiveDateTime?.value);
+      return BloodPressureObservation(
+          systolic, diastolic, observation.effectiveDateTime?.value);
     } else {
-      throw const InvalidResourceException("Could not locate a valid blood pressure within given Observation");
+      throw const InvalidResourceException(
+          "Could not locate a valid blood pressure within given Observation");
     }
   }
 
@@ -91,11 +101,9 @@ class BloodPressureObservation {
   Observation generateObservation(Reference? subject) {
     final issued = taken;
     return Observation(
-      code: CodeableConcept(
-        coding: <Coding>[
-          Coding(system: FhirUri(Systems.loinc), code: Code('55284-4'))
-        ]
-      ),
+      code: CodeableConcept(coding: <Coding>[
+        Coding(system: FhirUri(Systems.loinc), code: Code('55284-4'))
+      ]),
       issued: issued == null ? null : Instant.fromDateTime(issued),
       component: <ObservationComponent>[
         ObservationComponent(
@@ -105,16 +113,16 @@ class BloodPressureObservation {
               Coding(
                 display: 'Systolic blood pressure',
                 system: FhirUri(Systems.loinc),
-                code: Code("8480-6")
-              )
-            ]
+                code: Code("8480-6"),
+              ),
+            ],
           ),
           valueQuantity: Quantity(
             system: FhirUri(Systems.unitsOfMeasure),
             code: Code('mm[Hg]'),
             unit: 'mm[Hg]',
-            value: Decimal(systolic)
-          )
+            value: Decimal(systolic),
+          ),
         ),
         ObservationComponent(
           code: CodeableConcept(
@@ -123,19 +131,19 @@ class BloodPressureObservation {
               Coding(
                 display: 'Diastolic blood pressure',
                 system: FhirUri(Systems.loinc),
-                code: Code("8462-4")
-              )
-            ]
+                code: Code("8462-4"),
+              ),
+            ],
           ),
           valueQuantity: Quantity(
             system: FhirUri(Systems.unitsOfMeasure),
             code: Code('mm[Hg]'),
             unit: 'mm[Hg]',
-            value: Decimal(diastolic)
-          )
-        )
+            value: Decimal(diastolic),
+          ),
+        ),
       ],
-      subject: subject
+      subject: subject,
     );
   }
 }
@@ -146,10 +154,8 @@ extension BloodPressureQuerying on OpenHealthManager {
   /// Any exceptions during loading are thrown, and any exceptions during parsing are logged to the FINE (500) log level
   /// but otherwise eaten and simply left out of the result.
   Future<List<BloodPressureObservation>> queryBloodPressure() async {
-    final bundle = await queryResource("Observation", {
-      "code": "http://loinc.org|55284-4",
-      "_sort": "-date"
-    });
+    final bundle = await queryResource(
+        "Observation", {"code": "http://loinc.org|55284-4", "_sort": "-date"});
     final results = <BloodPressureObservation>[];
     final entries = bundle.entry;
     if (entries == null) {
@@ -160,8 +166,9 @@ extension BloodPressureQuerying on OpenHealthManager {
       if (resource != null && resource is Observation) {
         try {
           results.add(BloodPressureObservation.fromObservation(resource));
-        } on InvalidResourceException catch(error) {
-          log('Unable to parse Observation into blood pressure', level: 500, error: error);
+        } on InvalidResourceException catch (error) {
+          log('Unable to parse Observation into blood pressure',
+              level: 500, error: error);
         }
       }
     }
@@ -170,8 +177,7 @@ extension BloodPressureQuerying on OpenHealthManager {
 
   /// Attempts to post the given blood pressure observation back to the Open Health Manager.
   Future<void> postBloodPressure(BloodPressureObservation observation,
-    {bool addToBatch=false}
-  ) async {
+      {bool addToBatch = false}) async {
     Observation fhirResource =
         observation.generateObservation(createPatientReference());
     if (addToBatch) {

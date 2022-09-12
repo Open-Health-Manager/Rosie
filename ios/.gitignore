@@ -1,3 +1,7 @@
+# Generated icon images
+/Runner/Assets.xcassets/AppIcon.appiconset/*.png
+
+# Flutter ignores
 **/dgph
 *.mode1v3
 *.mode2v3
