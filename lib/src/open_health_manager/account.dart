@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'package:flutter/foundation.dart';
+
 import 'open_health_manager.dart';
 
 /// Represents an account within the Open Health Manager.
@@ -26,9 +28,9 @@ class Account {
     required this.activated,
     required this.langKey,
     required this.createdBy,
-    required this.createdDate,
+    this.createdDate,
     required this.lastModifiedBy,
-    required this.lastModifiedDate,
+    this.lastModifiedDate,
     required this.authorities,
   });
   final int id;
@@ -40,9 +42,9 @@ class Account {
   final bool activated;
   final String langKey;
   final String createdBy;
-  final DateTime createdDate;
+  final DateTime? createdDate;
   final String lastModifiedBy;
-  final DateTime lastModifiedDate;
+  final DateTime? lastModifiedDate;
   final List<String> authorities;
 
   static Account fromJson(dynamic jsonData) {
@@ -71,14 +73,22 @@ class Account {
             activated is bool &&
             langKey is String &&
             createdBy is String &&
-            createdDateString is String &&
+            (createdDateString == null || createdDateString is String) &&
             lastModifiedBy is String &&
-            lastModifiedDateString is String) {
+            (lastModifiedDateString == null ||
+                lastModifiedDateString is String)) {
           // One last parse step - parse dates
-          final createdDate =
-              OpenHealthManager.parseDateTime(createdDateString);
-          final lastModifiedDate =
-              OpenHealthManager.parseDateTime(lastModifiedDateString);
+          DateTime? createdDate;
+          if (createdDateString != null) {
+            createdDate = OpenHealthManager.parseDateTime(createdDateString);
+          }
+
+          DateTime? lastModifiedDate;
+          if (lastModifiedDateString != null) {
+            lastModifiedDate =
+                OpenHealthManager.parseDateTime(lastModifiedDateString);
+          }
+
           return Account(
             id: id.toInt(),
             login: login,
@@ -98,7 +108,7 @@ class Account {
         // If parsing fails, fall through to the final exception
       }
     }
-    print('Unable to parse $jsonData');
+    debugPrint('Unable to parse $jsonData');
     throw const FormatException('Unable to parse Account object');
   }
 }
