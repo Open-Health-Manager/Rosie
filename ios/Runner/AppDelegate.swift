@@ -285,8 +285,8 @@ func getFHIRDateString(fromDateComponents dateComponents: DateComponents?) -> St
     guard let dateYear = dateComponents?.year else { return "" }
     guard let dateMonth = dateComponents?.month else { return "" }
     guard let dateDay = dateComponents?.day else { return "" }
-    let dateMonthString = dateMonth > 10 ? "\(dateMonth)" : "0\(dateMonth)"
-    let dateDayString = dateDay > 10 ? "\(dateDay)" : "0\(dateDay)"
+    let dateMonthString = dateMonth > 9 ? "\(dateMonth)" : "0\(dateMonth)"
+    let dateDayString = dateDay > 9 ? "\(dateDay)" : "0\(dateDay)"
     
     return "\(dateYear)-\(dateMonthString)-\(dateDayString)"
 }
