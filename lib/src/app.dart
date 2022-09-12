@@ -144,6 +144,7 @@ class _RosieAppState extends State<RosieApp> {
       {required Widget home}) {
     return MaterialApp(
       title: 'Rosie',
+      debugShowCheckedModeBanner: false,
       theme: createRosieTheme(),
       darkTheme: createRosieTheme(brightness: Brightness.dark),
       home: home,

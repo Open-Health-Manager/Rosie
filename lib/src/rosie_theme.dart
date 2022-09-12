@@ -17,25 +17,43 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 
 class RosieTheme {
-  static const Color accent = Color(0xFF6750A4);
+  //static const Color accent = Color(0xFF6750A4);
+  static const Color accent = Color.fromARGB(255, 250, 153, 175);
   static const Color primary = Color.fromARGB(255, 109, 211, 233);
   static const Color shadow = Color.fromARGB(255, 49, 181, 206);
   static const Color blush = Color.fromARGB(255, 242, 109, 178);
   static const Color buttonColor = accent;
-  static const Color onButtonColor = Colors.white;
-  static const Color belowOptimal = Color.fromARGB(255, 60, 126, 205);
+  //static const Color onButtonColor = Colors.white;
+  static const Color onButtonColor = Colors.black;
+  /* static const Color belowOptimal = Color.fromARGB(255, 60, 126, 205);
   static const Color optimal = Color.fromARGB(255, 97, 78, 222);
   static const Color concern = Color.fromARGB(255, 175, 54, 174);
   static const Color urgent = Color.fromARGB(255, 205, 25, 133);
   static const Color inactiveBelowOptimal = Color.fromARGB(255, 22, 46, 75);
   static const Color inactiveOptimal = Color.fromARGB(255, 32, 26, 74);
   static const Color inactiveConcern = Color.fromARGB(255, 84, 39, 85);
-  static const Color inactiveUrgent = Color.fromARGB(255, 68, 8, 44);
+  static const Color inactiveUrgent = Color.fromARGB(255, 68, 8, 44); */
+  static const Color belowOptimal = Color.fromARGB(255, 234, 202, 210);
+  static const Color optimal = Colors.white;
+  //static const Color concern = Color.fromARGB(255, 243, 146, 170);
+  static const Color concern = Color.fromARGB(255, 234, 202, 210);
+  static const Color urgent = Color.fromARGB(255, 248, 119, 151);
+  static const Color inactiveBelowOptimal = Color.fromARGB(255, 234, 202, 210);
+  static const Color inactiveOptimal = Colors.white;
+  //static const Color inactiveConcern = Color.fromARGB(255, 243, 146, 170);
+  static const Color inactiveConcern = Color.fromARGB(255, 234, 202, 210);
+  static const Color inactiveUrgent = Color.fromARGB(255, 248, 119, 151);
+
   static const Color backgroundTop = Colors.white;
   static const Color backgroundBottom = Color(0xFF428CE3);
+
   static const Color inputBackground = Color(0xFFE7E0EC);
   static const Color dialogBackground = Color(0xFFE1E3E9);
   static const Color error = Color(0xFF880000);
+
+  static const Color backgroundColor = Colors.white;
+  static const Color fontColor = Colors.black;
+
   static const Gradient backgroundGradient = LinearGradient(
     colors: [backgroundTop, backgroundBottom],
     begin: Alignment.topCenter,
@@ -154,17 +172,35 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
             MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
         foregroundColor:
             MaterialStateProperty.all<Color>(RosieTheme.onButtonColor),
-        shape: MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder()),
+        shape: MaterialStateProperty.all<OutlinedBorder>(
+          //const StadiumBorder()
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            side: const BorderSide(color: Colors.black, width: 0.5),
+          ),
+        ),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
-        style: ButtonStyle(
-      backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
-      foregroundColor: MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
-      side: MaterialStateProperty.all<BorderSide>(
-          const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
-      shape: MaterialStateProperty.all<OutlinedBorder>(const StadiumBorder()),
-    )),
+      style: ButtonStyle(
+        //backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+        backgroundColor: MaterialStateProperty.all<Color>(
+          const Color.fromARGB(255, 254, 242, 245),
+        ),
+        foregroundColor:
+            // MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
+            MaterialStateProperty.all<Color>(Colors.black),
+        //side: MaterialStateProperty.all<BorderSide>(
+        //const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
+        shape: MaterialStateProperty.all<OutlinedBorder>(
+          //const StadiumBorder()
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            side: const BorderSide(color: Colors.black, width: 0.5),
+          ),
+        ),
+      ),
+    ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: Color.fromARGB(255, 231, 224, 236),
       selectedItemColor: Color.fromARGB(255, 29, 25, 43),
@@ -173,20 +209,28 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
     inputDecorationTheme: const InputDecorationTheme(
       filled: true,
       focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: RosieTheme.accent, width: 2)),
+        borderSide: BorderSide(color: RosieTheme.accent, width: 2),
+      ),
       focusColor: RosieTheme.accent,
       hoverColor: Color(0x141C1B1F),
       fillColor: RosieTheme.inputBackground,
-      labelStyle: TextStyle(color: RosieTheme.accent),
+      //labelStyle: TextStyle(color: RosieTheme.accent),
+      labelStyle: TextStyle(color: Colors.black, fontSize: 14),
     ),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: RosieTheme.accent,
       selectionColor: RosieTheme.accent.withAlpha(128),
       selectionHandleColor: RosieTheme.accent,
     ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      elevation: 0,
+    ),
   );
 }
 
 BoxDecoration createRosieScreenBoxDecoration() {
-  return const BoxDecoration(gradient: RosieTheme.backgroundGradient);
+  //return const BoxDecoration(gradient: RosieTheme.backgroundGradient);
+  return const BoxDecoration(color: RosieTheme.backgroundColor);
 }

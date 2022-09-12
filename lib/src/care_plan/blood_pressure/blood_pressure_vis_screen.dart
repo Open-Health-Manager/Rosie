@@ -163,7 +163,8 @@ class _BloodPressureVisualizationState
     if (urgency.index >= 3) {
       text = "Update your blood pressure now!";
       updateLabel = "Update now";
-      expression = RosieExpression.surprised;
+      //expression = RosieExpression.surprised;
+      expression = RosieExpression.neutral;
     } else {
       if (urgency.outdated) {
         text =
@@ -174,7 +175,8 @@ class _BloodPressureVisualizationState
       text,
       action:
           _createUpdateAction(updateLabel, context, patientData, bloodPressure),
-      actionPosition: RosieActionPosition.after,
+      //actionPosition: RosieActionPosition.after,
+      actionPosition: RosieActionPosition.below,
       expression: expression,
     );
   }
@@ -184,9 +186,12 @@ class _BloodPressureVisualizationState
       {loading = false}) {
     Widget chart = BloodPressureChart(
       bloodPressure: bloodPressure,
-      typeLabelStyle: RosieTheme.comicFont(color: Colors.white, fontSize: 16),
+      /* typeLabelStyle: RosieTheme.comicFont(color: Colors.white, fontSize: 16),
       numericLabelStyle:
-          RosieTheme.comicFont(color: Colors.white, fontSize: 20, height: 1.0),
+          RosieTheme.comicFont(color: Colors.white, fontSize: 20, height: 1.0), */
+      typeLabelStyle: RosieTheme.comicFont(color: Colors.black, fontSize: 16),
+      numericLabelStyle:
+          RosieTheme.comicFont(color: Colors.black, fontSize: 16),
       scale: widget.scale,
       urgency: urgency,
     );
@@ -259,7 +264,8 @@ class _BloodPressureVisualizationState
                       )
                     ],
                   ),
-                  expression: RosieExpression.surprised,
+                  //expression: RosieExpression.surprised,
+                  expression: RosieExpression.neutral,
                   action: _createReloadAction("Retry", context, patientData),
                 );
               } else {

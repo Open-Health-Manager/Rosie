@@ -73,6 +73,8 @@ flutter:
     - assets/rosie/
     - assets/pdm_comic_avatar.png
     - assets/config/
+    - assets/care_plan/lung-cancer-screening.png
+    - assets/care_plan/hypertension-in-adults-screening.png
 
   fonts:
     - family: ComicNeue

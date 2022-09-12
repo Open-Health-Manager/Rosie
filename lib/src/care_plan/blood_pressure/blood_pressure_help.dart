@@ -27,9 +27,12 @@ class BloodPressureHelp extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Text(
-          emergency ? "How can I help?" : "Let's get some help!",
-          style: RosieTheme.font(fontSize: 24),
+          emergency
+              ? "Let's get some help!"
+              : "Here are some helpful options to check your blood pressure:",
+          style: RosieTheme.font(fontSize: 18),
         ),
+        const SizedBox(height: 15),
         ..._createActionButtons(context),
         const SizedBox(height: 15),
         _createButtonBar(context),
@@ -41,44 +44,44 @@ class BloodPressureHelp extends StatelessWidget {
     if (emergency) {
       return <Widget>[
         ElevatedButton(
-          child: const Text("Find an emergency room near you"),
+          child: const Text("Find an emergency room"),
           onPressed: () {},
         ),
+        const SizedBox(height: 15),
         ElevatedButton(
           child: const Text("Call your emegency contact"),
           onPressed: () {},
         ),
+        const SizedBox(height: 15),
         ElevatedButton(child: const Text("Call 911"), onPressed: () {}),
       ];
     } else {
-      final textStyle = RosieTheme.font(fontSize: 14);
       return <Widget>[
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(child: Text("Show me clinics nearby", style: textStyle)),
             ElevatedButton(
-              child: const Text("Clinics"),
+              child: const Text("Call a family member"),
               onPressed: () {},
             )
           ],
         ),
+        const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(child: Text("Call family", style: textStyle)),
             ElevatedButton(
-              child: const Text("Call Family"),
+              child: const Text("Find a clinic nearby"),
               onPressed: () {},
             ),
           ],
         ),
+        const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(child: Text("Learn how to check it", style: textStyle)),
             ElevatedButton(
-              child: const Text("Check It"),
+              child: const Text("Learn to check it yourself"),
               onPressed: () {},
             ),
           ],
@@ -98,6 +101,7 @@ class BloodPressureHelp extends StatelessWidget {
     if (emergency) {
       return Wrap(
         crossAxisAlignment: WrapCrossAlignment.end,
+        runSpacing: 10.0, // gap between lines
         children: <Widget>[
           OutlinedButton(
             child: const Text("Why is this an emergency?"),
@@ -107,7 +111,7 @@ class BloodPressureHelp extends StatelessWidget {
         ],
       );
     } else {
-      return Align(alignment: AlignmentDirectional.centerEnd, child: goBack);
+      return Align(alignment: AlignmentDirectional.center, child: goBack);
     }
   }
 }

@@ -201,14 +201,20 @@ class BloodPressureChart extends StatelessWidget {
       // Base box fills the entire thing
       Container(
         decoration: BoxDecoration(
-          boxShadow: const [
+          /* boxShadow: const [
             BoxShadow(
               color: Color.fromARGB(128, 0, 0, 0),
               offset: Offset(4, 4),
               blurRadius: 4.0,
             )
           ],
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(5), */
+          borderRadius: const BorderRadius.only(
+            topRight: Radius.circular(5),
+            bottomRight: Radius.circular(5),
+            topLeft: Radius.circular(5),
+            bottomLeft: Radius.circular(5),
+          ),
           color:
               activeSlice == 3 ? RosieTheme.urgent : RosieTheme.inactiveUrgent,
         ),
@@ -224,6 +230,12 @@ class BloodPressureChart extends StatelessWidget {
             color: activeSlice == 2
                 ? RosieTheme.concern
                 : RosieTheme.inactiveConcern,
+            border: const Border(
+              top: BorderSide(width: 1.0, color: Colors.white),
+              bottom: BorderSide(width: 1.0, color: Colors.white),
+              left: BorderSide(width: 1.0, color: Colors.white),
+              right: BorderSide(width: 1.0, color: Colors.white),
+            ),
           ),
         ),
       ),
@@ -238,6 +250,12 @@ class BloodPressureChart extends StatelessWidget {
             color: activeSlice == 1
                 ? RosieTheme.optimal
                 : RosieTheme.inactiveOptimal,
+            border: const Border(
+              top: BorderSide(width: 1.0, color: Colors.white),
+              bottom: BorderSide(width: 1.0, color: Colors.white),
+              left: BorderSide(width: 1.0, color: Colors.white),
+              right: BorderSide(width: 1.0, color: Colors.white),
+            ),
           ),
         ),
       ),
@@ -252,6 +270,12 @@ class BloodPressureChart extends StatelessWidget {
             color: activeSlice == 0
                 ? RosieTheme.belowOptimal
                 : RosieTheme.inactiveBelowOptimal,
+            border: const Border(
+              top: BorderSide(width: 1.0, color: Colors.white),
+              bottom: BorderSide(width: 1.0, color: Colors.white),
+              left: BorderSide(width: 1.0, color: Colors.white),
+              right: BorderSide(width: 1.0, color: Colors.white),
+            ),
           ),
         ),
       ),
@@ -365,53 +389,72 @@ class _BloodPressureCallout extends StatelessWidget {
   final Color highlightColor;
 
   Widget _buildText(BuildContext context) {
-    final highlightStyle = RosieTheme.font(color: highlightColor, fontSize: 30);
-    final formattedBP = TextSpan(
-      text:
-          "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()}",
-      style: highlightStyle,
+    final highlightStyle = RosieTheme.font(color: highlightColor, fontSize: 18);
+    final highlightGoodStyle = RosieTheme.font(
+      color: const Color.fromARGB(255, 54, 127, 56),
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
     );
+    final highlightEmergencyStyle = RosieTheme.font(
+      color: const Color.fromARGB(255, 185, 47, 37),
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    );
+    final dateStyle = RosieTheme.font(color: Colors.grey, fontSize: 14);
+    DateTime? timeTaken = bloodPressure.taken;
+    String formattedTimeTaken =
+        "${timeTaken?.month}-${timeTaken?.day}-${timeTaken?.year}";
+
     List<TextSpan> text = [];
     if (urgency.index >= 3) {
-      text.add(const TextSpan(text: "At "));
-      text.add(formattedBP);
-      text.add(const TextSpan(text: " your blood pressure is\n"));
-      text.add(TextSpan(text: "an emergency", style: highlightStyle));
-      text.add(const TextSpan(text: "\nfor your immediate health!"));
+      text.add(TextSpan(
+        text:
+            "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()} high\n",
+        style: highlightEmergencyStyle,
+      ));
+      text.add(TextSpan(text: formattedTimeTaken, style: dateStyle));
     } else {
       // For now, always use the same text, I guess
-      text.add(formattedBP);
-      text.add(const TextSpan(text: "\nYour blood pressure was\n"));
       if (urgency.outdated) {
         text.add(TextSpan(text: "good, but", style: highlightStyle));
         text.add(const TextSpan(
           text: "\nnow it\u2019s out of date. You should check it every year.",
         ));
       } else {
-        text.add(TextSpan(text: "good", style: highlightStyle));
-        text.add(const TextSpan(text: "."));
+        text.add(TextSpan(
+          text:
+              "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()} good\n",
+          style: highlightGoodStyle,
+        ));
+        text.add(TextSpan(text: formattedTimeTaken, style: dateStyle));
       }
     }
     final textWidget = Text.rich(TextSpan(children: text),
         style: RosieTheme.comicFont(), softWrap: true);
     if (urgency.emergency) {
+      //return textWidget;
       // Slightly different
-      return Column(
-        children: <Widget>[
-          textWidget,
-          ElevatedButton(
-            child: const Text("Get Help!"),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return const RosieDialog(
-                      children: [BloodPressureHelp(emergency: true)]);
-                },
-              );
-            },
-          ),
-        ],
+      return SizedBox(
+        height: 95,
+        child: Column(
+          children: <Widget>[
+            textWidget,
+            const SizedBox(height: 10),
+            ElevatedButton(
+              child: const Text("Get Help!"),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return const RosieDialog(
+                      children: [BloodPressureHelp(emergency: true)],
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
       );
     } else {
       return textWidget;
@@ -422,12 +465,14 @@ class _BloodPressureCallout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10),
-      decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 226, 235, 244),
-        boxShadow: <BoxShadow>[
+      decoration: BoxDecoration(
+        //color: Color.fromARGB(255, 226, 235, 244),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10.0),
+        boxShadow: const <BoxShadow>[
           BoxShadow(
             color: Color.fromARGB(128, 0, 0, 0),
-            offset: Offset(4, 4),
+            //offset: Offset(4, 4),
             blurRadius: 4,
           ),
         ],

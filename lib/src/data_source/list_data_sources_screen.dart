@@ -78,7 +78,7 @@ class _DataSourceTile extends StatelessWidget {
               width: 72.0,
               child: AspectRatio(
                 aspectRatio: 1.0,
-                child: dataSource.createIcon(context) ?? const Placeholder(),
+                child: dataSource.createIcon(context) // ?? const Placeholder(),
               ),
             ),
             Expanded(
