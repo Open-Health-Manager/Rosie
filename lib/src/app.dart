@@ -134,8 +134,9 @@ class _RosieAppState extends State<RosieApp> {
       // The patient data provider has to be kept outside the MaterialApp
       // wrapper, so create it here.
       return ChangeNotifierProvider<PatientData>.value(
-          value: patientData,
-          child: _createRosieMaterialApp(context, home: const HomeScreen()));
+        value: patientData,
+        child: _createRosieMaterialApp(context, home: const HomeScreen()),
+      );
     }
   }
 
@@ -175,20 +176,6 @@ class _RosieAppState extends State<RosieApp> {
           child: Center(child: Text("Rosie")),
         ),
       );
-    }
-  }
-}
-
-class _RosieHome extends StatelessWidget {
-  const _RosieHome({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final model = context.watch<OpenHealthManager>();
-    if (model.isSignedIn) {
-      return const HomeScreen();
-    } else {
-      return const Onboarding();
     }
   }
 }
