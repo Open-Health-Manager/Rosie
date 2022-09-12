@@ -19,7 +19,6 @@ import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'account_screen.dart';
 import 'reset_password.dart';
-import 'sign_up.dart';
 import '../open_health_manager/open_health_manager.dart';
 
 class SignIn extends StatefulWidget {
@@ -38,7 +37,7 @@ class _SignInState extends State<SignIn> {
     // Go back button is always the same
     final goBack = ElevatedButton(
       style: ElevatedButton.styleFrom(
-        primary: Color(0xFFFEF2F5),
+        backgroundColor: const Color(0xFFFEF2F5),
       ),
       child: const Text(
         "Back",
@@ -126,56 +125,35 @@ class _SignInState extends State<SignIn> {
             Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(
-                    text: "",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  const TextSpan(text: ""),
                   TextSpan(
                     text: "Retrieve account or password?",
                     style: const TextStyle(
                       color: Color(0xFF4C4D4A),
                       decoration: TextDecoration.underline,
-                      fontWeight: FontWeight.bold,
                     ),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
                         Navigator.push<void>(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (context) => const ResetPassword(),
-                            ));
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (context) => const ResetPassword(),
+                          ),
+                        );
                       },
                   ),
-                  const TextSpan(
-                    text: "",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
                 ],
               ),
-            ),
-            const Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Need to Create An Account? ",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(
-                      text: "Need to Create An Account? ",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  const TextSpan(text: "Need to Create An Account? "),
                   TextSpan(
                     text: "Sign Up",
                     style: const TextStyle(
                       decoration: TextDecoration.underline,
-                      fontWeight: FontWeight.bold,
                     ),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
@@ -184,9 +162,9 @@ class _SignInState extends State<SignIn> {
                   ),
                   const TextSpan(
                     text: ".",
-                    style: TextStyle(fontWeight: FontWeight.bold),
                   )
                 ],
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ],

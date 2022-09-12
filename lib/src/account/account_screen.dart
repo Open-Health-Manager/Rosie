@@ -184,16 +184,8 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
             case ConnectionState.done:
               // refactor so that styling is the same as other buttons
               final submitButton = ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFA99AF),
-                ),
                 onPressed: submit,
-                child: Text(
-                  widget.submitLabel,
-                  style: const TextStyle(
-                    color: Color(0xFF1F201D),
-                  ),
-                ),
+                child: Text(widget.submitLabel),
               );
               // Error is an error object from the backend and is likely a
               // ServerErrorException

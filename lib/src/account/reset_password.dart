@@ -119,16 +119,10 @@ class PasswordResetSent extends StatelessWidget {
             const Text('Recovery email sent!'),
             const SizedBox(height: 30.0),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFA99AF),
-              ),
               onPressed: () {
                 // Attempt to open the email app
               },
-              child: const Text(
-                'Open Email',
-                style: TextStyle(color: Color(0xFF1F201D)),
-              ),
+              child: const Text('Open Email'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
