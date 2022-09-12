@@ -7,19 +7,24 @@ import HealthKit
     @available(iOS 12.0, *)
     /// Supported clinical types. This is the list of types that are requested when approval is requested.
     static let supportedClinicalTypes: [HKClinicalTypeIdentifier] = [
-//        // For now, only request access to vital sign records
-//        .allergyRecord,
-//        .conditionRecord,
-//        .immunizationRecord,
-//        .labResultRecord,
-//        .medicationRecord,
-//        .procedureRecord,
+        .allergyRecord,
+        .conditionRecord,
+        .immunizationRecord,
+        .labResultRecord,
+        .medicationRecord,
+        .procedureRecord,
         .vitalSignRecord
+        // .coverage - skip, required ios 15
     ];
     /// Supported characteristic types. This is the list of types that are requested when approval is requested.
     static let supportedCharacteristicTypes: [HKCharacteristicTypeIdentifier] = [
         .dateOfBirth,
         .biologicalSex
+    ];
+    @available(iOS 14.3, *)
+    /// Supported category types. This is the list of types that are requested when approval is requested.
+    static let supportedCategoryTypes: [HKCategoryTypeIdentifier] = [
+        .pregnancy
     ];
     lazy var healthStore = HKHealthStore()
 
@@ -38,10 +43,14 @@ import HealthKit
                 self?.requestHealthKitAccess(result: result)
             case "supportedClinicalTypes":
                 self?.supportedClinicalTypes(result: result)
+            case "supportedCategoryTypes":
+                self?.supportedCategoryTypes(result: result)                
             case "queryClinicalRecords":
                 self?.queryClinicalRecords(call: call, result: result)
             case "getPatientCharacteristicData":
                 self?.getPatientCharacteristicData(call: call, result: result)
+            case "queryCategoryData":
+                self?.queryCategoryData(call: call, result: result)                
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -67,6 +76,16 @@ import HealthKit
                     types.insert(characteristicType)
                 }
             }
+
+            if #available(iOS 14.3, *) {
+                // Add category types
+                for identifier in AppDelegate.supportedCategoryTypes {
+                    if let categoryType = HKObjectType.categoryType(forIdentifier: identifier) {
+                        types.insert(categoryType)
+                    }
+                }
+            }
+
             healthStore.requestAuthorization(toShare: nil, read: types, completion: { success, error in
                 // The result happens in a background thread, but we want to invoke Flutter only from the main thread, so:
                 DispatchQueue.main.async {
@@ -159,6 +178,51 @@ import HealthKit
         }
     }
 
+    func supportedCategoryTypes(result: FlutterResult) {
+        if #available(iOS 14.3, *) {
+            print("Building supported category types")
+            result(AppDelegate.supportedCategoryTypes.map { $0.rawValue })
+        } else {
+            result([])
+        }
+    }
+
+    func queryCategoryData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if #available(iOS 14.3, *) {
+            // Create the query. For this method we expect an argument that's a string
+            guard let typeString = call.arguments as? String else {
+                result(FlutterError(code: "MissingArgumentsError", message: "Missing required argument type", details: nil))
+                return
+            }
+
+            let typeIdentifier = HKCategoryTypeIdentifier(rawValue: typeString)
+            // ...we try and create an HKObjectType from it
+            guard let type = HKObjectType.categoryType(forIdentifier: typeIdentifier) else {
+                result(FlutterError(code: "HealthKitError", message: "Unsupported type", details: typeString))
+                return
+            }
+
+            let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+            let query = HKSampleQuery(sampleType: type, predicate: nil, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { query, samples, error in
+                guard let actualSamples = samples else {
+                    result(FlutterError(code: "HealthKitError", message: error?.localizedDescription ?? "No error given", details: error))
+                    return
+                }
+                
+                var records: [[String: String?]] = []
+                for sample in actualSamples {
+                    let response = createCategoryValueResponse(fromCategory: sample)
+                    if let record = response {
+                        records.append(record)  
+                    }                                      
+                }
+                result(records)
+            }
+            healthStore.execute(query)
+        } else {
+            result(healthKitNotSupported())
+        }
+    }
 }
 
 // MARK: Utility functions
@@ -225,4 +289,29 @@ func getFHIRDateString(fromDateComponents dateComponents: DateComponents?) -> St
     let dateDayString = dateDay > 10 ? "\(dateDay)" : "0\(dateDay)"
     
     return "\(dateYear)-\(dateMonthString)-\(dateDayString)"
+}
+
+@available(iOS 12.0, *)
+func createCategoryValueResponse(fromCategory sample: HKSample) -> [String: String?]? {
+    guard let record = sample as? HKCategorySample else { return nil }
+    var value: String = "unknown"
+    if #available(iOS 14.3, *) {
+        if(type(of: record.sampleType.identifier) == type(of: HKCategoryTypeIdentifier.pregnancy.rawValue)){
+            switch (record.value) {
+                case HKCategoryValue.notApplicable.rawValue: value = "notApplicable"
+                default: value = "unknown"
+            }
+        }
+    }
+
+    let startDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.startDate))
+    let endDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.endDate))
+     
+    return [
+        "uuid": record.uuid.uuidString,
+        "sampleType": record.sampleType.identifier,
+        "value": value,
+        "startDate": startDate,
+        "endDate": endDate
+    ];
 }
