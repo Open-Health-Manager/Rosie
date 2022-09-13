@@ -193,8 +193,17 @@ class _ListDataSourcesState extends State<ListDataSourcesScreen> {
   @override
   initState() {
     super.initState();
-    _patientConsentFuture =
-        context.read<OpenHealthManager>().getAllPatientConsents();
+    _patientConsentFuture = context
+        .read<OpenHealthManager>()
+        .getAllPatientConsents()
+        .then((consents) {
+      // Before passing the list off to be displayed, sort by display name.
+      consents.sort((a, b) {
+        // Sort by name
+        return a.client.displayName.compareTo(b.client.displayName);
+      });
+      return consents;
+    });
   }
 
   Widget _buildDataSourceList(BuildContext context) {
@@ -205,8 +214,8 @@ class _ListDataSourcesState extends State<ListDataSourcesScreen> {
             // Show the list
             if (snapshot.hasError) {
               return Center(
-                  child:
-                      Text('Error fetching data sources: ${snapshot.error}'));
+                child: Text('Error fetching data sources: ${snapshot.error}'),
+              );
             } else {
               final consents = snapshot.data;
               final cupertino = context.read<AppConfig>().useCupertinoWidgets;
