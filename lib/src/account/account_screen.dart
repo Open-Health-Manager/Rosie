@@ -148,6 +148,8 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
           // The specific error information could not be parsed so just fall
           // through and go with the generic handling.
         }
+      } else if (error.statusCode == 401) {
+        return "The password entered is incorrect, please try again.";
       }
     }
     // Default: return whatever toString does
