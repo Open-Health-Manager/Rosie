@@ -147,6 +147,8 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
         } on FormatException catch (_) {
           // Ignore this and fall through
         }
+      } else if (error.statusCode == 401) {
+        return "The password entered is incorrect, please try again.";
       }
     }
     // Default: return whatever toString does
