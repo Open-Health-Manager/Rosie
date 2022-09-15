@@ -114,8 +114,9 @@ class Account {
 }
 
 extension AccountQuerying on OpenHealthManager {
+  /// When logged in, gets the current account information from the backend.
   Future<Account> getAccount() async {
-    // Account data should be determined by the JWT
+    // Back end determines the account based on the JWT, make sure there is one
     if (authData == null) {
       throw AuthenticationStateError('Account data only exists when logged in');
     }

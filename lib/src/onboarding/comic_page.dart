@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'comic.dart';
 import 'onboarding.dart';
+import '../rosie_theme.dart';
 
 /// A single comic page.
 class ComicPage extends StatelessWidget {
@@ -78,9 +79,10 @@ class ComicPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              primary: const Color(0xFFFEF2F5),
-            ),
+            style: Theme.of(context)
+                .extension<RosieThemeExtension>()
+                ?.secondaryButtonTheme
+                .style,
             onPressed: () {
               Navigator.pushNamed(context, "signIn");
             },

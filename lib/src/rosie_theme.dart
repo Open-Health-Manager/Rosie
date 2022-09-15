@@ -23,6 +23,7 @@ class RosieTheme {
   static const Color shadow = Color.fromARGB(255, 49, 181, 206);
   static const Color blush = Color.fromARGB(255, 242, 109, 178);
   static const Color buttonColor = accent;
+  static const Color secondaryButtonColor = Color(0xFFFEF2F5);
   //static const Color onButtonColor = Colors.white;
   static const Color onButtonColor = Colors.black;
   /* static const Color belowOptimal = Color.fromARGB(255, 60, 126, 205);
@@ -162,10 +163,57 @@ ColorScheme createRosieColorScheme({required Brightness brightness}) {
       seedColor: RosieTheme.backgroundBottom, brightness: brightness);
 }
 
+class RosieThemeExtension extends ThemeExtension<RosieThemeExtension> {
+  const RosieThemeExtension({
+    required this.secondaryButtonTheme,
+  });
+
+  final ElevatedButtonThemeData secondaryButtonTheme;
+
+  @override
+  ThemeExtension<RosieThemeExtension> copyWith(
+      {ElevatedButtonThemeData? secondaryButtonTheme}) {
+    return RosieThemeExtension(
+      secondaryButtonTheme: secondaryButtonTheme ?? this.secondaryButtonTheme,
+    );
+  }
+
+  @override
+  ThemeExtension<RosieThemeExtension> lerp(
+      ThemeExtension<RosieThemeExtension>? other, double t) {
+    if (other is! RosieThemeExtension) {
+      return this;
+    }
+    // This uses copyWith because lerp can, conceptually, return null
+    return copyWith(
+      secondaryButtonTheme: ElevatedButtonThemeData.lerp(
+          secondaryButtonTheme, other.secondaryButtonTheme, t),
+    );
+  }
+}
+
 ThemeData createRosieTheme({brightness = Brightness.light}) {
   // Intentionally ignore the given brightness for now and ALWAYS do light mode
   return ThemeData(
     colorScheme: createRosieColorScheme(brightness: Brightness.light),
+    extensions: <ThemeExtension<dynamic>>[
+      RosieThemeExtension(
+        secondaryButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all<Color>(
+                RosieTheme.secondaryButtonColor),
+            foregroundColor:
+                MaterialStateProperty.all<Color>(RosieTheme.onButtonColor),
+            shape: MaterialStateProperty.all<OutlinedBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                side: const BorderSide(color: Colors.black, width: 0.5),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
         backgroundColor:
@@ -173,7 +221,6 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
         foregroundColor:
             MaterialStateProperty.all<Color>(RosieTheme.onButtonColor),
         shape: MaterialStateProperty.all<OutlinedBorder>(
-          //const StadiumBorder()
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),
             side: const BorderSide(color: Colors.black, width: 0.5),
@@ -230,6 +277,7 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
   );
 }
 
+@Deprecated('no longer used as the background is no longer a gradient')
 BoxDecoration createRosieScreenBoxDecoration() {
   //return const BoxDecoration(gradient: RosieTheme.backgroundGradient);
   return const BoxDecoration(color: RosieTheme.backgroundColor);

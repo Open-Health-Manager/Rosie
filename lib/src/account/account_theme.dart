@@ -13,11 +13,13 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../rosie_theme.dart';
 
 class AccountThemePalette {
   static const boxColor = Color(0xFFFEF2F5);
   static const background = Colors.white;
-  static const primary = Color(0xFFFA99AF);
+  static const primary = RosieTheme.accent;
   static const textColor = Color(0xFF1F201D);
 }
 
@@ -28,6 +30,8 @@ ThemeData createAccountTheme() {
       backgroundColor: AccountThemePalette.background,
       foregroundColor: AccountThemePalette.primary,
       elevation: 0.0,
+      systemOverlayStyle: SystemUiOverlayStyle(
+          systemNavigationBarIconBrightness: Brightness.dark),
     ),
     checkboxTheme: CheckboxThemeData(
       fillColor: MaterialStateColor.resolveWith(
@@ -57,9 +61,8 @@ ThemeData createAccountTheme() {
       hintStyle: TextStyle(color: Colors.black54),
       prefixIconColor: Colors.black,
     ),
-    textTheme: Typography.material2018()
-        .black
-        .copyWith(subtitle1: const TextStyle(color: Color(0xFF1F201D))),
+    textTheme: Typography.material2018().black.copyWith(
+        subtitle1: const TextStyle(color: AccountThemePalette.textColor)),
     toggleableActiveColor: AccountThemePalette.background,
     unselectedWidgetColor: AccountThemePalette.textColor,
   );

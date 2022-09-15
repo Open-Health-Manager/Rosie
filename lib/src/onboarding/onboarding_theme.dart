@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
-// import 'package:flutter/cupertino.dart';
+import '../rosie_theme.dart';
 
 class OnboardingTheme {
   static const Color primary = Color(0xFFFA99AF);
@@ -22,7 +22,7 @@ class OnboardingTheme {
 
 ThemeData createOnboardingTheme({brightness = Brightness.light}) {
   // Currently you are allowed to pass a brightness, and it will be happily ignored.
-  return ThemeData(
+  return createRosieTheme(brightness: brightness).copyWith(
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.light,
       seedColor: OnboardingTheme.primary,
