@@ -15,7 +15,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../app_config.dart';
 import '../open_health_manager/consents.dart';
 import '../open_health_manager/open_health_manager.dart';
 import '../open_health_manager/patient_data.dart';
@@ -56,11 +55,9 @@ class _DataSourceTile extends StatefulWidget {
   const _DataSourceTile({
     Key? key,
     required this.consent,
-    required this.cupertinoSwitch,
   }) : super(key: key);
 
   final PatientConsent consent;
-  final bool cupertinoSwitch;
 
   @override
   State<StatefulWidget> createState() => _DataSourceTileState();
@@ -83,7 +80,8 @@ class _DataSourceTileState extends State<_DataSourceTile> {
   Widget _createSwitch(BuildContext context) {
     if (_changeFuture == null) {
       // Show the switch if it's not changing
-      if (widget.cupertinoSwitch) {
+      final platform = Theme.of(context).platform;
+      if (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS) {
         return CupertinoSwitch(
           value: _currentApprove,
           onChanged: changeApproval,
@@ -218,14 +216,12 @@ class _ListDataSourcesState extends State<ListDataSourcesScreen> {
               );
             } else {
               final consents = snapshot.data;
-              final cupertino = context.read<AppConfig>().useCupertinoWidgets;
               if (consents == null || consents.isEmpty) {
                 return const Center(child: Text("No data sources."));
               } else {
                 return ListView.builder(
                   itemBuilder: (context, index) => _DataSourceTile(
                     consent: consents[index],
-                    cupertinoSwitch: cupertino,
                   ),
                   itemCount: consents.length,
                 );

@@ -86,15 +86,6 @@ class AppConfig {
     return AppConfig(config);
   }
 
-  /// Determines if Cupertino widgets should be used for this platform.
-  bool get useCupertinoWidgets {
-    if (kIsWeb) {
-      // TODO: Check the user agent so to see if this is macOS?
-      return false;
-    }
-    return Platform.isIOS || Platform.isMacOS;
-  }
-
   dynamic operator [](String key) => config[key];
 
   /// Gets a string value. This will split the path as via get(String key). If
