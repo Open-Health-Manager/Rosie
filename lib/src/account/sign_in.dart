@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'account_screen.dart';
 import 'reset_password.dart';
@@ -39,9 +40,9 @@ class _SignInState extends State<SignIn> {
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFFFEF2F5),
       ),
-      child: const Text(
-        "Back",
-        style: TextStyle(color: Color(0xFF1F201D)),
+      child: Text(
+        AppLocalizations.of(context)!.back,
+        style: const TextStyle(color: Color(0xFF1F201D)),
       ),
       onPressed: () {
         Navigator.of(context).pop();
@@ -52,8 +53,9 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
     return AccountScreenForm(
-      title: "Sign In",
+      title: localizations!.signInTitle,
       formBuilder: (BuildContext context) {
         return AutofillGroup(
           child: Column(
@@ -61,13 +63,13 @@ class _SignInState extends State<SignIn> {
               TextFormField(
                 autocorrect: false,
                 autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: "Email Address",
-                  prefixIcon: Icon(Icons.email),
+                decoration: InputDecoration(
+                  hintText: localizations.emailAddressHint,
+                  prefixIcon: const Icon(Icons.email),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Email is required";
+                    return localizations.emailRequired;
                   }
                   return null;
                 },
@@ -80,14 +82,14 @@ class _SignInState extends State<SignIn> {
               const SizedBox(height: 15.0),
               TextFormField(
                 autocorrect: false,
-                decoration: const InputDecoration(
-                  hintText: "Password",
-                  prefixIcon: Icon(Icons.lock),
+                decoration: InputDecoration(
+                  hintText: localizations.passwordHint,
+                  prefixIcon: const Icon(Icons.lock),
                 ),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Password cannot be blank";
+                    return localizations.passwordRequired;
                   }
                   return null;
                 },
@@ -104,16 +106,16 @@ class _SignInState extends State<SignIn> {
           ),
         );
       },
-      submitLabel: "Confirm",
+      submitLabel: localizations.signInButton,
       onSubmit: () async {
         if (email != null && password != null) {
           final auth =
               await context.read<OpenHealthManager>().signIn(email!, password!);
           return auth == null
-              ? "Login failed (check your email and password)"
+              ? localizations.loginFailed
               : null;
         } else {
-          return "Email and password are required";
+          return localizations.emailPasswordRequired;
         }
       },
       afterFormBuilder: (BuildContext context) {
@@ -127,7 +129,7 @@ class _SignInState extends State<SignIn> {
                 children: [
                   const TextSpan(text: ""),
                   TextSpan(
-                    text: "Retrieve account or password?",
+                    text: localizations.retrieveAccountPassword,
                     style: const TextStyle(
                       color: Color(0xFF4C4D4A),
                       decoration: TextDecoration.underline,
@@ -149,9 +151,9 @@ class _SignInState extends State<SignIn> {
             Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(text: "Need to Create An Account? "),
+                  TextSpan(text: localizations.needAccount),
                   TextSpan(
-                    text: "Sign Up",
+                    text: localizations.needAccountLink,
                     style: const TextStyle(
                       decoration: TextDecoration.underline,
                     ),

@@ -1,0 +1,122 @@
+{
+  "rosie": "Rosie",
+  "@rosie": {
+    "description": "The Rosie name used for the app title."
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Shown for buttons that lead back"
+  },
+  "signInTitle": "Sign In",
+  "@signInTitle": {
+    "description": "The title for the Sign In page"
+  },
+  "signUpTitle": "Create an Account",
+  "@signUpTitle": {
+    "description": "Title for the account creation page"
+  },
+  "firstNameHint": "First Name",
+  "@firstNameHint": {
+    "description": "First name hint text"
+  },
+  "firstNameRequired": "First name cannot be blank",
+  "@firstNameRequired": {
+    "description": "Validation error if first name is blank"
+  },
+  "lastNameHint": "Last Name",
+  "@lastNameHint": {
+    "description": "Last name hint text"
+  },
+  "lastNameRequired": "Last name cannot be blank",
+  "@lastNameRequired": {
+    "description": "Validation error if last name is blank"
+  },
+  "emailAddressHint": "Email Address",
+  "@emailAddressHint": {
+    "description": "The hint text for entering email on the account screens"
+  },
+  "emailRequired": "Email is required",
+  "@emailRequired": {
+    "description": "The validation error if an email address isn't given"
+  },
+  "passwordHint": "Password",
+  "@passwordHint": {
+    "description": "The hint text for the password field"
+  },
+  "passwordRequired": "Password cannot be blank",
+  "@passwordRequired": {
+    "description": "Validation error for a blank password"
+  },
+  "confirmPasswordHint": "Confirm Password",
+  "@confirmPasswordHint": {
+    "description": "The hint text for the confirm password field"
+  },
+  "confirmPasswordMismatch": "Passwords do not match",
+  "@confirmPasswordMismatch": {
+    "description": "Validation error when the two password fields do not match"
+  },
+  "signInButton": "Confirm",
+  "@signInButton": {
+    "description": "Label for the sign in button on the sign in page"
+  },
+  "signUpButton": "Confirm",
+  "@signUpButton": {
+    "description": "Label for the sign up button on the account creation page"
+  },
+  "emailPasswordRequired": "Email and password are required",
+  "@emailPasswordRequired": {
+    "description": "Error message displayed under the sign-in button if either the email or password are missing"
+  },
+  "loginFailed": "Login failed (check your email and password)",
+  "@loginFailed": {
+    "description": "Error message when login fails"
+  },
+  "retrieveAccountPassword": "Retrieve account or password?",
+  "@retrieveAccountPassword": {
+    "description": "Link text for password reset"
+  },
+  "needAccount": "Need to Create An Account? ",
+  "@needAccount": {
+    "description": "Need account starter text"
+  },
+  "needAccountLink": "Sign Up",
+  "@needAccountLink": {
+    "description": "Link text for the need account"
+  },
+  "haveAccount": "Already Have An Account? ",
+  "@haveAccount": {
+    "description": "Have account starter"
+  },
+  "haveAccountLink": "Sign In",
+  "@haveAccountLink": {
+    "description": "Link text for the have account message"
+  },
+  "agreeTOSBefore": "I agree to the ",
+  "@agreeTOSBefore": {
+    "description": "Text before the terms of service link on the agree to TOS checkbox"
+  },
+  "agreeTOSLink": "terms and conditions",
+  "@agreeTOSLink": {
+    "description": "The terms of service link text"
+  },
+  "agreeTOSAfter": ".",
+  "@agreeTOSAfter": {
+    "description": "Text after the terms of service link on the agree to TOS checkbox"
+  },
+  "errorAgreeTOS": "You must agree to the terms and conditions.",
+  "@errorAgreeTOS": {
+    "description": "Validation error if the agree to the TOS checkbox isn't checked"
+  },
+  "assertAge": "I am at least 18 years of age or older.",
+  "@assertAge": {
+    "description": "Label for the age assertion checkbox"
+  },
+  "errorAssertAge": "You must be at least 18 years of age to use this app",
+  "@errorAssertAge": {
+    "description": "Error message displayed if the age assertion checkbox isn't checked"
+  },
+  "correctAboveErrors": "Please correct the above errors and try again",
+  "@correctAboveErrors": {
+    "description": "Error message shown on the account creation screen when there are validation errors"
+  }
+}

@@ -16,13 +16,13 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'account_screen.dart';
 import 'verify_account.dart';
 import '../../data_use_agreement/data_use_agreement.dart';
 import '../open_health_manager/open_health_manager.dart';
-import '../account/sign_in.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key, required this.dataUseAgreement}) : super(key: key);
@@ -101,6 +101,7 @@ class _SignUpState extends State<SignUp> {
   }
 
   Widget _buildForm(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return AutofillGroup(
       child: Form(
         key: _formKey,
@@ -108,54 +109,54 @@ class _SignUpState extends State<SignUp> {
           children: <Widget>[
             TextFormField(
               autofillHints: const <String>[AutofillHints.givenName],
-              decoration: const InputDecoration(
-                hintText: "First Name",
-                prefixIcon: Icon(Icons.badge),
+              decoration: InputDecoration(
+                hintText: localizations.firstNameHint,
+                prefixIcon: const Icon(Icons.badge),
               ),
               controller: _firstName,
               validator: (String? value) => value == null || value.isEmpty
-                  ? "First name cannot be blank"
+                  ? localizations.firstNameRequired
                   : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
             TextFormField(
               autofillHints: const <String>[AutofillHints.familyName],
-              decoration: const InputDecoration(
-                hintText: "Last Name",
-                prefixIcon: Icon(Icons.badge),
+              decoration: InputDecoration(
+                hintText: localizations.lastNameHint,
+                prefixIcon: const Icon(Icons.badge),
               ),
               controller: _lastName,
               validator: (String? value) => value == null || value.isEmpty
-                  ? "Last name cannot be blank"
+                  ? localizations.lastNameRequired
                   : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
             TextFormField(
               autofillHints: const <String>[AutofillHints.email],
-              decoration: const InputDecoration(
-                hintText: "Email Address",
-                prefixIcon: Icon(Icons.email),
+              decoration: InputDecoration(
+                hintText: localizations.emailAddressHint,
+                prefixIcon: const Icon(Icons.email),
               ),
               controller: _email,
               // TODO (maybe): Validate that this is at least sort of accurate
               validator: (String? value) => value == null || value.isEmpty
-                  ? "Email cannot be blank"
+                  ? localizations.emailRequired
                   : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
             TextFormField(
               autofillHints: const <String>[AutofillHints.newPassword],
-              decoration: const InputDecoration(
-                hintText: "Password",
-                prefixIcon: Icon(Icons.lock),
+              decoration: InputDecoration(
+                hintText: localizations.passwordHint,
+                prefixIcon: const Icon(Icons.lock),
               ),
               controller: _password,
               obscureText: true,
               validator: (String? value) => value == null || value.isEmpty
-                  ? "Password cannot be blank"
+                  ? localizations.passwordRequired
                   : null,
               textInputAction: TextInputAction.next,
             ),
@@ -163,9 +164,9 @@ class _SignUpState extends State<SignUp> {
             TextFormField(
               // Apparently should also be "new password"
               autofillHints: const <String>[AutofillHints.newPassword],
-              decoration: const InputDecoration(
-                hintText: "Confirm Password",
-                prefixIcon: Icon(Icons.lock),
+              decoration: InputDecoration(
+                hintText: localizations.confirmPasswordHint,
+                prefixIcon: const Icon(Icons.lock),
               ),
               controller: _confirmPassword,
               obscureText: true,
@@ -176,7 +177,7 @@ class _SignUpState extends State<SignUp> {
                 // Otherwise, check if they match
                 return value == _password.text
                     ? null
-                    : "Passwords do not match";
+                    : localizations.confirmPasswordMismatch;
               },
               textInputAction: TextInputAction.done,
               onEditingComplete: () {
@@ -197,9 +198,9 @@ class _SignUpState extends State<SignUp> {
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      const TextSpan(text: "I agree to the "),
+                      TextSpan(text: localizations.agreeTOSBefore),
                       TextSpan(
-                        text: "terms and conditions",
+                        text: localizations.agreeTOSLink,
                         style: const TextStyle(
                           decoration: TextDecoration.underline,
                         ),
@@ -208,7 +209,7 @@ class _SignUpState extends State<SignUp> {
                             launchUrl(widget.dataUseAgreement.source);
                           },
                       ),
-                      const TextSpan(text: "."),
+                      TextSpan(text: localizations.agreeTOSAfter),
                     ],
                   ),
                 ),
@@ -216,7 +217,7 @@ class _SignUpState extends State<SignUp> {
               validator: (value) {
                 return value == true
                     ? null
-                    : "You must agree to the terms and conditions.";
+                    : localizations.errorAgreeTOS;
               },
               initialValue: _agreesToTerms,
             ),
@@ -231,12 +232,12 @@ class _SignUpState extends State<SignUp> {
                   });
                 },
                 errorText: field.errorText,
-                child: const Text("I am at least 18 years of age or older."),
+                child: Text(localizations.assertAge),
               ),
               validator: (value) {
                 return value == true
                     ? null
-                    : "You must be at least 18 years of age to use this app";
+                    : localizations.errorAssertAge;
               },
               initialValue: _assertsAge,
             ),
@@ -248,10 +249,11 @@ class _SignUpState extends State<SignUp> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return AccountScreenForm(
-      title: "Create an Account",
+      title: localizations.signUpTitle,
       formBuilder: _buildForm,
-      submitLabel: "Confirm",
+      submitLabel: localizations.signUpButton,
       onSubmit: () async {
         // currentState being null would indicate an actual error in the code
         if (_formKey.currentState!.validate()) {
@@ -279,7 +281,7 @@ class _SignUpState extends State<SignUp> {
           );
           return null;
         } else {
-          return "Please correct the above errors and try again";
+          return localizations.correctAboveErrors;
         }
       },
       afterFormBuilder: (BuildContext context) {
@@ -290,8 +292,8 @@ class _SignUpState extends State<SignUp> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFEF2F5),
               ),
-              child: const Text(
-                "Back",
+              child: Text(
+                localizations.back,
                 style: TextStyle(color: Color(0xFF1F201D)),
               ),
               onPressed: () {
@@ -301,9 +303,9 @@ class _SignUpState extends State<SignUp> {
             Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(text: "Already Have An Account? "),
+                  TextSpan(text: localizations.haveAccount),
                   TextSpan(
-                    text: "Sign In",
+                    text: localizations.haveAccountLink,
                     style: const TextStyle(
                       decoration: TextDecoration.underline,
                     ),
