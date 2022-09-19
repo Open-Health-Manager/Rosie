@@ -142,7 +142,40 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
             return serverError.title ?? "Unknown error from server";
           }
           return serverError.fieldErrors
-              .map((field) => "Invalid ${field.field}: ${field.message}")
+              .map((field) {
+              String errorMessage = "Invalid ${field.field}: ";
+              if (field.field == "password") {
+                switch (field.message) {
+                  case "INSUFFICIENT_SPECIAL":
+                    return errorMessage = "$errorMessage Please ensure password contains 1 or more special characters.";
+                  case "TOO_SHORT":
+                    return errorMessage = "$errorMessage Please ensure password is 4 or more characters in length.";
+                  case "TOO_LONG":
+                    return errorMessage = "$errorMessage Please ensure password is 60 or less characters in length";
+                  case "INSUFFICIENT_DIGIT":
+                    return errorMessage = "$errorMessage Please ensure password contains 1 or more digit characters.";
+                  case "INSUFFICIENT_UPPERCASE":
+                    return errorMessage = "$errorMessage Please ensure password contains 1 or more uppercase characters";
+                  case "INSUFFICIENT_LOWERCASE":
+                    return errorMessage = "$errorMessage Please ensure password contains 1 or more lowercase characters.";
+                  case "ILLEGAL_WHITESPACE":
+                    return errorMessage = "$errorMessage Please ensure password does not contain a whitespace character.";
+                  case "ILLEGAL_ALPHABETICAL_SEQUENCE":
+                    return errorMessage = "$errorMessage Please ensure password does not contain an illegal alphabetical sequence of 5 or more consecutive letters.";
+                  case "ILLEGAL_NUMERICAL_SEQUENCE":
+                    return errorMessage = "$errorMessage Please ensure password does not contain an illegal numerical sequence of 5 or more consecutive digits";
+                  default: return "$errorMessage ${field.message}";
+                }
+              } else if (field.field == "email"){
+                switch (field.message) {
+                  case "must be a well-formed email address":
+                    return errorMessage = "$errorMessage Please ensure email is a valid email address.";
+                  case "size must be between 5 and 254":
+                    return errorMessage = "$errorMessage Please ensure email has a length of at least 5 and no more than 254 characters.";
+                  default: return "$errorMessage ${field.message}";
+                }
+              }
+              })
               .join("\n\n");
         } on FormatException catch (_) {
           // The specific error information could not be parsed so just fall
