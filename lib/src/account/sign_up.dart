@@ -141,9 +141,15 @@ class _SignUpState extends State<SignUp> {
               ),
               controller: _email,
               // TODO (maybe): Validate that this is at least sort of accurate
-              validator: (String? value) => value == null || value.isEmpty
-                  ? localizations.emailRequired
-                  : null,
+              validator: (String? value) {
+                if (value == null || value.isEmpty) {
+                  return localizations.emailRequired;
+                } else if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
+                  return "Invalid email address format";
+                } else {
+                  return null;
+                }
+              },
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
