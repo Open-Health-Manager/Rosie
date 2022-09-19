@@ -68,6 +68,9 @@ class _ResetPasswordState extends State<ResetPassword> {
       submitLabel: "Recover Account",
       onSubmit: () async {
         if (email != null) {
+          if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email!)) {
+            return "The email entered is not a valid email address. Please try again.";
+          }
           await context.read<OpenHealthManager>().requestPasswordReset(email!);
           if (!mounted) return null;
           Navigator.push(
