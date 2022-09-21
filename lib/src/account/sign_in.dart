@@ -110,14 +110,19 @@ class _SignInState extends State<SignIn> {
       submitLabel: localizations.signInButton,
       onSubmit: () async {
         if (email != null && password != null) {
-          if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email!)) {
+          if (email == '' && password == '') {
+            return "Email and password are required";
+          }
+           else if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email!)) {
             return "The email entered is not a valid email address. Please try again.";
           }
-          
           final auth =
               await context.read<OpenHealthManager>().signIn(email!, password!);
-          return auth == null ? localizations.loginFailed : null;
-        } else {
+          return auth == null
+              ? localizations.loginFailed
+              : null;
+        } 
+        else {
           return localizations.emailPasswordRequired;
         }
       },
