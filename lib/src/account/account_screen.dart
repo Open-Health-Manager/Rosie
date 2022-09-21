@@ -141,42 +141,69 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
           if (serverError.fieldErrors.isEmpty) {
             return serverError.title ?? "Unknown error from server";
           }
-          return serverError.fieldErrors
-              .map((field) {
-              String errorMessage = "Invalid ${field.field}: ";
-              if (field.field == "password") {
+
+          String passwordErrorMessage = "Invalid password: Please ensure that ";
+          String emailErrorMessage = "Invalid email: Please ensure that ";
+
+          String passwordFieldErrors = serverError.fieldErrors.map((field) {
+            if (field.field == "password") {
+                String errorMessage = "";
                 switch (field.message) {
                   case "INSUFFICIENT_SPECIAL":
-                    return errorMessage = "$errorMessage Please ensure password contains 1 or more special characters.";
+                    return errorMessage = "password contains 1 or more special characters";
                   case "TOO_SHORT":
-                    return errorMessage = "$errorMessage Please ensure password is 4 or more characters in length.";
+                    return errorMessage = "password is 4 or more characters in length";
                   case "TOO_LONG":
-                    return errorMessage = "$errorMessage Please ensure password is 60 or less characters in length";
+                     return errorMessage = "password is 60 or less characters in length";
                   case "INSUFFICIENT_DIGIT":
-                    return errorMessage = "$errorMessage Please ensure password contains 1 or more digit characters.";
+                    return errorMessage = "password contains 1 or more digit characters";
                   case "INSUFFICIENT_UPPERCASE":
-                    return errorMessage = "$errorMessage Please ensure password contains 1 or more uppercase characters";
+                    return errorMessage = "password contains 1 or more uppercase characters";
                   case "INSUFFICIENT_LOWERCASE":
-                    return errorMessage = "$errorMessage Please ensure password contains 1 or more lowercase characters.";
+                    return errorMessage = "password contains 1 or more lowercase characters";
                   case "ILLEGAL_WHITESPACE":
-                    return errorMessage = "$errorMessage Please ensure password does not contain a whitespace character.";
+                    return errorMessage = "password does not contain a whitespace character";
                   case "ILLEGAL_ALPHABETICAL_SEQUENCE":
-                    return errorMessage = "$errorMessage Please ensure password does not contain an illegal alphabetical sequence of 5 or more consecutive letters.";
+                    return errorMessage = "password does not contain an illegal alphabetical sequence of 5 or more consecutive letters";
                   case "ILLEGAL_NUMERICAL_SEQUENCE":
-                    return errorMessage = "$errorMessage Please ensure password does not contain an illegal numerical sequence of 5 or more consecutive digits";
-                  default: return "$errorMessage ${field.message}";
-                }
-              } else if (field.field == "email"){
-                switch (field.message) {
-                  case "must be a well-formed email address":
-                    return errorMessage = "$errorMessage Please ensure email is a valid email address.";
-                  case "size must be between 5 and 254":
-                    return errorMessage = "$errorMessage Please ensure email has a length of at least 5 and no more than 254 characters.";
+                    return errorMessage = "password does not contain an illegal numerical sequence of 5 or more consecutive digits";
                   default: return "$errorMessage ${field.message}";
                 }
               }
-              })
-              .join("\n\n");
+            })
+            .where((field) => field != null)
+            .join(", and ");
+
+          String emailFieldErrors = serverError.fieldErrors.map((field) {
+            if (field.field == "email") {
+              String errorMessage = "";
+              switch (field.message) {
+                case "must be a well-formed email address":
+                  return errorMessage = "$errorMessage Please ensure email is a valid email address.";
+                case "size must be between 5 and 254":
+                  return errorMessage = "password does not contain an illegal numerical sequence of 5 or more consecutive digits";
+                default: return "$errorMessage ${field.message}";
+              }
+            }
+          })
+          .where((field) => field != null)
+         .join(", and ");
+          
+          String errorMessage = "";
+          
+          // Check if either email field errors or password field errors are null to avoid displaying
+          if (emailFieldErrors != "" && passwordFieldErrors != "") {
+            emailErrorMessage = "$emailErrorMessage $emailFieldErrors";
+            passwordErrorMessage = "$passwordErrorMessage $passwordFieldErrors";
+            errorMessage = "$emailErrorMessage \n\n $passwordErrorMessage";
+          } else if (emailFieldErrors != "") {
+             errorMessage = "$emailErrorMessage $emailFieldErrors";
+          } else {
+            errorMessage = "$passwordErrorMessage $passwordFieldErrors";
+          }
+
+
+          return errorMessage;
         } on FormatException catch (_) {
           // Ignore this and fall through
         }
