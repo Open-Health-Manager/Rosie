@@ -118,5 +118,28 @@
   "correctAboveErrors": "Please correct the above errors and try again",
   "@correctAboveErrors": {
     "description": "Error message shown on the account creation screen when there are validation errors"
+  },
+  "tabCarePlan": "Care Plan",
+  "@tabCarePlan": {
+    "description": "Label for the Care Plan tab"
+  },
+  "tabRecords": "Records",
+  "@tabRecords": {
+    "description": "Label for the Records tab"
+  },
+  "tabPrivacy": "Privacy",
+  "@tabPrivacy": {
+    "description": "Label for the Privacy tab"
+  },
+  "tabHelp": "Help",
+  "@tabHelp": {
+    "description": "Label for the Help tab"
+  },
+  "errorInternal": "Internal error: {message}",
+  "@errorInternal": {
+    "description": "Error message for an internal error",
+    "placeholders": {
+      "message": {}
+    }
   }
 }
