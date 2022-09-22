@@ -148,10 +148,8 @@ extension PatientConsentsQuerying on OpenHealthManager {
   Future<List<PatientConsent>> getAllPatientConsents() async {
     // For now, just use the default page/size
     final clients = await getFHIRClients();
-    print('Got ${clients.length} clients');
     // Next, get the existing consents
     final consents = await getPatientConsents();
-    print('Got ${consents.length} existing consents');
     // final consents = <PatientConsent>[];
     final existingConsents = Map.fromEntries(
         consents.map((consent) => MapEntry(consent.client.uri, consent)));

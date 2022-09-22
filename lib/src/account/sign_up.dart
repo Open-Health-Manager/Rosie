@@ -294,7 +294,7 @@ class _SignUpState extends State<SignUp> {
               ),
               child: Text(
                 localizations.back,
-                style: TextStyle(color: Color(0xFF1F201D)),
+                style: const TextStyle(color: Color(0xFF1F201D)),
               ),
               onPressed: () {
                 Navigator.of(context).pop();

@@ -145,7 +145,8 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
               .map((field) => "Invalid ${field.field}: ${field.message}")
               .join("\n\n");
         } on FormatException catch (_) {
-          // Ignore this and fall through
+          // The specific error information could not be parsed so just fall
+          // through and go with the generic handling.
         }
       }
     }

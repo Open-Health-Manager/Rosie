@@ -165,6 +165,7 @@ import HealthKit
         do {
             return try healthStore.dateOfBirthComponents()
         } catch {
+            // It's unclear what errors can be raised. Presumably the error would indicate if the user denied permission, but in any case, return nil, as if was simply not specified.
             return nil
         }
     }
@@ -174,6 +175,7 @@ import HealthKit
         do {
             return try healthStore.biologicalSex()
         } catch {
+            // It's unclear what errors can be raised. Presumably the error would indicate if the user denied permission, but in any case, return nil, as if was simply not specified.
             return nil
         }
     }

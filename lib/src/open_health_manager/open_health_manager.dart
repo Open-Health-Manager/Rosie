@@ -371,11 +371,11 @@ class OpenHealthManager with ChangeNotifier {
     }
     if (!duaAccepted) {
       throw ArgumentError.value(
-          duaAccepted, "duaAccepted", "Use must accept data use agreement");
+          duaAccepted, "duaAccepted", "User must accept data use agreement");
     }
     if (!ageAttested) {
       throw ArgumentError.value(
-          duaAccepted, "ageAttested", "Use must indicate they are 18 or older");
+          duaAccepted, "ageAttested", "User must indicate they are 18 or older");
     }
     // The way this currently works involves first creating the account and then automatically attempting to log in to
     // the newly created account.
