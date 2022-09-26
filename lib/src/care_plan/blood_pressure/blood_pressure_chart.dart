@@ -299,6 +299,9 @@ class BloodPressureChart extends StatelessWidget {
         diastolicPositions: diastolicPositions,
       ),
     ];
+    /* if (activeSlice < 0 || activeSlice > 3) {
+      print("Please try inputting your blood pressure again");
+    } else  */
     if (bp != null) {
       // If bp exists, add it
       children.add(_BloodPressureValue(
