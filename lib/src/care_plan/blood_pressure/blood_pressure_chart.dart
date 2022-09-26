@@ -420,10 +420,17 @@ class _BloodPressureCallout extends StatelessWidget {
         text.add(const TextSpan(
           text: "\nnow it\u2019s out of date. You should check it every year.",
         ));
+      } else if (urgency.index == 0) {
+        text.add(TextSpan(
+          text:
+              "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()} low\n",
+          style: highlightEmergencyStyle,
+        ));
+        text.add(TextSpan(text: formattedTimeTaken, style: dateStyle));
       } else {
         text.add(TextSpan(
           text:
-              "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()} good\n",
+              "${bloodPressure.systolic.round()}/${bloodPressure.diastolic.round()} good \n",
           style: highlightGoodStyle,
         ));
         text.add(TextSpan(text: formattedTimeTaken, style: dateStyle));
