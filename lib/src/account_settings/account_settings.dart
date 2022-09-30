@@ -15,6 +15,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../open_health_manager/open_health_manager.dart';
+import '../debug_details.dart';
 
 /// Account settings screen. At present, does one thing: lets you log out.
 class AccountSettingsScreen extends StatelessWidget {
@@ -22,12 +23,32 @@ class AccountSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () {
-          context.read<OpenHealthManager>().signOut();
-        },
-        child: const Text('Log Out'),
+    return SafeArea(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                context.read<OpenHealthManager>().signOut();
+              },
+              child: const Text('Log Out'),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DebugDetailsScreen(),
+                  ),
+                );
+              },
+              child: const Text('Debug Details'),
+            )
+          ],
+        ),
       ),
     );
   }

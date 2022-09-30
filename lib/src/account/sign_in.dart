@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'account_screen.dart';
 import 'reset_password.dart';
 import '../open_health_manager/open_health_manager.dart';
+import '../debug_details.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
@@ -111,9 +112,7 @@ class _SignInState extends State<SignIn> {
         if (email != null && password != null) {
           final auth =
               await context.read<OpenHealthManager>().signIn(email!, password!);
-          return auth == null
-              ? localizations.loginFailed
-              : null;
+          return auth == null ? localizations.loginFailed : null;
         } else {
           return localizations.emailPasswordRequired;
         }
@@ -168,6 +167,18 @@ class _SignInState extends State<SignIn> {
                 ],
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
+            ),
+            const SizedBox(height: 16.0),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DebugDetailsScreen(),
+                  ),
+                );
+              },
+              child: const Text('Show debug information'),
             ),
           ],
         );
