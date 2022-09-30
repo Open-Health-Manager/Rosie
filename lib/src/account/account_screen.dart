@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'account_theme.dart';
 import '../open_health_manager/open_health_manager.dart';
 import '../open_health_manager/server_error_message.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Intent for submitting the form within the account screen. This is intented
 /// to be used to inform the account screen that some action has happened within
@@ -131,7 +132,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
     });
   }
 
-  String _parseErrorMessage(dynamic error) {
+  String _parseErrorMessage(dynamic error, AppLocalizations localizations) {
     if (error is ServerErrorException) {
       // This is "special" - a more detailed error message may be available
       if (error.statusCode == 400) {
@@ -139,34 +140,34 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
         try {
           final serverError = ServerErrorMessage.fromJson(error.responseObject);
           if (serverError.fieldErrors.isEmpty) {
-            return serverError.title ?? "Unknown error from server";
+            return serverError.title ?? localizations.unknownServerError;
           }
 
-          String passwordErrorMessage = "Invalid password: Please ensure that ";
-          String emailErrorMessage = "Invalid email: Please ensure that ";
+          String passwordErrorMessage = localizations.passwordServerErrorMessageStart;
+          String emailErrorMessage = localizations.emailServerErrorMessageStart;
 
           String passwordFieldErrors = serverError.fieldErrors.map((field) {
             if (field.field == "password") {
                 String errorMessage = "";
                 switch (field.message) {
                   case "INSUFFICIENT_SPECIAL":
-                    return errorMessage = "password contains 1 or more special characters";
+                    return errorMessage = "$errorMessage ${localizations.insufficientSpecialPassword}";
                   case "TOO_SHORT":
-                    return errorMessage = "password is 4 or more characters in length";
+                    return errorMessage = "$errorMessage ${localizations.tooShortPassword}";
                   case "TOO_LONG":
-                     return errorMessage = "password is 60 or less characters in length";
+                     return errorMessage = "$errorMessage ${localizations.tooLongPassword}";
                   case "INSUFFICIENT_DIGIT":
-                    return errorMessage = "password contains 1 or more digit characters";
+                    return errorMessage = "$errorMessage ${localizations.insufficientDigitPassword}";
                   case "INSUFFICIENT_UPPERCASE":
-                    return errorMessage = "password contains 1 or more uppercase characters";
+                    return errorMessage = "$errorMessage ${localizations.insufficientUpperCasePassword}";
                   case "INSUFFICIENT_LOWERCASE":
-                    return errorMessage = "password contains 1 or more lowercase characters";
+                    return errorMessage = "$errorMessage ${localizations.insufficientLowerCasePassword}";
                   case "ILLEGAL_WHITESPACE":
-                    return errorMessage = "password does not contain a whitespace character";
+                    return errorMessage = "$errorMessage ${localizations.illegalWhiteSpacePassword}";
                   case "ILLEGAL_ALPHABETICAL_SEQUENCE":
-                    return errorMessage = "password does not contain an illegal alphabetical sequence of 5 or more consecutive letters";
+                    return errorMessage = "$errorMessage ${localizations.illegalAlphabeticalSequencePassword}";
                   case "ILLEGAL_NUMERICAL_SEQUENCE":
-                    return errorMessage = "password does not contain an illegal numerical sequence of 5 or more consecutive digits";
+                    return errorMessage = "$errorMessage ${localizations.illegalNumericalSequencePassword}";
                   default: return "$errorMessage ${field.message}";
                 }
               }
@@ -179,9 +180,9 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
               String errorMessage = "";
               switch (field.message) {
                 case "must be a well-formed email address":
-                  return errorMessage = "$errorMessage Please ensure email is a valid email address.";
+                  return errorMessage = "$errorMessage ${localizations.emailFormatServerErrorMessage}";
                 case "size must be between 5 and 254":
-                  return errorMessage = "password does not contain an illegal numerical sequence of 5 or more consecutive digits";
+                  return errorMessage = "$errorMessage ${localizations.emailLengthServerErrorMessage}";
                 default: return "$errorMessage ${field.message}";
               }
             }
@@ -209,7 +210,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
           // through and go with the generic handling.
         }
       } else if (error.statusCode == 401) {
-        return "The password entered is incorrect, please try again.";
+        return localizations.incorrectPassword401Error;
       }
     }
     // Default: return whatever toString does
@@ -217,8 +218,9 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
   }
 
   Widget _buildErrorMessage(BuildContext context, dynamic error) {
+    final localizations = AppLocalizations.of(context)!;
     return Text(
-      _parseErrorMessage(error),
+      _parseErrorMessage(error, localizations),
       softWrap: true,
       style: TextStyle(color: Theme.of(context).errorColor),
     );
@@ -226,6 +228,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final afterFormBuilder = widget.afterFormBuilder;
     List<Widget> formChildren = [
       Text(
@@ -254,7 +257,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
               // ServerErrorException
               dynamic error;
               if (snapshot.hasError) {
-                error = snapshot.error ?? "Unknown error";
+                error = snapshot.error ?? localizations.unknownError;
               } else if (snapshot.hasData) {
                 error = snapshot.data;
               }
