@@ -145,7 +145,7 @@ class _SignUpState extends State<SignUp> {
                 if (value == null || value.isEmpty) {
                   return localizations.emailRequired;
                 } else if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
-                  return "Invalid email address format";
+                  return localizations.invalidEmailFormat;
                 } else {
                   return null;
                 }
