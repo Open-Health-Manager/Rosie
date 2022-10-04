@@ -44,10 +44,17 @@ class HealthKitResource {
     this.sourceUrl,
   });
 
+  /// FHIR version of the resource
   final FhirVersion fhirVersion;
+
+  /// Source URL of the resource
   final Uri? sourceUrl;
+
+  /// The actual JSON data of the resource, if available
   final Map<String, dynamic> resource;
 
+  /// Attempts to parse the HealthKitResource *as sent from the Swift backend* -
+  /// this is *not* expecting a FHIR resource!
   static HealthKitResource? fromJson(Map<String, dynamic> jsonObject) {
     // Basically make sure the data is there and correct
     var version = FhirVersion.unknown;
@@ -97,51 +104,84 @@ class HealthKitResource {
       return null;
     }
 
-    if (version == FhirVersion.r4) {
-      return HealthKitResource(
-          fhirVersion: version, sourceUrl: sourceUrl, resource: resource);
-    } else if (version == FhirVersion.dstu2) {
-      return fromFhirDstu2(resource, sourceUrlJson, version);
-    }
-
-    return null;
+    return HealthKitResource(
+      fhirVersion: version,
+      sourceUrl: sourceUrl,
+      resource: resource,
+    );
   }
 
-  static HealthKitResource? fromFhirDstu2(Map<String, dynamic> resourceJson,
-      String sourceUrl, FhirVersion version) {
-    var blacklist = [
-      //can't be handled by DSTU2 to R4 HAPI converter
-      'AllergyIntolerance',
-      'Immunization',
-      'MedicationOrder',
-      'MedicationRequest',
-      'Procedure'
-    ];
-    if (blacklist.any((item) =>
-        item.toLowerCase() ==
-        resourceJson['resourceType'].toString().toLowerCase())) {
+  /// If this is not a FHIR R4 resource, creates a representation of it as if it
+  /// where one. This does not do any conversion, instead, it wraps the existing
+  /// resource within a FHIR R4 Binary resource.
+  Map<String, dynamic> asFhirR4Resource() {
+    if (fhirVersion == FhirVersion.r4) {
+      return resource;
+    }
+    return <String, dynamic>{
+      "resourceType": "Binary",
+      "contentType": fhirVersion == FhirVersion.dstu2
+          ? "application/fhir+json"
+          : "application/json",
+      "data": base64.encode(utf8.encode(json.encode(resource))),
+    };
+  }
+}
+
+/// Represents a HealthKitSample - something that likely can't be represented as
+/// FHIR but may have embedded data that can be used.
+class HealthKitSample extends HealthKitResource {
+  HealthKitSample({
+    required this.uuid,
+    required this.sampleType,
+    required this.value,
+    required this.startDate,
+    required this.endDate,
+    required this.encoded,
+    required super.resource,
+    required super.fhirVersion,
+    super.sourceUrl,
+  });
+
+  final String uuid;
+  final String sampleType;
+  final String value;
+  final String startDate;
+  final String endDate;
+  final String encoded;
+
+  static HealthKitSample? fromJson(
+      Map<String, dynamic> jsonObject, Uri? sourceUrl) {
+    final uuid = jsonObject["uuid"];
+    final sampleType = jsonObject["sampleType"];
+    final value = jsonObject["value"];
+    final startDate = jsonObject["startDate"];
+    final endDate = jsonObject["endDate"];
+    final encoded = jsonObject["encoded"];
+    if (uuid is String &&
+        sampleType is String &&
+        value is String &&
+        startDate is String &&
+        endDate is String &&
+        encoded is String) {
+      return HealthKitSample(
+        uuid: uuid,
+        sampleType: sampleType,
+        value: value,
+        startDate: startDate,
+        endDate: endDate,
+        encoded: encoded,
+        resource: <String, dynamic>{
+          "resourceType": "Binary",
+          "contentType": "application/json",
+          "data": base64.encode(utf8.encode(json.encode(jsonObject)))
+        },
+        fhirVersion: FhirVersion.r4,
+        sourceUrl: sourceUrl,
+      );
+    } else {
       return null;
     }
-    return fromNonFhirR4(resourceJson, sourceUrl, version);
-  }
-
-  static HealthKitResource? fromNonFhirR4(
-      Map<String, dynamic> jsonObject, String sourceUrl, FhirVersion version) {
-    Map<String, dynamic> binaryResource = <String, dynamic>{};
-    binaryResource["resourceType"] = "Binary";
-    if (version == FhirVersion.dstu2) {
-      binaryResource["contentType"] = "application/fhir+json";
-    } else {
-      binaryResource["contentType"] = "application/json";
-    }
-
-    final bytes = utf8.encode(jsonEncode(jsonObject));
-    final base64Str = base64.encode(bytes);
-    binaryResource["data"] = base64Str;
-    return HealthKitResource(
-        fhirVersion: FhirVersion.r4,
-        sourceUrl: Uri.parse(sourceUrl),
-        resource: binaryResource);
   }
 }
 
@@ -220,10 +260,11 @@ class HealthKit {
       return null;
     }
     return HealthKitResource(
-        fhirVersion: FhirVersion.r4,
-        sourceUrl: Uri.parse("urn:apple:health-kit"),
-        resource: getHealthKitPatientFHIRJSON(
-            Map<String, dynamic>.from(results), currentPatient));
+      fhirVersion: FhirVersion.r4,
+      sourceUrl: Uri.parse("urn:apple:health-kit"),
+      resource: getHealthKitPatientFHIRJSON(
+          Map<String, dynamic>.from(results), currentPatient),
+    );
   }
 
   /// Attempts to query all known supported types.
@@ -279,19 +320,18 @@ class HealthKit {
     return patientJSON;
   }
 
-  static Future<List<HealthKitResource>> queryCategoryData(String type) async {
+  static Future<List<HealthKitSample>> queryCategoryData(String type) async {
     final results = await platform.invokeListMethod<Map<dynamic, dynamic>>(
         "queryCategoryData", type);
     if (results == null) {
       // Just return an empty list
-      return <HealthKitResource>[];
+      return <HealthKitSample>[];
     }
+    final healthKitUri = Uri.parse("urn:apple:health-kit");
     return results
-        .map<HealthKitResource?>((e) => HealthKitResource.fromNonFhirR4(
-            Map<String, dynamic>.from(e),
-            "urn:apple:health-kit",
-            FhirVersion.unknown))
-        .whereType<HealthKitResource>()
+        .map<HealthKitSample?>((e) => HealthKitSample.fromJson(
+            Map<String, dynamic>.from(e), healthKitUri))
+        .whereType<HealthKitSample>()
         .toList(growable: false);
   }
 }

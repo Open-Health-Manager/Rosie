@@ -25,6 +25,23 @@ class SendHealthKitScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _SendHealthKitScreenState();
 }
 
+/// Filters out resources that can't be handled.
+Iterable<HealthKitResource> filterResources(
+    Iterable<HealthKitResource> resources) {
+  // Set of resource types that can't be handled by DSTU2 to R4 HAPI converter
+  const blacklist = <String>{
+    'allergyintolerance',
+    'immunization',
+    'medicationorder',
+    'medicationrequest',
+    'procedure'
+  };
+  return resources.where((resource) {
+    return !blacklist
+        .contains(resource.resource['resourceType'].toString().toLowerCase());
+  });
+}
+
 class _SendHealthKitScreenState extends State<SendHealthKitScreen> {
   late final OpenHealthManager healthManager;
   Future<List<HealthKitResource>>? recordFuture;
@@ -67,7 +84,8 @@ class _SendHealthKitScreenState extends State<SendHealthKitScreen> {
         });
         return healthManager
             .sendProcessMessage(
-              records.map<Map<String, dynamic>>((e) => e.resource),
+              filterResources(records)
+                  .map<Map<String, dynamic>>((e) => e.resource),
               fhirVersion: "dstu2",
               endpoint: "urn:apple:health-kit",
             )

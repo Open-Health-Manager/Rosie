@@ -66,7 +66,7 @@ class _DebugDetailsState extends State<DebugDetails> {
           ListTile(
             title: const Text('HealthKit'),
             subtitle: const Text(
-                'Showing details will trigger a HealthKit permission request'),
+                'Showing HealthKit details will trigger a HealthKit permission request, this may or may not cause a permission dialog to display'),
             trailing: TextButton(
               onPressed: () {
                 Navigator.push(
