@@ -110,6 +110,68 @@ class AccountScreenForm extends StatefulWidget {
   createState() => _AccountScreenFormState();
 }
 
+@visibleForTesting
+String createLocalizedErrorMessage(
+    ServerErrorMessage error, AppLocalizations localizations) {
+  if (error.fieldErrors.isEmpty) {
+    return error.title ?? localizations.unknownServerError;
+  }
+
+  String passwordFieldErrors = error.fieldErrors
+      .where((field) => field.field == 'password')
+      .map<String>((field) {
+    switch (field.message) {
+      case "INSUFFICIENT_SPECIAL":
+        return localizations.insufficientSpecialPassword;
+      case "TOO_SHORT":
+        return localizations.tooShortPassword;
+      case "TOO_LONG":
+        return localizations.tooLongPassword;
+      case "INSUFFICIENT_DIGIT":
+        return localizations.insufficientDigitPassword;
+      case "INSUFFICIENT_UPPERCASE":
+        return localizations.insufficientUpperCasePassword;
+      case "INSUFFICIENT_LOWERCASE":
+        return localizations.insufficientLowerCasePassword;
+      case "ILLEGAL_WHITESPACE":
+        return localizations.illegalWhiteSpacePassword;
+      case "ILLEGAL_ALPHABETICAL_SEQUENCE":
+        return localizations.illegalAlphabeticalSequencePassword;
+      case "ILLEGAL_NUMERICAL_SEQUENCE":
+        return localizations.illegalNumericalSequencePassword;
+      default:
+        return field.message;
+    }
+  }).join(localizations.errorListJoin);
+  // Add prefix if it exists
+
+  String emailFieldErrors = error.fieldErrors
+      .where((field) => field.field == 'email')
+      .map<String>((field) {
+    switch (field.message) {
+      case "must be a well-formed email address":
+        return localizations.emailFormatServerErrorMessage;
+      case "size must be between 5 and 254":
+        return localizations.emailLengthServerErrorMessage;;
+      default:
+        return field.message;
+    }
+  }).join(localizations.errorListJoin);
+
+  // Check if either email field errors or password field errors are null to avoid displaying
+  if (emailFieldErrors.isNotEmpty && passwordFieldErrors.isNotEmpty) {
+    return "${localizations.emailServerErrorMessage(emailFieldErrors)} \n\n ${localizations.passwordServerErrorMessage(passwordFieldErrors)}";
+  } else if (emailFieldErrors.isNotEmpty) {
+    return localizations.emailServerErrorMessage(emailFieldErrors);
+  } else if (passwordFieldErrors.isNotEmpty) {
+    return localizations.passwordServerErrorMessage(passwordFieldErrors);
+  } else {
+    // This means that fields were marked invalid, but we don't know what they
+    // are.
+    return localizations.unknownServerValidationError;
+  }
+}
+
 class _AccountScreenFormState extends State<AccountScreenForm> {
   // This is the future that indicates if a login/account creation is in process
   Future<String?>? _submitFuture;
@@ -139,72 +201,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
         // "Bad Request" - attempt to parse out the body
         try {
           final serverError = ServerErrorMessage.fromJson(error.responseObject);
-          if (serverError.fieldErrors.isEmpty) {
-            return serverError.title ?? localizations.unknownServerError;
-          }
-
-          String passwordErrorMessage = localizations.passwordServerErrorMessageStart;
-          String emailErrorMessage = localizations.emailServerErrorMessageStart;
-
-          String passwordFieldErrors = serverError.fieldErrors.map((field) {
-            if (field.field == "password") {
-                String errorMessage = "";
-                switch (field.message) {
-                  case "INSUFFICIENT_SPECIAL":
-                    return errorMessage = "$errorMessage ${localizations.insufficientSpecialPassword}";
-                  case "TOO_SHORT":
-                    return errorMessage = "$errorMessage ${localizations.tooShortPassword}";
-                  case "TOO_LONG":
-                     return errorMessage = "$errorMessage ${localizations.tooLongPassword}";
-                  case "INSUFFICIENT_DIGIT":
-                    return errorMessage = "$errorMessage ${localizations.insufficientDigitPassword}";
-                  case "INSUFFICIENT_UPPERCASE":
-                    return errorMessage = "$errorMessage ${localizations.insufficientUpperCasePassword}";
-                  case "INSUFFICIENT_LOWERCASE":
-                    return errorMessage = "$errorMessage ${localizations.insufficientLowerCasePassword}";
-                  case "ILLEGAL_WHITESPACE":
-                    return errorMessage = "$errorMessage ${localizations.illegalWhiteSpacePassword}";
-                  case "ILLEGAL_ALPHABETICAL_SEQUENCE":
-                    return errorMessage = "$errorMessage ${localizations.illegalAlphabeticalSequencePassword}";
-                  case "ILLEGAL_NUMERICAL_SEQUENCE":
-                    return errorMessage = "$errorMessage ${localizations.illegalNumericalSequencePassword}";
-                  default: return "$errorMessage ${field.message}";
-                }
-              }
-            })
-            .where((field) => field != null)
-            .join(", and ");
-
-          String emailFieldErrors = serverError.fieldErrors.map((field) {
-            if (field.field == "email") {
-              String errorMessage = "";
-              switch (field.message) {
-                case "must be a well-formed email address":
-                  return errorMessage = "$errorMessage ${localizations.emailFormatServerErrorMessage}";
-                case "size must be between 5 and 254":
-                  return errorMessage = "$errorMessage ${localizations.emailLengthServerErrorMessage}";
-                default: return "$errorMessage ${field.message}";
-              }
-            }
-          })
-          .where((field) => field != null)
-         .join(", and ");
-          
-          String errorMessage = "";
-          
-          // Check if either email field errors or password field errors are null to avoid displaying
-          if (emailFieldErrors != "" && passwordFieldErrors != "") {
-            emailErrorMessage = "$emailErrorMessage $emailFieldErrors";
-            passwordErrorMessage = "$passwordErrorMessage $passwordFieldErrors";
-            errorMessage = "$emailErrorMessage \n\n $passwordErrorMessage";
-          } else if (emailFieldErrors != "") {
-             errorMessage = "$emailErrorMessage $emailFieldErrors";
-          } else {
-            errorMessage = "$passwordErrorMessage $passwordFieldErrors";
-          }
-
-
-          return errorMessage;
+          return createLocalizedErrorMessage(serverError, localizations);
         } on FormatException catch (_) {
           // The specific error information could not be parsed so just fall
           // through and go with the generic handling.
@@ -297,4 +294,11 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
       ),
     );
   }
+}
+
+/// Checks if a given email address is valid.
+bool isValidEmail(String email) {
+  return RegExp(
+          r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@([a-zA-Z0-9]+\.)+[a-zA-Z]+")
+      .hasMatch(email);
 }

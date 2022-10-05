@@ -31,8 +31,8 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-  String? email;
-  String? password;
+  String? _email;
+  String? _password;
 
   // new piece of code - create button bar, may need to add the underscore and call it from the build function as done in the blood_pressure_help
   Widget _createButtonBar(BuildContext context) {
@@ -75,7 +75,7 @@ class _SignInState extends State<SignIn> {
                   return null;
                 },
                 onChanged: (value) {
-                  email = value;
+                  _email = value;
                 },
                 autofillHints: const [AutofillHints.email],
                 textInputAction: TextInputAction.next,
@@ -95,7 +95,7 @@ class _SignInState extends State<SignIn> {
                   return null;
                 },
                 onChanged: (value) {
-                  password = value;
+                  _password = value;
                 },
                 onEditingComplete: () {
                   Actions.invoke(context, const SubmitIntent());
@@ -109,20 +109,17 @@ class _SignInState extends State<SignIn> {
       },
       submitLabel: localizations.signInButton,
       onSubmit: () async {
+        final email = _email, password = _password;
         if (email != null && password != null) {
-          if (email == '' || password == '') {
+          if (email.isEmpty || password.isEmpty) {
             return localizations.emailPasswordRequired;
-          }
-           else if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email!)) {
+          } else if (!isValidEmail(email)) {
             return localizations.invalidEmailFormat;
           }
           final auth =
-              await context.read<OpenHealthManager>().signIn(email!, password!);
-          return auth == null
-              ? localizations.loginFailed
-              : null;
-        } 
-        else {
+              await context.read<OpenHealthManager>().signIn(email, password);
+          return auth == null ? localizations.loginFailed : null;
+        } else {
           return localizations.emailPasswordRequired;
         }
       },
