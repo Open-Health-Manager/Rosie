@@ -28,8 +28,7 @@ class ResetPassword extends StatefulWidget {
 }
 
 class _ResetPasswordState extends State<ResetPassword> {
-  String? email;
-  String? password;
+  String? _email;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +55,7 @@ class _ResetPasswordState extends State<ResetPassword> {
                   return null;
                 },
                 onChanged: (value) {
-                  email = value;
+                  _email = value;
                 },
                 autofillHints: const [AutofillHints.email],
                 textInputAction: TextInputAction.next,
@@ -67,11 +66,12 @@ class _ResetPasswordState extends State<ResetPassword> {
       },
       submitLabel: "Recover Account",
       onSubmit: () async {
+        final email = _email;
         if (email != null) {
-          if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email!)) {
+          if (!isValidEmail(email)) {
             return "The email entered is not a valid email address. Please try again.";
           }
-          await context.read<OpenHealthManager>().requestPasswordReset(email!);
+          await context.read<OpenHealthManager>().requestPasswordReset(_email!);
           if (!mounted) return null;
           Navigator.push(
             context,
