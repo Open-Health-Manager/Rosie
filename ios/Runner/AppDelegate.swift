@@ -39,6 +39,8 @@ import HealthKit
             switch (call.method) {
             case "isHealthDataAvailable":
                 result(HKHealthStore.isHealthDataAvailable())
+            case "supportsHealthRecords":
+                result(self?.supportsHealthRecords())
             case "requestAccess":
                 self?.requestHealthKitAccess(result: result)
             case "supportedClinicalTypes":
@@ -58,6 +60,14 @@ import HealthKit
 
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+
+    func supportsHealthRecords() -> Bool {
+        if #available(iOS 12.0, *) {
+            return healthStore.supportsHealthRecords()
+        } else {
+            return false
+        }
     }
 
     func requestHealthKitAccess(result: @escaping FlutterResult) {
@@ -314,6 +324,17 @@ func createCategoryValueResponse(fromCategory sample: HKSample) -> [String: Stri
         "sampleType": record.sampleType.identifier,
         "value": value,
         "startDate": startDate,
-        "endDate": endDate
+        "endDate": endDate,
+        "encoded": encodeSample(sample: sample)
     ];
+}
+
+/// Attempts to encode a sample into a string
+@available(iOS 12.0, *)
+func encodeSample(sample: HKSample) -> String {
+    let encoder = NSKeyedArchiver(requiringSecureCoding: true)
+    encoder.outputFormat = .xml
+    sample.encode(with: encoder)
+    // Unclear if this works
+    return String(data: encoder.encodedData, encoding: .utf8) ?? "Error converting to string"
 }

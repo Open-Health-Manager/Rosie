@@ -16,6 +16,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:fhir/r4.dart';
 import 'package:flutter/services.dart';
 import '../../open_health_manager/open_health_manager.dart';
@@ -156,7 +157,7 @@ class HealthKit {
   /// all other function calls will return null!
   static Future<bool> isHealthDataAvailable() async {
     // Only possibly available on iOS
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       final available = await platform.invokeMethod("isHealthDataAvailable");
       return available as bool;
     } else {
@@ -164,8 +165,9 @@ class HealthKit {
     }
   }
 
+  /// Determines if health records are supported on this device.
   static Future<bool> supportsHealthRecords() async {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       final available = await platform.invokeMethod("supportsHealthRecords");
       return available as bool;
     } else {
