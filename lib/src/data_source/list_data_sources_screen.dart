@@ -16,15 +16,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../open_health_manager/consents.dart';
+import '../open_health_manager/fhir_client.dart';
 import '../open_health_manager/open_health_manager.dart';
 import '../open_health_manager/patient_data.dart';
 import 'health_kit_connection_screen.dart';
 
+enum _Supported {
+  loading,
+  supported,
+  unsupported
+}
+
 class _DataSourceDescription extends StatelessWidget {
-  const _DataSourceDescription({Key? key, required this.dataSource})
+  const _DataSourceDescription({Key? key, required this.dataSource, required this.supported})
       : super(key: key);
 
   final FHIRClient dataSource;
+  final _Supported supported;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +46,8 @@ class _DataSourceDescription extends StatelessWidget {
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 2),
+        if (supported == _Supported.unsupported)
+          const Text('This client is not supported on your current device.'),
         // Don't have a description for now
         Text(
           'Description',
@@ -64,6 +74,7 @@ class _DataSourceTile extends StatefulWidget {
 }
 
 class _DataSourceTileState extends State<_DataSourceTile> {
+  _Supported _supported = _Supported.loading;
   Future? _changeFuture;
   bool _currentApprove = false;
 
@@ -75,21 +86,31 @@ class _DataSourceTileState extends State<_DataSourceTile> {
     super.initState();
     _currentApprove = widget.consent.approve;
     _currentConsent = widget.consent;
+    // Start the check to see if this is supported
+    widget.consent.client.isClientSupported().then((supported) {
+      setState(() {
+        _supported = supported ? _Supported.supported : _Supported.unsupported;
+      });
+    });
   }
 
   Widget _createSwitch(BuildContext context) {
     if (_changeFuture == null) {
+      // For now, only allow changing consent on devices that support the client
+      // This should probably be changed to allow revoking consent on
+      // unsupported devices.
+      void Function(bool)? onChanged = _supported == _Supported.supported ? changeApproval : null;
       // Show the switch if it's not changing
       final platform = Theme.of(context).platform;
       if (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS) {
         return CupertinoSwitch(
           value: _currentApprove,
-          onChanged: changeApproval,
+          onChanged: onChanged,
         );
       } else {
         return Switch(
           value: _currentApprove,
-          onChanged: changeApproval,
+          onChanged: onChanged,
         );
       }
     } else {
@@ -167,7 +188,7 @@ class _DataSourceTileState extends State<_DataSourceTile> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 2, 0),
                 child:
-                    _DataSourceDescription(dataSource: widget.consent.client),
+                    _DataSourceDescription(dataSource: widget.consent.client, supported: _supported),
               ),
             ),
             _createSwitch(context),

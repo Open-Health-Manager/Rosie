@@ -14,6 +14,7 @@
 
 import 'package:http/http.dart';
 import 'account.dart';
+import 'fhir_client.dart';
 import 'open_health_manager.dart';
 
 /// Patient consent object. Patient consents that represent database-backed
@@ -64,66 +65,6 @@ class PatientConsent {
     } else {
       // Otherwise, throw a FormatException
       throw const FormatException('Invalid object type for patient consent');
-    }
-  }
-}
-
-class FHIRClient {
-  const FHIRClient({
-    required this.id,
-    required this.name,
-    required this.displayName,
-    required this.uri,
-    required this.fhirOrganizationId,
-    required this.clientDirection,
-  });
-
-  final int id;
-  final String name;
-  final String displayName;
-  final String uri;
-  final String fhirOrganizationId;
-  final String clientDirection;
-
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "name": name,
-      "displayName": displayName,
-      "uri": uri,
-      "fhirOrganizationId": fhirOrganizationId,
-      "clientDirection": clientDirection,
-    };
-  }
-
-  static FHIRClient fromJson(dynamic jsonData) {
-    if (jsonData is Map<String, dynamic>) {
-      final id = jsonData['id'];
-      final name = jsonData['name'];
-      final displayName = jsonData['displayName'];
-      final uri = jsonData['uri'];
-      final fhirOrganizationId = jsonData['fhirOrganizationId'];
-      final clientDirection = jsonData['clientDirection'];
-      if (id is num &&
-          name is String &&
-          displayName is String &&
-          uri is String &&
-          fhirOrganizationId is String &&
-          clientDirection is String) {
-        return FHIRClient(
-          id: id.toInt(),
-          name: name,
-          displayName: displayName,
-          uri: uri,
-          fhirOrganizationId: fhirOrganizationId,
-          clientDirection: clientDirection,
-        );
-      } else {
-        throw const FormatException('Missing key or invalid data');
-      }
-    } else {
-      // Otherwise, throw a FormatException
-      throw const FormatException('Invalid object type for client');
     }
   }
 }
