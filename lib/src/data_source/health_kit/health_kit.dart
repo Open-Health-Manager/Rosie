@@ -44,6 +44,12 @@ class HealthKitResource {
     this.sourceUrl,
   });
 
+  /// The (string form) of URNs used for HealthKit
+  static const healthKitUrnString = 'urn:apple:health-kit';
+
+  /// Creates a [Uri] representing the URN used for HealthKit resources
+  static get healthKitUri => Uri.parse(healthKitUrnString);
+
   /// FHIR version of the resource
   final FhirVersion fhirVersion;
 
@@ -134,43 +140,29 @@ class HealthKitSample extends HealthKitResource {
   HealthKitSample({
     required this.uuid,
     required this.sampleType,
-    required this.value,
-    required this.startDate,
-    required this.endDate,
-    required this.encoded,
+    required this.fields,
     required super.resource,
     required super.fhirVersion,
     super.sourceUrl,
   });
 
+  /// HealthKit UUID of the sample (required)
   final String uuid;
+  /// HealthKit sample type (required)
   final String sampleType;
-  final String value;
-  final String startDate;
-  final String endDate;
-  final String encoded;
+  /// Sample-specific fields.
+  final Map<String, dynamic> fields;
 
   static HealthKitSample? fromJson(
       Map<String, dynamic> jsonObject, Uri? sourceUrl) {
     final uuid = jsonObject["uuid"];
     final sampleType = jsonObject["sampleType"];
-    final value = jsonObject["value"];
-    final startDate = jsonObject["startDate"];
-    final endDate = jsonObject["endDate"];
-    final encoded = jsonObject["encoded"];
     if (uuid is String &&
-        sampleType is String &&
-        value is String &&
-        startDate is String &&
-        endDate is String &&
-        encoded is String) {
+        sampleType is String) {
       return HealthKitSample(
         uuid: uuid,
         sampleType: sampleType,
-        value: value,
-        startDate: startDate,
-        endDate: endDate,
-        encoded: encoded,
+        fields: jsonObject,
         resource: <String, dynamic>{
           "resourceType": "Binary",
           "contentType": "application/json",
@@ -347,7 +339,7 @@ class HealthKit {
       // Just return an empty list
       return <HealthKitSample>[];
     }
-    final healthKitUri = Uri.parse("urn:apple:health-kit");
+    final healthKitUri = HealthKitResource.healthKitUri;
     return results
         .map<HealthKitSample?>((e) => HealthKitSample.fromJson(
             Map<String, dynamic>.from(e), healthKitUri))
@@ -362,7 +354,7 @@ class HealthKit {
       // Just return an empty list
       return <HealthKitSample>[];
     }
-    final healthKitUri = Uri.parse("urn:apple:health-kit");
+    final healthKitUri = HealthKitResource.healthKitUri;
     return results
         .map<HealthKitSample?>((e) => HealthKitSample.fromJson(
             Map<String, dynamic>.from(e), healthKitUri))

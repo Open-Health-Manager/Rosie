@@ -182,7 +182,11 @@ class _RecordListState extends State<_RecordList> {
     } else {
       if (resources.isEmpty) {
         return Center(
-            child: Text('No resources found for ${widget.type.name}'));
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text('No resources found for ${widget.type.name}'),
+          ),
+        );
       } else {
         return ListView.builder(
           itemCount: resources.length,

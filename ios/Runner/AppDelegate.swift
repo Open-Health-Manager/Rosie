@@ -449,7 +449,8 @@ func createCorrelationValueResponse(fromCorrelation sample: HKSample) -> [String
         "sampleType": record.sampleType.identifier,
         "systolicValue": systolicString,
         "diastolicValue": diastolicString,
-        "effectiveDate": effectiveDate
+        "effectiveDate": effectiveDate,
+        "encoded": encodeSample(sample: sample)
     ];
 }
 

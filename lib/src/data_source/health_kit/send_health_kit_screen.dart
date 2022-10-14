@@ -87,7 +87,7 @@ class _SendHealthKitScreenState extends State<SendHealthKitScreen> {
               filterResources(records)
                   .map<Map<String, dynamic>>((e) => e.asFhirR4Resource()),
               fhirVersion: "dstu2",
-              endpoint: "urn:apple:health-kit",
+              endpoint: HealthKitResource.healthKitUrnString,
             )
             .then((_) => records);
       });

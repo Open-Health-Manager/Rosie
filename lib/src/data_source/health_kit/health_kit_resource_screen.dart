@@ -27,20 +27,16 @@ class HealthKitResourceScreen extends StatelessWidget {
 
   Widget _buildSampleView(BuildContext context, HealthKitSample sample) {
     return ListView(
-      children: <Widget>[
-        ListTile(title: const Text('UUID'), subtitle: Text(sample.uuid)),
-        ListTile(
-          title: const Text('Sample Type'),
-          subtitle: Text(sample.sampleType),
-        ),
-        ListTile(title: const Text('Value'), subtitle: Text(sample.value)),
-        ListTile(
-          title: const Text('Start Date'),
-          subtitle: Text(sample.startDate),
-        ),
-        ListTile(title: const Text('End Date'), subtitle: Text(sample.endDate)),
-        ListTile(title: const Text('Encoded'), subtitle: Text(sample.encoded)),
-      ],
+      children: sample.fields.entries
+          .map<Widget>(
+            (entry) => ListTile(
+              title: Text(entry.key),
+              subtitle: Text(
+                _formatValue(entry.value),
+              ),
+            ),
+          )
+          .toList(growable: false),
     );
   }
 
