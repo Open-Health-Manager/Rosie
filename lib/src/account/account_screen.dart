@@ -152,7 +152,7 @@ String createLocalizedErrorMessage(
       case "must be a well-formed email address":
         return localizations.emailFormatServerErrorMessage;
       case "size must be between 5 and 254":
-        return localizations.emailLengthServerErrorMessage;;
+        return localizations.emailLengthServerErrorMessage;
       default:
         return field.message;
     }
