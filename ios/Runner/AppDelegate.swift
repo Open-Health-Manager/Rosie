@@ -60,15 +60,15 @@ import HealthKit
             case "supportedCategoryTypes":
                 self?.supportedCategoryTypes(result: result)
             case "supportedCorrelationTypes":
-                self?.supportedCorrelationTypes(result: result)               
+                self?.supportedCorrelationTypes(result: result)
             case "queryClinicalRecords":
                 self?.queryClinicalRecords(call: call, result: result)
             case "getPatientCharacteristicData":
                 self?.getPatientCharacteristicData(call: call, result: result)
             case "queryCategoryData":
-                self?.queryCategoryData(call: call, result: result)  
+                self?.queryCategoryData(call: call, result: result)
             case "queryCorrelationData":
-                self?.queryCorrelationData(call: call, result: result)                 
+                self?.queryCorrelationData(call: call, result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -252,13 +252,13 @@ import HealthKit
                     result(FlutterError(code: "HealthKitError", message: error?.localizedDescription ?? "No error given", details: error))
                     return
                 }
-                
+
                 var records: [[String: String?]] = []
                 for sample in actualSamples {
                     let response = createCategoryValueResponse(fromCategory: sample)
                     if let record = response {
-                        records.append(record)  
-                    }                                      
+                        records.append(record)
+                    }
                 }
                 result(records)
             }
@@ -301,7 +301,7 @@ import HealthKit
                 result(FlutterError(code: "HealthKitError", message: "Unable to create the start date", details: "Error creating start date for HKStatistic Query"))
                 return
             }
-            
+
             let queryTime = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
             let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
 
@@ -310,13 +310,13 @@ import HealthKit
                     result(FlutterError(code: "HealthKitError", message: error?.localizedDescription ?? "No error given", details: error))
                     return
                 }
-                
+
                 var records: [[String: String?]] = []
                 for sample in actualSamples {
                     let response = createCorrelationValueResponse(fromCorrelation: sample)
                     if let record = response {
-                        records.append(record)  
-                    }                                      
+                        records.append(record)
+                    }
                 }
                 result(records)
             }
@@ -389,7 +389,7 @@ func getFHIRDateString(fromDateComponents dateComponents: DateComponents?) -> St
     guard let dateDay = dateComponents?.day else { return "" }
     let dateMonthString = dateMonth > 9 ? "\(dateMonth)" : "0\(dateMonth)"
     let dateDayString = dateDay > 9 ? "\(dateDay)" : "0\(dateDay)"
-    
+
     return "\(dateYear)-\(dateMonthString)-\(dateDayString)"
 }
 
@@ -408,7 +408,7 @@ func createCategoryValueResponse(fromCategory sample: HKSample) -> [String: Stri
 
     let startDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.startDate))
     let endDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.endDate))
-     
+
     return [
         "uuid": record.uuid.uuidString,
         "sampleType": record.sampleType.identifier,
