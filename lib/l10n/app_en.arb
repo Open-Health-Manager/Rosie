@@ -39,6 +39,10 @@
   "@emailRequired": {
     "description": "The validation error if an email address isn't given"
   },
+  "invalidEmailFormat": "The email entered is not a valid email address. Please try again.",
+  "@invalidEmailFormat": {
+    "description": "Validation error if the given email does not pass email format validator"
+  },
   "passwordHint": "Password",
   "@passwordHint": {
     "description": "The hint text for the password field"
@@ -54,6 +58,82 @@
   "confirmPasswordMismatch": "Passwords do not match",
   "@confirmPasswordMismatch": {
     "description": "Validation error when the two password fields do not match"
+  },
+  "passwordServerErrorMessage": "Invalid password: Please ensure that {errors}",
+  "@passwordServerErrorMessage": {
+    "description": "Error message displayed for password errors",
+    "placeholders": {
+      "errors": {
+        "type": "String",
+        "description": "Detailed error messages"
+      }
+    }
+  },
+  "emailServerErrorMessage": "Invalid email: Please ensure that {errors}",
+  "@emailServerErrorMessage": {
+    "description": "Error message display for email errors",
+    "placeholders": {
+      "errors": {
+        "type": "String",
+        "description": "Detailed error messages"
+      }
+    }
+  },
+  "insufficientSpecialPassword": "password contains 1 or more special characters",
+  "@insufficientSpecialPassword": {
+    "description": "Validation error for password that does not contain enough special characters"
+  },
+  "tooShortPassword": "password is 4 or more characters in length",
+  "@tooShortPassword": {
+    "description": "Validation error for password that does not contain enough characters"
+  },
+  "tooLongPassword": "password is 60 or less characters in length",
+  "@tooLongPassword": {
+    "description": "Validation error for password that contains too many characters"
+  },
+  "insufficientDigitPassword": "password contains 1 or more digit characters",
+  "@insufficientDigitPassword": {
+    "description": "Validation error for password that does not contain enough digit characters"
+  },
+  "insufficientUpperCasePassword": "password contains 1 or more uppercase characters",
+  "@insufficientUpperCasePassword": {
+    "description": "Validation error for password that does not contain enough uppercase characters"
+  },
+  "insufficientLowerCasePassword": "password contains 1 or more lowercase characters",
+  "@insufficientLowerCasePassword": {
+    "description": "Validation error for password that does not contain enough lowercase characters"
+  },
+  "illegalWhiteSpacePassword": "password does not contain a whitespace character",
+  "@illegalWhiteSpacePassword": {
+    "description": "Validation error for password that does not contain enough whitespace characters"
+  },
+  "illegalAlphabeticalSequencePassword": "password does not contain an illegal alphabetical sequence of 5 or more consecutive letters",
+  "@illegalAlphabeticalSequencePassword": {
+    "description": "Validation error for password that contains an illegal alphabetical sequence"
+  },
+  "illegalNumericalSequencePassword": "password does not contain an illegal numerical sequence of 5 or more consecutive digits",
+  "@illegalNumericalSequencePassword": {
+    "description": "Validation error for password that contains an illegal numerical sequence"
+  },
+  "emailFormatServerErrorMessage": "email is a valid email address",
+  "@emailFormatServerErrorMessage": {
+    "description": "Validation error displayed when server sends back email format error"
+  },
+  "emailLengthServerErrorMessage": "email is between 5 and 254 characters",
+  "@emailLengthServerErrorMessage": {
+    "description": "Validation error displayed when server sends back email length error"
+  },
+  "errorListJoin": ", and ",
+  "@errorListJoin": {
+    "description": "Text used to join multiple errors (e.g., [error 1][this text][error 2], which becomes [error 1], and [error 2]"
+  },
+  "unknownServerValidationError": "Unknown validation errors returned from the server",
+  "@unknownServerValidationError": {
+    "description": "Error message displayed when the server returns field error messages for fields that aren't recognized"
+  },
+  "incorrectPassword401Error": "The password entered is incorrect, please try again.",
+  "@incorrectPassword401Error": {
+    "description": "Error message when server responds with status 401 due to incorrect submitted password"
   },
   "signInButton": "Confirm",
   "@signInButton": {
@@ -141,5 +221,13 @@
     "placeholders": {
       "message": {}
     }
+  },
+  "unknownServerError": "Unknown error from server",
+  "@unknownServerError": {
+    "description": "Error message for an unknown server error"
+  },
+  "unknownError": "Unknown error",
+  "@unknownError": {
+    "description": "Error message for an unknown error"
   }
 }

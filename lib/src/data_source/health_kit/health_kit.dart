@@ -234,6 +234,12 @@ class HealthKit {
     return supported ?? <String>[];
   }
 
+  static Future<List<String>> supportedCorrelationTypes() async {
+    final supported =
+        await platform.invokeListMethod<String>("supportedCorrelationTypes");
+    return supported ?? <String>[];
+  }
+
   /// Starts a query on the given set of clinical records. This method is truly asynchronous: it is also asynchronous
   /// on the HealthKit side.
   static Future<List<HealthKitResource>> queryClinicalRecords(
@@ -288,6 +294,16 @@ class HealthKit {
         (String type) => queryCategoryData(type),
       ),
     );
+
+    // correlation types
+    final supportedCorTypes = await supportedCorrelationTypes();
+    // With the list of types, create futures for each supported type
+    final correlationResults = await Future.wait(
+      supportedCorTypes.map<Future<List<HealthKitResource>>>(
+        (String type) => queryCorrelationData(type),
+      ),
+    );
+
     // Results is a list of lists, so flatten it
     final resourceList = results.expand((e) => e).toList();
     if (patientData != null) {
@@ -295,6 +311,10 @@ class HealthKit {
     }
     final categoryList = categoryResults.expand((e) => e).toList();
     resourceList.addAll(categoryList);
+
+    final correlationList = correlationResults.expand((e) => e).toList();
+    resourceList.addAll(correlationList);
+
     return resourceList;
   }
 
@@ -323,6 +343,21 @@ class HealthKit {
   static Future<List<HealthKitSample>> queryCategoryData(String type) async {
     final results = await platform.invokeListMethod<Map<dynamic, dynamic>>(
         "queryCategoryData", type);
+    if (results == null) {
+      // Just return an empty list
+      return <HealthKitSample>[];
+    }
+    final healthKitUri = Uri.parse("urn:apple:health-kit");
+    return results
+        .map<HealthKitSample?>((e) => HealthKitSample.fromJson(
+            Map<String, dynamic>.from(e), healthKitUri))
+        .whereType<HealthKitSample>()
+        .toList(growable: false);
+  }
+
+  static Future<List<HealthKitSample>> queryCorrelationData(String type) async {
+    final results = await platform.invokeListMethod<Map<dynamic, dynamic>>(
+        "queryCorrelationData", type);
     if (results == null) {
       // Just return an empty list
       return <HealthKitSample>[];
