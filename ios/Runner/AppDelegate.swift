@@ -26,6 +26,18 @@ import HealthKit
     static let supportedCategoryTypes: [HKCategoryTypeIdentifier] = [
         .pregnancy
     ];
+    @available(iOS 12.0, *)
+    // Supported quantity types. This is the list of types that identify samples that store numerical values.
+    static let supportedQuantityTypes: [HKQuantityTypeIdentifier] = [
+        .bloodPressureDiastolic,
+        .bloodPressureSystolic
+    ];
+    @available(iOS 12.0, *)
+    // Supported correlation types. This is the list of types that identify samples that group multiple subsamples.
+    static let supportedCorrelationTypes: [HKCorrelationTypeIdentifier] = [
+        .bloodPressure
+    ];
+
     lazy var healthStore = HKHealthStore()
 
     override func application(
@@ -46,13 +58,17 @@ import HealthKit
             case "supportedClinicalTypes":
                 self?.supportedClinicalTypes(result: result)
             case "supportedCategoryTypes":
-                self?.supportedCategoryTypes(result: result)                
+                self?.supportedCategoryTypes(result: result)
+            case "supportedCorrelationTypes":
+                self?.supportedCorrelationTypes(result: result)
             case "queryClinicalRecords":
                 self?.queryClinicalRecords(call: call, result: result)
             case "getPatientCharacteristicData":
                 self?.getPatientCharacteristicData(call: call, result: result)
             case "queryCategoryData":
-                self?.queryCategoryData(call: call, result: result)                
+                self?.queryCategoryData(call: call, result: result)
+            case "queryCorrelationData":
+                self?.queryCorrelationData(call: call, result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -93,6 +109,13 @@ import HealthKit
                     if let categoryType = HKObjectType.categoryType(forIdentifier: identifier) {
                         types.insert(categoryType)
                     }
+                }
+            }
+
+            // Add quantity types
+            for identifier in AppDelegate.supportedQuantityTypes {
+                if let quantityType = HKObjectType.quantityType(forIdentifier: identifier) {
+                    types.insert(quantityType)
                 }
             }
 
@@ -199,6 +222,15 @@ import HealthKit
         }
     }
 
+    func supportedCorrelationTypes(result: FlutterResult) {
+        if #available(iOS 12.0, *) {
+            print("Building supported correlation types")
+            result(AppDelegate.supportedCorrelationTypes.map { $0.rawValue })
+        } else {
+            result([])
+        }
+    }
+
     func queryCategoryData(call: FlutterMethodCall, result: @escaping FlutterResult) {
         if #available(iOS 14.3, *) {
             // Create the query. For this method we expect an argument that's a string
@@ -220,13 +252,71 @@ import HealthKit
                     result(FlutterError(code: "HealthKitError", message: error?.localizedDescription ?? "No error given", details: error))
                     return
                 }
-                
+
                 var records: [[String: String?]] = []
                 for sample in actualSamples {
                     let response = createCategoryValueResponse(fromCategory: sample)
                     if let record = response {
-                        records.append(record)  
-                    }                                      
+                        records.append(record)
+                    }
+                }
+                result(records)
+            }
+            healthStore.execute(query)
+        } else {
+            result(healthKitNotSupported())
+        }
+    }
+
+    func queryCorrelationData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if #available(iOS 12.0, *) {
+            // Create the query. For this method we expect an argument that's a string
+            guard let typeString = call.arguments as? String else {
+                result(FlutterError(code: "MissingArgumentsError", message: "Missing required argument type", details: nil))
+                return
+            }
+
+            let typeIdentifier = HKCorrelationTypeIdentifier(rawValue: typeString)
+            // ...we try and create an HKObjectType from it
+            guard let type = HKObjectType.correlationType(forIdentifier: typeIdentifier) else {
+                result(FlutterError(code: "HealthKitError", message: "Unsupported type", details: typeString))
+                return
+            }
+
+            let calendar = NSCalendar.current
+            let now = Date()
+            let components = calendar.dateComponents([.year, .month, .day], from: now)
+
+            guard let calendarCurrent = calendar.date(from: components) else {
+                result(FlutterError(code: "HealthKitError", message: "Unable to create the current data calendar", details: "Error creating current data calendar for HKStatistic Query"))
+                return
+            }
+
+            guard let endDate = calendar.date(byAdding: .day, value: 1, to: calendarCurrent) else {
+                result(FlutterError(code: "HealthKitError", message: "Unable to create the end date", details: "Error creating start date for HKStatistic Query"))
+                return
+            }
+
+            guard let startDate = calendar.date(byAdding: .month, value: -6, to: calendarCurrent) else {
+                result(FlutterError(code: "HealthKitError", message: "Unable to create the start date", details: "Error creating start date for HKStatistic Query"))
+                return
+            }
+
+            let queryTime = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
+            let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+
+            let query = HKSampleQuery(sampleType: type, predicate: queryTime, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { query, samples, error in
+                guard let actualSamples = samples else {
+                    result(FlutterError(code: "HealthKitError", message: error?.localizedDescription ?? "No error given", details: error))
+                    return
+                }
+
+                var records: [[String: String?]] = []
+                for sample in actualSamples {
+                    let response = createCorrelationValueResponse(fromCorrelation: sample)
+                    if let record = response {
+                        records.append(record)
+                    }
                 }
                 result(records)
             }
@@ -299,7 +389,7 @@ func getFHIRDateString(fromDateComponents dateComponents: DateComponents?) -> St
     guard let dateDay = dateComponents?.day else { return "" }
     let dateMonthString = dateMonth > 9 ? "\(dateMonth)" : "0\(dateMonth)"
     let dateDayString = dateDay > 9 ? "\(dateDay)" : "0\(dateDay)"
-    
+
     return "\(dateYear)-\(dateMonthString)-\(dateDayString)"
 }
 
@@ -318,7 +408,7 @@ func createCategoryValueResponse(fromCategory sample: HKSample) -> [String: Stri
 
     let startDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.startDate))
     let endDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.endDate))
-     
+
     return [
         "uuid": record.uuid.uuidString,
         "sampleType": record.sampleType.identifier,
@@ -326,6 +416,40 @@ func createCategoryValueResponse(fromCategory sample: HKSample) -> [String: Stri
         "startDate": startDate,
         "endDate": endDate,
         "encoded": encodeSample(sample: sample)
+    ];
+}
+
+@available(iOS 12.0, *)
+func createCorrelationValueResponse(fromCorrelation sample: HKSample) -> [String: String?]? {
+    guard let record = sample as? HKCorrelation else { return nil }
+    var systolicString: String = "unknown"
+    var diastolicString: String = "unknown"
+
+    let systolicTypeOptional = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bloodPressureSystolic)
+    let diastolicTypeOptional = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bloodPressureDiastolic)
+
+    if(type(of: record.sampleType.identifier) == type(of: HKCorrelationTypeIdentifier.bloodPressure.rawValue)){
+
+        if let systolicType = systolicTypeOptional, let diastolicType = diastolicTypeOptional {
+            if let data1 = record.objects(for: systolicType).first as? HKQuantitySample,
+            let data2 = record.objects(for: diastolicType).first as? HKQuantitySample {
+                let systolicValue = data1.quantity.doubleValue(for: HKUnit.millimeterOfMercury())
+                let diastolicValue = data2.quantity.doubleValue(for: HKUnit.millimeterOfMercury())
+
+                systolicString = String(format: "%f", systolicValue)
+                diastolicString = String(format: "%f", diastolicValue)
+            }
+        }
+    }
+
+    let effectiveDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.startDate))
+
+    return [
+        "uuid": record.uuid.uuidString,
+        "sampleType": record.sampleType.identifier,
+        "systolicValue": systolicString,
+        "diastolicValue": diastolicString,
+        "effectiveDate": effectiveDate
     ];
 }
 

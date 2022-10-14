@@ -31,16 +31,10 @@ class HealthKitDebugScreen extends StatelessWidget {
   }
 }
 
-class HealthKitDebug extends StatefulWidget {
-  const HealthKitDebug({Key? key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => _HealthKitDebugState();
-}
-
 enum _HKType implements Comparable<_HKType> {
   category,
-  clinical;
+  clinical,
+  correlation;
 
   @override
   int compareTo(_HKType other) {
@@ -64,6 +58,13 @@ class _HKResourceType implements Comparable<_HKResourceType> {
   }
 }
 
+class HealthKitDebug extends StatefulWidget {
+  const HealthKitDebug({Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _HealthKitDebugState();
+}
+
 class _HealthKitDebugState extends State<HealthKitDebug> {
   bool loading = true;
   bool available = false;
@@ -83,11 +84,14 @@ class _HealthKitDebugState extends State<HealthKitDebug> {
     available = await HealthKit.requestAccess();
     if (available) {
       _supportedTypes.addAll((await HealthKit.supportedClinicalTypes()).map(
-          (categoryType) =>
-              _HKResourceType(type: _HKType.clinical, name: categoryType)));
+          (clinicalType) =>
+              _HKResourceType(type: _HKType.clinical, name: clinicalType)));
       _supportedTypes.addAll((await HealthKit.supportedCategoryTypes()).map(
           (categoryType) =>
               _HKResourceType(type: _HKType.category, name: categoryType)));
+      _supportedTypes.addAll((await HealthKit.supportedCorrelationTypes()).map(
+          (correlationType) => _HKResourceType(
+              type: _HKType.correlation, name: correlationType)));
     }
   }
 
@@ -150,6 +154,9 @@ class _RecordListState extends State<_RecordList> {
         break;
       case _HKType.clinical:
         resourceFuture = HealthKit.queryClinicalRecords(widget.type.name);
+        break;
+      case _HKType.correlation:
+        resourceFuture = HealthKit.queryCorrelationData(widget.type.name);
         break;
     }
     resourceFuture.then((results) {
