@@ -17,6 +17,7 @@
 // useful as a Flutter model.
 
 import 'package:flutter/foundation.dart';
+import 'package:rosie/src/open_health_manager/pregnancy_status.dart';
 import 'account.dart';
 import 'open_health_manager.dart';
 import 'blood_pressure.dart';
@@ -127,6 +128,10 @@ class PatientData extends ChangeNotifier {
       CachedData<List<SmokingStatusObservation>>(() async {
     return await healthManager.querySmokingStatus();
   });
+  late final pregnancyStatus =
+      CachedData<List<PregnancyStatusCondition>>(() async {
+    return await healthManager.queryPregnancyStatus();
+  });
   late final account = CachedData<Account>(() async {
     return await healthManager.getAccount();
   });
@@ -135,6 +140,7 @@ class PatientData extends ChangeNotifier {
     patientDemographics.reload();
     bloodPressure.reload();
     smokingStatus.reload();
+    pregnancyStatus.reload();
     // Reloading the account data may be excessive
     account.reload();
   }

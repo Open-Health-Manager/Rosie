@@ -130,9 +130,14 @@ class PreventativeServicesTaskForce with ChangeNotifier {
     String? gender = (demographics != null && demographics.gender != null)
         ? demographics.gender
         : null;
+    final pregnancyStatusList = await patientData?.pregnancyStatus.get();
+    final pregnancyStatusValue =
+        (pregnancyStatusList != null && pregnancyStatusList.isNotEmpty)
+            ? pregnancyStatusList[0].pregnancyStatus
+            : null;
 
-    return await getRecommendedServices(
-        age, gender, null, smokingStatusValue?.toTaskForceAPIParam(), null);
+    return await getRecommendedServices(age, gender, pregnancyStatusValue,
+        smokingStatusValue?.toTaskForceAPIParam(), null);
   }
 
   Future<Map<String, dynamic>> getRecommendedServices(int? age, String? sex,
