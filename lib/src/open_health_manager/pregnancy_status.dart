@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import 'dart:developer';
-import 'dart:html';
 import 'package:fhir/r4/resource_types/clinical/summary/summary.dart';
 import 'open_health_manager.dart';
 
@@ -68,7 +67,7 @@ extension PregnancyStatusQuerying on OpenHealthManager {
   Future<List<PregnancyStatusCondition>> queryPregnancyStatus() async {
     // return most recent ones first
     final bundle = await queryResource("Condition",
-        {"code": "http://snomed.info/sct|77386006", "_sort": "-date"});
+        {"code": "http://snomed.info/sct|77386006", "_sort": "-onset-date"});
     final results = <PregnancyStatusCondition>[];
     final entries = bundle.entry;
     if (entries == null) {
