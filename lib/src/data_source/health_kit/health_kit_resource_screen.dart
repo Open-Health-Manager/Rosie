@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'health_kit.dart';
 
@@ -39,7 +40,7 @@ class HealthKitResourceScreen extends StatelessWidget {
         ...keys.map(
           (key) => ListTile(
             title: Text(key),
-            subtitle: Text(_formatValue(resource.resource[key])),
+            subtitle: SelectableText(_formatValue(key, resource.resource[key])),
           ),
         ),
       ],
@@ -58,9 +59,23 @@ String _fhirVersionString(FhirVersion version) {
   }
 }
 
-String _formatValue(dynamic value) {
+String _formatValue(String key, dynamic value) {
   if (value == null) {
     return "null";
+  }
+  // If the key is "encoded" then see if it's base64 encoded and can be
+  // converted back to a text string
+  if (key == 'data' && value is String) {
+    try {
+      final binary = base64.decode(value);
+      // See if it can be decoded into a string
+      return utf8.decode(binary);
+    } on FormatException catch (_) {
+      // FormatException can happen on either the base64 decode or the UTF8
+      // decode. In both cases, it doesn't matter, just return the original
+      // string
+      return value;
+    }
   }
   return value.toString();
 }
