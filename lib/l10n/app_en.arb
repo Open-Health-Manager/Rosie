@@ -211,6 +211,10 @@
   "@tabPrivacy": {
     "description": "Label for the Privacy tab"
   },
+  "tabQuestionnaire": "Questionnaire",
+  "@tabQuestionnaire": {
+    "description": "Label for the Questionnaire tab"
+  },
   "tabHelp": "Help",
   "@tabHelp": {
     "description": "Label for the Help tab"

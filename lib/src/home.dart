@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'account_settings/account_settings.dart';
 import 'care_plan/care_plan_home.dart';
 import 'get_started/get_started.dart';
+import 'questionnaire/questionnaire_screen.dart';
 import 'app_config.dart';
 import 'app_state.dart';
 
@@ -52,9 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _addRosieBackground(Widget child) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark,
-      child: child
-    );
+        value: SystemUiOverlayStyle.dark, child: child);
   }
 
   Widget _buildSelectedPage() {
@@ -70,6 +69,12 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return _addRosieBackground(const Center(child: GetStarted()));
       case 3:
+        return QuestionnaireScreen(
+          questionnaire:
+              'assets/Questionnaire-SDOHCC-QuestionnairePRAPARE.json',
+          locale: Localizations.localeOf(context),
+        );
+      case 4:
         return _addRosieBackground(const AccountSettingsScreen());
       default:
         return _addRosieBackground(
@@ -98,6 +103,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.people),
             label: localizations.tabPrivacy,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.question_mark),
+            label: localizations.tabQuestionnaire,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.account_circle_outlined),
