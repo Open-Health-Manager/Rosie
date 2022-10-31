@@ -16,6 +16,7 @@ import 'dart:convert';
 import 'package:faiadashu/faiadashu.dart';
 import 'package:fhir/r4.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../open_health_manager/open_health_manager.dart';
 
@@ -83,11 +84,19 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
             showDialog<void>(
               context: context,
               builder: (context) {
-                return SimpleDialog(
+                final jsonText = json.encode(response.toJson());
+                return AlertDialog(
                   title: const Text('Response'),
-                  children: [
-                    SelectableText(json.encode(response.toJson())),
-                    ElevatedButton(
+                  content:
+                      SingleChildScrollView(child: SelectableText(jsonText)),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: jsonText));
+                      },
+                      child: const Text('Copy'),
+                    ),
+                    TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
