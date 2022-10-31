@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:convert';
 import 'package:faiadashu/faiadashu.dart';
+import 'package:fhir/r4.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../open_health_manager/open_health_manager.dart';
@@ -40,9 +42,9 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       questionnaireResourceUri,
       widget.questionnaire,
     );
-    _createModel().then((model) {
+    _createLaunchContext().then((launchContext) {
       setState(() {
-        _launchContext = model.launchContext;
+        _launchContext = launchContext;
       });
     }, onError: (error) {
       setState(() {
@@ -55,16 +57,51 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     });
   }
 
-  Future<QuestionnaireResponseModel> _createModel() async {
+  Future<LaunchContext> _createLaunchContext() async {
     // Grab locale before any async code
     final patient = await context.read<OpenHealthManager>().queryPatient();
-    final launchContext = LaunchContext(patient: patient);
-    final model = await QuestionnaireResponseModel.fromFhirResourceBundle(
-      locale: widget.locale,
-      fhirResourceProvider: _resourceProvider,
-      launchContext: launchContext,
-    );
-    return model;
+    return LaunchContext(patient: patient);
+  }
+
+  Widget _submitButton(BuildContext context) {
+    return Builder(builder: (context) {
+      return ElevatedButton(
+        onPressed: () {
+          final response = QuestionnaireResponseFiller.of(context)
+              .aggregator<QuestionnaireResponseAggregator>()
+              .aggregate(responseStatus: QuestionnaireResponseStatus.completed);
+          if (response == null) {
+            showDialog<void>(
+              context: context,
+              builder: (context) => const AlertDialog(
+                title: Text('No response'),
+                content: Text('Did not receive a response'),
+              ),
+            );
+          } else {
+            // For now, just display a dialog that show the response JSON
+            showDialog<void>(
+              context: context,
+              builder: (context) {
+                return SimpleDialog(
+                  title: const Text('Response'),
+                  children: [
+                    SelectableText(json.encode(response.toJson())),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        },
+        child: const Text('Submit'),
+      );
+    });
   }
 
   @override
@@ -80,10 +117,43 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                 Text('Getting patient data...'),
               ],
             );
+    } else {
+      return QuestionnaireScroller(
+        scaffoldBuilder: _RosieQuestionnaireScaffoldBuilder(
+          persistentFooterButtons: [_submitButton(context)],
+        ),
+        fhirResourceProvider: _resourceProvider,
+        launchContext: launchContext,
+      );
     }
-    return QuestionnaireScrollerPage(
-      fhirResourceProvider: _resourceProvider,
-      launchContext: launchContext,
+  }
+}
+
+/// The default scaffold includes a back button that goes nowhere, along with a
+/// few toolbar items that aren't needed. This provides a basic scaffold.
+class _RosieQuestionnaireScaffoldBuilder
+    extends QuestionnairePageScaffoldBuilder {
+  const _RosieQuestionnaireScaffoldBuilder({this.persistentFooterButtons});
+
+  final List<Widget>? persistentFooterButtons;
+
+  @override
+  Widget build(
+    BuildContext context, {
+    required void Function(void Function() p1) setStateCallback,
+    required Widget child,
+  }) {
+    final questionnaire = QuestionnaireResponseFiller.of(context)
+        .questionnaireResponseModel
+        .questionnaireModel
+        .questionnaire;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(questionnaire.title ?? 'Survey'),
+      ),
+      body: child,
+      floatingActionButton: const QuestionnaireFillerCircularProgress(),
+      persistentFooterButtons: persistentFooterButtons,
     );
   }
 }
