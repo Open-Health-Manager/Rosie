@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:convert';
 import 'package:faiadashu/faiadashu.dart';
 import 'package:fhir/r4.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../open_health_manager/open_health_manager.dart';
 
@@ -76,36 +74,12 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
               context: context,
               builder: (context) => const AlertDialog(
                 title: Text('No response'),
-                content: Text('Did not receive a response'),
+                content: Text(
+                    'Response aggregator did not generate a FHIR response object'),
               ),
             );
           } else {
-            // For now, just display a dialog that show the response JSON
-            showDialog<void>(
-              context: context,
-              builder: (context) {
-                final jsonText = json.encode(response.toJson());
-                return AlertDialog(
-                  title: const Text('Response'),
-                  content:
-                      SingleChildScrollView(child: SelectableText(jsonText)),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: jsonText));
-                      },
-                      child: const Text('Copy'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
+            _SendResourceDialog.sendResource(context, response);
           }
         },
         child: const Text('Submit'),
@@ -163,6 +137,90 @@ class _RosieQuestionnaireScaffoldBuilder
       body: child,
       floatingActionButton: const QuestionnaireFillerCircularProgress(),
       persistentFooterButtons: persistentFooterButtons,
+    );
+  }
+}
+
+/// Overlay shown when sending the resource
+class _SendResourceDialog extends StatefulWidget {
+  final QuestionnaireResponse questionnaireResponse;
+
+  const _SendResourceDialog({required this.questionnaireResponse});
+
+  @override
+  State<StatefulWidget> createState() => _SendResourceDialogState();
+
+  /// Uses showDialog to show a dialog to send
+  static _SendResourceDialog sendResource(
+      BuildContext context, QuestionnaireResponse response) {
+    final dialogContent = _SendResourceDialog(questionnaireResponse: response);
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(children: [dialogContent]),
+      barrierDismissible: false,
+    );
+    return dialogContent;
+  }
+}
+
+class _SendResourceDialogState extends State<_SendResourceDialog> {
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    context
+        .read<OpenHealthManager>()
+        .postResource(widget.questionnaireResponse)
+        .then((result) {
+      // Sent successfully. Replace dialog with one that indicates a successful send
+      _closeWithMessage('Response sent to server.', 'Response Sent');
+      return result;
+    }, onError: (error) {
+      _closeWithMessage(
+          'Failed to send response: $error', 'Could not send response');
+    }).whenComplete(() {
+      // No matter what, indicate done
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+    });
+  }
+
+  void _closeWithMessage(String message, [String? title, Object? result]) {
+    if (mounted) {
+      Navigator.of(context).pop(result);
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: title == null ? null : Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: const <Widget>[
+          CircularProgressIndicator(),
+          SizedBox(width: 16),
+          Text('Sending response...'),
+        ],
+      ),
     );
   }
 }
