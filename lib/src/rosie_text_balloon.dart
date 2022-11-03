@@ -44,8 +44,6 @@ class RosieTextBalloon extends StatelessWidget {
     required this.rosieImage,
   }) : super(key: key);
 
-  static final defaultTextStyle = RosieTheme.comicFont(color: Colors.black);
-
   // The actual message Rosie is saying. This can be any widget but usually the
   // build factories are used to create text.
   final Widget body;
@@ -82,6 +80,7 @@ class RosieTextBalloon extends StatelessWidget {
   // Creates a Rosie text balloon with the default Rosie text balloon styled text.
   factory RosieTextBalloon.text(
     String message, {
+    required BuildContext context,
     Key? key,
     Widget? action,
     RosieActionPosition actionPosition = RosieActionPosition.below,
@@ -90,7 +89,7 @@ class RosieTextBalloon extends StatelessWidget {
     return RosieTextBalloon(
       key: key,
       body: _createBody(
-        Text(message, style: defaultTextStyle, softWrap: true),
+        Text(message, style: Theme.of(context).extension<RosieThemeExtension>()!.comicTextStyle, softWrap: true),
         action,
         actionPosition,
       ),
@@ -101,6 +100,7 @@ class RosieTextBalloon extends StatelessWidget {
   // Creates a Rosie text ballon with rich text.
   factory RosieTextBalloon.rich(
     InlineSpan message, {
+    required BuildContext context,
     Key? key,
     Widget? action,
     RosieActionPosition actionPosition = RosieActionPosition.below,
@@ -109,7 +109,7 @@ class RosieTextBalloon extends StatelessWidget {
     return RosieTextBalloon(
       key: key,
       body: _createBody(
-        Text.rich(message, style: defaultTextStyle),
+        Text.rich(message, style: Theme.of(context).extension<RosieThemeExtension>()!.comicTextStyle),
         action,
         actionPosition,
       ),
@@ -119,19 +119,19 @@ class RosieTextBalloon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = Theme.of(context).extension<RosieThemeExtension>()!.palette;
     return Stack(
       alignment: AlignmentDirectional.topStart,
       children: [
         // This is the "balloon"
         Container(
           decoration: BoxDecoration(
-            //color: const Color.fromARGB(255, 0xE1, 0xE3, 0xE9),
-            color: const Color.fromARGB(255, 254, 242, 245),
+            color: palette.speechBalloonBackground,
             borderRadius: BorderRadius.circular(5.0),
-            boxShadow: const <BoxShadow>[
+            boxShadow: <BoxShadow>[
               BoxShadow(
-                color: Color.fromARGB(64, 0, 0, 0),
-                offset: Offset(0, 4),
+                color: palette.speechBalloonShadow,
+                offset: const Offset(0, 4),
                 blurRadius: 4,
               )
             ],

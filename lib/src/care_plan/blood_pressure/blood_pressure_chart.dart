@@ -192,6 +192,7 @@ class BloodPressureChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = Theme.of(context).extension<RosieThemeExtension>()!.palette;
     final systolicPositions = scale.systolicPercentStops;
     final diastolicPositions = scale.diastolicPercentStops;
     // Make local so compiler believes it won't be null
@@ -215,8 +216,7 @@ class BloodPressureChart extends StatelessWidget {
             topLeft: Radius.circular(5),
             bottomLeft: Radius.circular(5),
           ),
-          color:
-              activeSlice == 3 ? RosieTheme.urgent : RosieTheme.inactiveUrgent,
+          color: palette.urgencyColor(3, activeSlice == 3),
         ),
       ),
       // Concern box
@@ -227,9 +227,7 @@ class BloodPressureChart extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
-            color: activeSlice == 2
-                ? RosieTheme.concern
-                : RosieTheme.inactiveConcern,
+            color: palette.urgencyColor(2, activeSlice == 2),
             border: const Border(
               top: BorderSide(width: 1.0, color: Colors.white),
               bottom: BorderSide(width: 1.0, color: Colors.white),
@@ -247,9 +245,7 @@ class BloodPressureChart extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
-            color: activeSlice == 1
-                ? RosieTheme.optimal
-                : RosieTheme.inactiveOptimal,
+            color: palette.urgencyColor(1, activeSlice == 1),
             border: const Border(
               top: BorderSide(width: 1.0, color: Colors.white),
               bottom: BorderSide(width: 1.0, color: Colors.white),
@@ -267,9 +263,7 @@ class BloodPressureChart extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
-            color: activeSlice == 0
-                ? RosieTheme.belowOptimal
-                : RosieTheme.inactiveBelowOptimal,
+            color: palette.urgencyColor(0, activeSlice == 0),
             border: const Border(
               top: BorderSide(width: 1.0, color: Colors.white),
               bottom: BorderSide(width: 1.0, color: Colors.white),
@@ -306,7 +300,7 @@ class BloodPressureChart extends StatelessWidget {
         urgency: urgency,
         maxSystolic: scale.systolicRange.last,
         maxDiastolic: scale.diastolicRange.last,
-        highlightColor: RosieTheme.urgencyPalette[activeSlice],
+        highlightColor: palette.urgencyColor(activeSlice),
       ));
     }
     return Stack(

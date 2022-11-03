@@ -34,17 +34,15 @@ class _SignInState extends State<SignIn> {
   String? _email;
   String? _password;
 
-  // new piece of code - create button bar, may need to add the underscore and call it from the build function as done in the blood_pressure_help
+  // Creates the buttons on the bottom of the page.
   Widget _createButtonBar(BuildContext context) {
     // Go back button is always the same
     final goBack = ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFFFEF2F5),
+        foregroundColor: const Color(0xFF1F201D),
       ),
-      child: Text(
-        AppLocalizations.of(context)!.back,
-        style: const TextStyle(color: Color(0xFF1F201D)),
-      ),
+      child: Text(AppLocalizations.of(context)!.back),
       onPressed: () {
         Navigator.of(context).pop();
       },

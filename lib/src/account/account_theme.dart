@@ -19,18 +19,18 @@ import '../rosie_theme.dart';
 class AccountThemePalette {
   static const boxColor = Color(0xFFFEF2F5);
   static const background = Colors.white;
-  static const primary = RosieTheme.accent;
   static const textColor = Color(0xFF1F201D);
 }
 
-ThemeData createAccountTheme() {
+ThemeData createAccountTheme(Brightness brightness) {
+  final palette = RosiePalette.forBrightness(brightness);
   return ThemeData(
-    brightness: Brightness.dark,
-    appBarTheme: const AppBarTheme(
+    brightness: Brightness.light,
+    appBarTheme: AppBarTheme(
       backgroundColor: AccountThemePalette.background,
-      foregroundColor: AccountThemePalette.primary,
+      foregroundColor: palette.accent,
       elevation: 0.0,
-      systemOverlayStyle: SystemUiOverlayStyle(
+      systemOverlayStyle: const SystemUiOverlayStyle(
           systemNavigationBarIconBrightness: Brightness.dark),
     ),
     checkboxTheme: CheckboxThemeData(
@@ -47,7 +47,7 @@ ThemeData createAccountTheme() {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AccountThemePalette.primary,
+        backgroundColor: palette.accent,
         foregroundColor: AccountThemePalette.textColor,
       ),
     ),

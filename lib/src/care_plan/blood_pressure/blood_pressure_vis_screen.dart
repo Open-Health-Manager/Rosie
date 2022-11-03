@@ -173,6 +173,7 @@ class _BloodPressureVisualizationState
     }
     return RosieTextBalloon.text(
       text,
+      context: context,
       action:
           _createUpdateAction(updateLabel, context, patientData, bloodPressure),
       //actionPosition: RosieActionPosition.after,
@@ -224,6 +225,7 @@ class _BloodPressureVisualizationState
                   context, null, const BPChartUrgency(-1, outdated: true));
               rosieBubble = RosieTextBalloon.text(
                 "No blood pressure available.",
+                context: context,
                 action: _createReloadAction("Reload", context, patientData),
               );
               break;
@@ -236,7 +238,9 @@ class _BloodPressureVisualizationState
                 loading: true,
               );
               rosieBubble = RosieTextBalloon.text(
-                  "Please wait while your blood pressure data is loaded...");
+                "Please wait while your blood pressure data is loaded...",
+                context: context,
+              );
               break;
             case ConnectionState.active:
             case ConnectionState.done:
@@ -260,12 +264,13 @@ class _BloodPressureVisualizationState
                       TextSpan(
                         text: snapshot.error?.toString() ??
                             "No error data available",
-                        style: const TextStyle(color: RosieTheme.error),
+                        style: TextStyle(color: Theme.of(context).errorColor),
                       )
                     ],
                   ),
                   //expression: RosieExpression.surprised,
                   expression: RosieExpression.neutral,
+                  context: context,
                   action: _createReloadAction("Retry", context, patientData),
                 );
               } else {

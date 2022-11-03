@@ -47,7 +47,7 @@ class AccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: createAccountTheme(),
+      data: createAccountTheme(Theme.of(context).brightness),
       child: Scaffold(
         appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
         backgroundColor: AccountThemePalette.background,

@@ -82,8 +82,7 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
             children: <Widget>[
               Text(
                 "on ${DateFormat.yMd().format(_entryDate)}",
-                //style: RosieTheme.comicFont(color: RosieTheme.accent),
-                style: RosieTheme.comicFont(color: RosieTheme.fontColor),
+                style: Theme.of(context).extension<RosieThemeExtension>()!.comicTextStyle,
               ),
               const Icon(Icons.edit_outlined, size: 14),
             ],
@@ -110,7 +109,7 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Text("Enter your blood pressure", style: RosieTheme.font(fontSize: 16)),
+        Text("Enter your blood pressure", style: Theme.of(context).textTheme.titleLarge),
         _createEntryFields(context),
         ButtonBar(
           children: <Widget>[
