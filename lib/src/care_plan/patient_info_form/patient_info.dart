@@ -63,11 +63,6 @@ class PatientInfoState extends State<PatientInfo> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _dateofBirthController = TextEditingController();
-  //final TextEditingController _dateofBloodPressureRecordedController =
-  //    TextEditingController();
-
-  //DateTime selectedDateOfBirthField = DateTime.now();
-  //DateTime selectedDateOfBloodPressureRecorded = DateTime.now();
 
   List<String> sexAtBirthOptions = ['', 'Male', 'Female', 'Other', 'Unknown'];
   List<String> pregnancyOptions = ['', 'Yes', 'No'];
@@ -78,10 +73,6 @@ class PatientInfoState extends State<PatientInfo> {
     'Former Smoker',
     'Never Smoked'
   ];
-  //final _heightController = TextEditingController();
-  //final _weightController = TextEditingController();
-  //final _systolicController = TextEditingController();
-  //final _diastolicController = TextEditingController();
 
   bool _dateOfBirthDirty = false;
   bool _genderDirty = false;
@@ -106,27 +97,11 @@ class PatientInfoState extends State<PatientInfo> {
           ? "${dobValue.toLocal().month}/${dobValue.toLocal().day}/${dobValue.toLocal().year}"
           : '';
     });
-    /*_heightController.text = patientData.height;
-    _dateofBirthController.text = patientData.dob;
-    _initialGender = patientData.gender;
-    _weightController.text = patientData.weight;
-    _systolicController.text = patientData.systolic;
-    _diastolicController.text = patientData.diastolic;
-    _dateofBloodPressureRecordedController.text =
-        patientData.bloodPressureRecorded;
-    _initialPregnancyStatus = patientData.pregnancyStatus;
-    _initialTobaccoUsageStatus = patientData.tobaccoUsage;
-    _initialSexuallyActivityStatus = patientData.sexualActivityStatus;*/
   }
 
   @override
   void dispose() {
-    //_heightController.dispose();
     _dateofBirthController.dispose();
-    //_weightController.dispose();
-    //_systolicController.dispose();
-    //_diastolicController.dispose();
-    //_dateofBloodPressureRecordedController.dispose();
     super.dispose();
   }
 

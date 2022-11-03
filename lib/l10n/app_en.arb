@@ -203,9 +203,33 @@
   "@tabCarePlan": {
     "description": "Label for the Care Plan tab"
   },
+  "carePlanTitle": "Care Plan",
+  "@carePlanTitle": {
+    "description": "The text shown on the top of the Care Plan screen"
+  },
+  "carePlanLoading": "Loading...",
+  "@carePlanLoading": {
+    "description": "The text shown while loading care plans"
+  },
+  "carePlanError": "Unable to load Care Plan recommendations:",
+  "@carePlanError": {
+    "description": "Message when care plans cannot be loaded"
+  },
   "tabRecords": "Records",
   "@tabRecords": {
     "description": "Label for the Records tab"
+  },
+  "getStartedTitle": "Get Started with Preventative Health Check",
+  "@getStartedTitle": {
+    "description": "Text displayed for the Get Started page"
+  },
+  "getStartedNoConnections": "Looks like you don\u2019t have any health data sources yet. Connect your health data to have a more complete view of your own health.",
+  "@getStartedNoConnections": {
+    "description": "Rosie dialog when no connections exist"
+  },
+  "getStartedConnectDataServices": "Connect Data & Services",
+  "@getStartedConnectDataServices": {
+    "description": "Button label for connecting data and services"
   },
   "tabPrivacy": "Privacy",
   "@tabPrivacy": {
