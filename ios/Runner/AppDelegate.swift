@@ -1,3 +1,17 @@
+// Copyright 2022 The MITRE Corporation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import UIKit
 import Flutter
 import HealthKit
@@ -183,10 +197,10 @@ import HealthKit
     func getPatientCharacteristicData(call: FlutterMethodCall, result: @escaping FlutterResult) {
         if #available(iOS 12.0, *) {
             let birthdayComponents = getDateOfBirthComponents()
-            let biologicalSex =  getBiologicalSex()
+            let biologicalSex = getBiologicalSex()
             result([
                 "gender": getGenderCodeString(fromBiologicalSex: biologicalSex),
-                "dateOfBirth" : getFHIRDateString(fromDateComponents: birthdayComponents)
+                "dateOfBirth": createFHIRDate(fromDateComponents: birthdayComponents)
             ])
         } else {
             result(healthKitNotSupported())
@@ -383,17 +397,6 @@ func getGenderCodeString(fromBiologicalSex biologicalSex: HKBiologicalSexObject?
 }
 
 @available(iOS 12.0, *)
-func getFHIRDateString(fromDateComponents dateComponents: DateComponents?) -> String {
-    guard let dateYear = dateComponents?.year else { return "" }
-    guard let dateMonth = dateComponents?.month else { return "" }
-    guard let dateDay = dateComponents?.day else { return "" }
-    let dateMonthString = dateMonth > 9 ? "\(dateMonth)" : "0\(dateMonth)"
-    let dateDayString = dateDay > 9 ? "\(dateDay)" : "0\(dateDay)"
-
-    return "\(dateYear)-\(dateMonthString)-\(dateDayString)"
-}
-
-@available(iOS 12.0, *)
 func createCategoryValueResponse(fromCategory sample: HKSample) -> [String: String?]? {
     guard let record = sample as? HKCategorySample else { return nil }
     var value: String = "unknown"
@@ -406,50 +409,13 @@ func createCategoryValueResponse(fromCategory sample: HKSample) -> [String: Stri
         }
     }
 
-    let startDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.startDate))
-    let endDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.endDate))
-
     return [
         "uuid": record.uuid.uuidString,
         "sampleType": record.sampleType.identifier,
         "value": value,
-        "startDate": startDate,
-        "endDate": endDate,
+        "startDate": createFHIRDateTime(fromDate: record.startDate),
+        "endDate": createFHIRDateTime(fromDate: record.endDate),
         "encoded": encodeSample(sample: sample)
-    ];
-}
-
-@available(iOS 12.0, *)
-func createCorrelationValueResponse(fromCorrelation sample: HKSample) -> [String: String?]? {
-    guard let record = sample as? HKCorrelation else { return nil }
-    var systolicString: String = "unknown"
-    var diastolicString: String = "unknown"
-
-    let systolicTypeOptional = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bloodPressureSystolic)
-    let diastolicTypeOptional = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.bloodPressureDiastolic)
-
-    if(type(of: record.sampleType.identifier) == type(of: HKCorrelationTypeIdentifier.bloodPressure.rawValue)){
-
-        if let systolicType = systolicTypeOptional, let diastolicType = diastolicTypeOptional {
-            if let data1 = record.objects(for: systolicType).first as? HKQuantitySample,
-            let data2 = record.objects(for: diastolicType).first as? HKQuantitySample {
-                let systolicValue = data1.quantity.doubleValue(for: HKUnit.millimeterOfMercury())
-                let diastolicValue = data2.quantity.doubleValue(for: HKUnit.millimeterOfMercury())
-
-                systolicString = String(format: "%f", systolicValue)
-                diastolicString = String(format: "%f", diastolicValue)
-            }
-        }
-    }
-
-    let effectiveDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.startDate))
-
-    return [
-        "uuid": record.uuid.uuidString,
-        "sampleType": record.sampleType.identifier,
-        "systolicValue": systolicString,
-        "diastolicValue": diastolicString,
-        "effectiveDate": effectiveDate
     ];
 }
 
