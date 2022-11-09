@@ -18,6 +18,7 @@ import HealthKit
 final class HealthKitConvertersTests: XCTestCase {
     let gregorianCalendar = Calendar(identifier: .gregorian)
     let formatter = ISO8601DateFormatter()
+    let converter = HealthKitConverter()
     var previousTimeZone: TimeZone? = nil
 
     override func setUpWithError() throws {
@@ -36,14 +37,24 @@ final class HealthKitConvertersTests: XCTestCase {
     func testCreateCategoryResponse() throws {
         // Create a test sample
         let sample = HKCategorySample(type: HKCategoryType.categoryType(forIdentifier: .pregnancy)!, value: HKCategoryValue.notApplicable.rawValue, start: formatter.date(from: "2022-01-01T12:00:00Z")!, end: formatter.date(from: "2022-09-01T12:00:00Z")!)
+        let actual = converter.createCategoryValueResponse(fromCategory: sample)
+        print("actual: \(String(describing: actual))")
+        XCTAssertNotNil(actual)
+        if let actual = actual {
+            XCTAssertEqual(Set(actual.keys), Set(["uuid", "sampleType", "value", "startDate", "endDate", "encoded"]))
+            XCTAssertEqual(actual["uuid"], sample.uuid.uuidString)
+            XCTAssertEqual(actual["sampleType"], sample.sampleType.identifier)
+            XCTAssertEqual(actual["startDate"], "2022-01-01T12:00:00.000Z")
+            XCTAssertEqual(actual["endDate"], "2022-09-01T12:00:00.000Z")
+        }
     }
-    
+
     func testCreateCorrelationValueResponse() throws {
         let date = formatter.date(from: "2022-06-09T15:02:04Z")!
         let systolicSample = HKQuantitySample(type: HKQuantityType.quantityType(forIdentifier: .bloodPressureSystolic)!, quantity: HKQuantity(unit: HKUnit.millimeterOfMercury(), doubleValue: 120.0), start: date, end: date)
         let diastolicSample = HKQuantitySample(type: HKQuantityType.quantityType(forIdentifier: .bloodPressureDiastolic)!, quantity: HKQuantity(unit: HKUnit.millimeterOfMercury(), doubleValue: 80.0), start: date, end: date)
         let sample = HKCorrelation(type: HKCorrelationType.correlationType(forIdentifier: .bloodPressure)!, start: date, end: date, objects: [systolicSample, diastolicSample])
-        let actual = createCorrelationValueResponse(fromCorrelation: sample)
+        let actual = converter.createCorrelationValueResponse(fromCorrelation: sample)
         XCTAssertNotNil(actual)
         if let actual = actual {
             XCTAssertEqual(Set(actual.keys), Set(["uuid", "sampleType", "systolicValue", "diastolicValue", "effectiveDate"]))
@@ -54,6 +65,4 @@ final class HealthKitConvertersTests: XCTestCase {
             XCTAssertEqual(actual["effectiveDate"], "2022-06-09T15:02:04.000Z")
         }
     }
-
-
 }

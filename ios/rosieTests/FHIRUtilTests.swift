@@ -15,15 +15,19 @@
 import XCTest
 
 final class FHIRUtilTests: XCTestCase {
-    let gregorianCalendar = Calendar(identifier: .gregorian)
+    var gregorianCalendar = Calendar(identifier: .gregorian)
+
+    override func setUp() {
+        gregorianCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
+    }
 
     func testCreateFHIRDate() throws {
-        XCTAssertEqual(createFHIRDate(fromDateComponents: DateComponents(calendar: gregorianCalendar, year: 2022)), "2022")
-        XCTAssertEqual(createFHIRDate(fromDateComponents: DateComponents(calendar: gregorianCalendar, year: 2022, month: 2)), "2022-02")
-        XCTAssertEqual(createFHIRDate(fromDateComponents: DateComponents(calendar: gregorianCalendar, year: 2022, day: 9)), "2022")
-        XCTAssertEqual(createFHIRDate(fromDateComponents: DateComponents(calendar: gregorianCalendar, year: 2022, month: 2, day: 9)), "2022-02-09")
+        XCTAssertEqual(FHIRUtils.createFHIRDate(fromDateComponents: DateComponents(calendar: gregorianCalendar, year: 2022)), "2022")
+        XCTAssertEqual(FHIRUtils.createFHIRDate(fromDateComponents: DateComponents(calendar: gregorianCalendar, year: 2022, month: 2)), "2022-02")
+        XCTAssertEqual(FHIRUtils.createFHIRDate(fromDateComponents: DateComponents(calendar: gregorianCalendar, year: 2022, day: 9)), "2022")
+        XCTAssertEqual(FHIRUtils.createFHIRDate(fromDateComponents: DateComponents(calendar: gregorianCalendar, year: 2022, month: 2, day: 9)), "2022-02-09")
     }
-    
+
     func testCreateFHIRDateTime() throws {
         // These tests are also sort of a test of how Apple handles dates *at all*
         let formatter = ISO8601DateFormatter()
@@ -34,8 +38,18 @@ final class FHIRUtilTests: XCTestCase {
         // And let Swift know it isn't nil
         if let testDate = testDate {
             let testDateComponents = gregorianCalendar.dateComponents([.year, .month, .day, .hour, .minute, .second, .calendar, .timeZone], from: testDate)
-            XCTAssertEqual(createFHIRDateTime(fromDateComponents: testDateComponents), "2022-04-10T10:12:13-04:00")
+            XCTAssertEqual(FHIRUtils.createFHIRDateTime(fromDateComponents: testDateComponents), "2022-04-10T14:12:13Z")
         }
     }
 
+    func testCreateDateTimeZone() throws {
+        // Basically: test to see what happens if we exclude the timezone
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = .withInternetDateTime
+        let testDate = formatter.date(from: "2022-10-31T23:59:59+00:00")
+        XCTAssertNotNil(testDate)
+        if let testDate = testDate {
+            XCTAssertEqual(FHIRUtils.createFHIRDateTime(fromDateComponents:gregorianCalendar.dateComponents([.year, .month, .day, .hour, .minute, .second, .calendar], from: testDate)), "2022-10-31T23:59:59Z")
+        }
+    }
 }

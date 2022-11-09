@@ -53,6 +53,7 @@ import HealthKit
     ];
 
     lazy var healthStore = HKHealthStore()
+    let converters = HealthKitConverter()
 
     override func application(
         _ application: UIApplication,
@@ -200,7 +201,7 @@ import HealthKit
             let biologicalSex = getBiologicalSex()
             result([
                 "gender": getGenderCodeString(fromBiologicalSex: biologicalSex),
-                "dateOfBirth": createFHIRDate(fromDateComponents: birthdayComponents)
+                "dateOfBirth": FHIRUtils.createFHIRDate(fromDateComponents: birthdayComponents)
             ])
         } else {
             result(healthKitNotSupported())
@@ -269,7 +270,7 @@ import HealthKit
 
                 var records: [[String: String?]] = []
                 for sample in actualSamples {
-                    let response = createCategoryValueResponse(fromCategory: sample)
+                    let response = self.converters.createCategoryValueResponse(fromCategory: sample)
                     if let record = response {
                         records.append(record)
                     }
@@ -327,7 +328,7 @@ import HealthKit
 
                 var records: [[String: String?]] = []
                 for sample in actualSamples {
-                    let response = createCorrelationValueResponse(fromCorrelation: sample)
+                    let response = self.converters.createCorrelationValueResponse(fromCorrelation: sample)
                     if let record = response {
                         records.append(record)
                     }
@@ -394,37 +395,4 @@ func getGenderCodeString(fromBiologicalSex biologicalSex: HKBiologicalSexObject?
         case HKBiologicalSex.other: return "other"
         default: return ""
     }
-}
-
-@available(iOS 12.0, *)
-func createCategoryValueResponse(fromCategory sample: HKSample) -> [String: String?]? {
-    guard let record = sample as? HKCategorySample else { return nil }
-    var value: String = "unknown"
-    if #available(iOS 14.3, *) {
-        if(type(of: record.sampleType.identifier) == type(of: HKCategoryTypeIdentifier.pregnancy.rawValue)){
-            switch (record.value) {
-                case HKCategoryValue.notApplicable.rawValue: value = "notApplicable"
-                default: value = "unknown"
-            }
-        }
-    }
-
-    return [
-        "uuid": record.uuid.uuidString,
-        "sampleType": record.sampleType.identifier,
-        "value": value,
-        "startDate": createFHIRDateTime(fromDate: record.startDate),
-        "endDate": createFHIRDateTime(fromDate: record.endDate),
-        "encoded": encodeSample(sample: sample)
-    ];
-}
-
-/// Attempts to encode a sample into a string
-@available(iOS 12.0, *)
-func encodeSample(sample: HKSample) -> String {
-    let encoder = NSKeyedArchiver(requiringSecureCoding: true)
-    encoder.outputFormat = .xml
-    sample.encode(with: encoder)
-    // Unclear if this works
-    return String(data: encoder.encodedData, encoding: .utf8) ?? "Error converting to string"
 }
