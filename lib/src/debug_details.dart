@@ -15,8 +15,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'open_health_manager/open_health_manager.dart';
+import 'open_health_manager/patient_data.dart';
 import 'data_source/health_kit/health_kit.dart';
 import 'data_source/health_kit/health_kit_debug.dart';
+import 'debug_patient_data.dart';
 
 /// Shows debug details in a Scaffold.
 class DebugDetailsScreen extends StatelessWidget {
@@ -55,12 +57,40 @@ class _DebugDetailsState extends State<DebugDetails> {
 
   @override
   Widget build(BuildContext context) {
-    final healthManager = context.read<OpenHealthManager>();
+    final healthManager =
+        Provider.of<OpenHealthManager>(context, listen: false);
+    final patientData = Provider.of<PatientData?>(context, listen: false);
     return ListView(
       children: <Widget>[
         ListTile(
           title: const Text('OHM Endpoint'),
           subtitle: Text(healthManager.serverUrl.toString()),
+        ),
+        ListTile(
+          title: const Text('Patient Data'),
+          subtitle: patientData == null
+              ? (healthManager.isSignedIn
+                  ? Text('No patient data despite user being logged in!',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: Theme.of(context).errorColor))
+                  : const Text('No patient data (user is logged out)'))
+              : const Text(
+                  'Shows details about the cached data for the logged in patient'),
+          trailing: patientData == null
+              ? null
+              : TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DebugPatientDataScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('Details'),
+                ),
         ),
         if (_healthKitAvailable)
           ListTile(
@@ -70,14 +100,15 @@ class _DebugDetailsState extends State<DebugDetails> {
             trailing: TextButton(
               onPressed: () {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const HealthKitDebugScreen(),
-                    ));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const HealthKitDebugScreen(),
+                  ),
+                );
               },
               child: const Text('Details'),
             ),
-          )
+          ),
       ],
     );
   }

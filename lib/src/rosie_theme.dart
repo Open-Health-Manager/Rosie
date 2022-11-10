@@ -30,6 +30,9 @@ class RosiePalette {
   /// Blush (not used anywhere?)
   final Color blush;
 
+  /// Interactive color (currently, links)
+  final Color interactive;
+
   final Color belowOptimal;
   final Color optimal;
   final Color concern;
@@ -49,6 +52,7 @@ class RosiePalette {
     required this.brightness,
     required this.accent,
     required this.blush,
+    required this.interactive,
     required this.belowOptimal,
     required this.optimal,
     required this.concern,
@@ -80,6 +84,7 @@ class RosiePalette {
     Brightness? brightness,
     Color? accent,
     Color? blush,
+    Color? interactive,
     Color? belowOptimal,
     Color? optimal,
     Color? concern,
@@ -95,6 +100,7 @@ class RosiePalette {
       brightness: brightness ?? this.brightness,
       accent: accent ?? this.accent,
       blush: blush ?? this.blush,
+      interactive: interactive ?? this.interactive,
       belowOptimal: belowOptimal ?? this.belowOptimal,
       optimal: optimal ?? this.optimal,
       concern: concern ?? this.concern,
@@ -114,6 +120,7 @@ class RosiePalette {
       brightness: t < 0.5 ? brightness : other.brightness,
       accent: Color.lerp(accent, other.accent, t) ?? accent,
       blush: Color.lerp(blush, other.blush, t) ?? blush,
+      interactive: Color.lerp(interactive, other.interactive, t) ?? interactive,
       belowOptimal:
           Color.lerp(belowOptimal, other.belowOptimal, t) ?? belowOptimal,
       optimal: Color.lerp(optimal, other.optimal, t) ?? optimal,
@@ -141,6 +148,7 @@ class RosiePalette {
     brightness: Brightness.light,
     accent: Color.fromARGB(255, 250, 153, 175),
     blush: Color.fromARGB(255, 242, 109, 178),
+    interactive: Color.fromARGB(255, 81, 84, 141),
     belowOptimal: Color.fromARGB(255, 234, 202, 210),
     optimal: Colors.white,
     concern: Color.fromARGB(255, 234, 202, 210),
@@ -157,6 +165,7 @@ class RosiePalette {
     brightness: Brightness.dark,
     accent: Color.fromARGB(255, 150, 92, 105),
     blush: Color.fromARGB(255, 124, 55, 90),
+    interactive: Color(0xFFB5B5F6),
     belowOptimal: Color.fromARGB(255, 234, 202, 210),
     optimal: Colors.white,
     concern: Color.fromARGB(255, 234, 202, 210),

@@ -15,6 +15,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'blood_pressure/blood_pressure_vis_screen.dart';
+import '../rosie_theme.dart';
 
 class CarePlanCards extends StatelessWidget {
   final String title;
@@ -44,10 +45,19 @@ class CarePlanCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final rosiePalette = theme.extension<RosieThemeExtension>()!.palette;
+    final titleTextStyle =
+        theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold);
+    final subtitleTextStyle =
+        theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.normal);
+    final linkTextStyle = theme.textTheme.bodyLarge?.copyWith(
+      color: rosiePalette.interactive,
+      fontWeight: FontWeight.bold,
+    );
     return Container(
       margin: const EdgeInsets.only(top: 30.0),
       child: Card(
-        color: Colors.white,
         elevation: 4.0,
         child: Column(
           children: [
@@ -55,15 +65,12 @@ class CarePlanCards extends StatelessWidget {
               title: Text(
                 heading,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+                style: titleTextStyle,
               ),
               subtitle: Text(
                 subheading,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black),
+                style: subtitleTextStyle,
               ),
             ),
             SizedBox(
@@ -76,14 +83,11 @@ class CarePlanCards extends StatelessWidget {
             ListTile(
               title: Text(
                 dataServicesHeading,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: titleTextStyle,
               ),
               subtitle: Text(
                 dataServicesSubHeading,
-                style: const TextStyle(color: Colors.black),
+                style: subtitleTextStyle,
               ),
             ),
             Container(
@@ -91,15 +95,12 @@ class CarePlanCards extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: RichText(
                 text: TextSpan(
-                  style: const TextStyle(color: Colors.black),
+                  style: theme.textTheme.bodyLarge,
                   children: <TextSpan>[
                     TextSpan(text: screeningText),
                     TextSpan(
                       text: patientInfoText,
-                      style: const TextStyle(
-                        color: Color(0xFF6750A4),
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: linkTextStyle,
                       recognizer: TapGestureRecognizer()
                         ..onTap = patientInfoOnTap,
                     ),

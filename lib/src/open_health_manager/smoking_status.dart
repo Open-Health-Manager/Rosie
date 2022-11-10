@@ -140,6 +140,11 @@ class SmokingStatusObservation {
       ],
     );
   }
+
+  @override
+  String toString() {
+    return "SmokingStatus($smokingStatus)";
+  }
 }
 
 extension SmokingStatusQuerying on OpenHealthManager {
