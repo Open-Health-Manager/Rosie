@@ -15,7 +15,6 @@
 // This shows the getting started page.
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../data_source/list_data_sources_screen.dart';
 import '../rosie_text_balloon.dart';
 
@@ -32,10 +31,8 @@ class GetStarted extends StatelessWidget {
           children: [
             Text(
               localizations.getStartedTitle,
-              style: GoogleFonts.ubuntu(fontSize: 24.0),
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
-            const SizedBox(height: 20),
-            // const SizedBox(width: 238, height: 214, child: Placeholder()),
             const Expanded(child: SizedBox()),
             RosieTextBalloon.text(
               localizations.getStartedNoConnections,

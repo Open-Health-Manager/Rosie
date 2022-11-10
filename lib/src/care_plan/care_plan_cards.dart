@@ -14,7 +14,6 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import '../rosie_theme.dart';
 import 'blood_pressure/blood_pressure_vis_screen.dart';
 
 class CarePlanCards extends StatelessWidget {
@@ -125,11 +124,8 @@ class CarePlanCards extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (context) => Scaffold(
                           appBar: AppBar(title: Text(title)),
-                          body: Container(
-                            decoration: createRosieScreenBoxDecoration(),
-                            child: const SafeArea(
-                              child: BloodPressureVisualizationScreen(),
-                            ),
+                          body: const SafeArea(
+                            child: BloodPressureVisualizationScreen(),
                           ),
                         ),
                       ),

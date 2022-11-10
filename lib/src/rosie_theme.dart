@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 
@@ -28,14 +30,6 @@ class RosiePalette {
   /// Blush (not used anywhere?)
   final Color blush;
 
-  /// Background color for elevated buttons
-  final Color buttonBackground;
-
-  /// Foreground color for elevated buttons (text/icon)
-  final Color buttonForeground;
-
-  /// Background color for secondary elevated button/outlined buttons
-  final Color secondaryButtonBackground;
   final Color belowOptimal;
   final Color optimal;
   final Color concern;
@@ -45,19 +39,9 @@ class RosiePalette {
   final Color inactiveConcern;
   final Color inactiveUrgent;
 
-  @Deprecated(
-      "refers to a gradient that is no longer used, use backgroundColor")
-  final Color backgroundTop = Colors.white;
-  @Deprecated(
-      "refers to a gradient this is no longer used, use backgroundColor")
-  final Color backgroundBottom = const Color(0xFF428CE3);
-
+  @Deprecated("use the theme data")
   final Color inputBackground = const Color(0xFFE7E0EC);
-  final Color dialogBackground = const Color(0xFFE1E3E9);
-  final Color error;
 
-  final Color backgroundColor;
-  final Color fontColor;
   final Color speechBalloonBackground;
   final Color speechBalloonShadow;
 
@@ -65,9 +49,6 @@ class RosiePalette {
     required this.brightness,
     required this.accent,
     required this.blush,
-    required this.buttonBackground,
-    required this.buttonForeground,
-    required this.secondaryButtonBackground,
     required this.belowOptimal,
     required this.optimal,
     required this.concern,
@@ -76,9 +57,6 @@ class RosiePalette {
     required this.inactiveOptimal,
     required this.inactiveConcern,
     required this.inactiveUrgent,
-    required this.error,
-    required this.backgroundColor,
-    required this.fontColor,
     required this.speechBalloonBackground,
     required this.speechBalloonShadow,
   });
@@ -102,9 +80,6 @@ class RosiePalette {
     Brightness? brightness,
     Color? accent,
     Color? blush,
-    Color? buttonBackground,
-    Color? buttonForeground,
-    Color? secondaryButtonBackground,
     Color? belowOptimal,
     Color? optimal,
     Color? concern,
@@ -113,9 +88,6 @@ class RosiePalette {
     Color? inactiveOptimal,
     Color? inactiveConcern,
     Color? inactiveUrgent,
-    Color? error,
-    Color? backgroundColor,
-    Color? fontColor,
     Color? speechBalloonBackground,
     Color? speechBalloonShadow,
   }) {
@@ -123,10 +95,6 @@ class RosiePalette {
       brightness: brightness ?? this.brightness,
       accent: accent ?? this.accent,
       blush: blush ?? this.blush,
-      buttonBackground: buttonBackground ?? this.buttonBackground,
-      buttonForeground: buttonForeground ?? this.buttonForeground,
-      secondaryButtonBackground:
-          secondaryButtonBackground ?? this.secondaryButtonBackground,
       belowOptimal: belowOptimal ?? this.belowOptimal,
       optimal: optimal ?? this.optimal,
       concern: concern ?? this.concern,
@@ -135,13 +103,9 @@ class RosiePalette {
       inactiveOptimal: inactiveOptimal ?? this.inactiveOptimal,
       inactiveConcern: inactiveConcern ?? this.inactiveConcern,
       inactiveUrgent: inactiveUrgent ?? this.inactiveUrgent,
-      error: error ?? this.error,
-      backgroundColor: backgroundColor ?? this.backgroundColor,
-      fontColor: fontColor ?? this.fontColor,
       speechBalloonBackground:
           speechBalloonBackground ?? this.speechBalloonBackground,
-      speechBalloonShadow:
-          speechBalloonShadow ?? this.speechBalloonShadow,
+      speechBalloonShadow: speechBalloonShadow ?? this.speechBalloonShadow,
     );
   }
 
@@ -150,15 +114,6 @@ class RosiePalette {
       brightness: t < 0.5 ? brightness : other.brightness,
       accent: Color.lerp(accent, other.accent, t) ?? accent,
       blush: Color.lerp(blush, other.blush, t) ?? blush,
-      buttonBackground:
-          Color.lerp(buttonBackground, other.buttonBackground, t) ??
-              buttonBackground,
-      buttonForeground:
-          Color.lerp(buttonForeground, other.buttonForeground, t) ??
-              buttonForeground,
-      secondaryButtonBackground: Color.lerp(
-              secondaryButtonBackground, other.secondaryButtonBackground, t) ??
-          secondaryButtonBackground,
       belowOptimal:
           Color.lerp(belowOptimal, other.belowOptimal, t) ?? belowOptimal,
       optimal: Color.lerp(optimal, other.optimal, t) ?? optimal,
@@ -173,16 +128,12 @@ class RosiePalette {
           inactiveConcern,
       inactiveUrgent:
           Color.lerp(inactiveUrgent, other.inactiveUrgent, t) ?? inactiveUrgent,
-      error: Color.lerp(error, other.error, t) ?? error,
-      backgroundColor: Color.lerp(backgroundColor, other.backgroundColor, t) ??
-          backgroundColor,
-      fontColor: Color.lerp(fontColor, other.fontColor, t) ?? fontColor,
       speechBalloonBackground: Color.lerp(
               speechBalloonBackground, other.speechBalloonBackground, t) ??
           speechBalloonBackground,
-      speechBalloonShadow: Color.lerp(
-              speechBalloonShadow, other.speechBalloonShadow, t) ??
-          speechBalloonShadow,
+      speechBalloonShadow:
+          Color.lerp(speechBalloonShadow, other.speechBalloonShadow, t) ??
+              speechBalloonShadow,
     );
   }
 
@@ -190,9 +141,6 @@ class RosiePalette {
     brightness: Brightness.light,
     accent: Color.fromARGB(255, 250, 153, 175),
     blush: Color.fromARGB(255, 242, 109, 178),
-    buttonBackground: Color.fromARGB(255, 250, 153, 175),
-    buttonForeground: Colors.black,
-    secondaryButtonBackground: Color(0xFFFEF2F5),
     belowOptimal: Color.fromARGB(255, 234, 202, 210),
     optimal: Colors.white,
     concern: Color.fromARGB(255, 234, 202, 210),
@@ -201,9 +149,6 @@ class RosiePalette {
     inactiveOptimal: Colors.white,
     inactiveConcern: Color.fromARGB(255, 234, 202, 210),
     inactiveUrgent: Color.fromARGB(255, 248, 119, 151),
-    error: Color(0xFF880000),
-    backgroundColor: Colors.white,
-    fontColor: Colors.black,
     speechBalloonBackground: Color.fromARGB(255, 254, 242, 245),
     speechBalloonShadow: Color.fromARGB(64, 0, 0, 0),
   );
@@ -212,9 +157,6 @@ class RosiePalette {
     brightness: Brightness.dark,
     accent: Color.fromARGB(255, 150, 92, 105),
     blush: Color.fromARGB(255, 124, 55, 90),
-    buttonBackground: Color.fromARGB(255, 150, 92, 105),
-    buttonForeground: Colors.white,
-    secondaryButtonBackground: Color(0xFFFEF2F5),
     belowOptimal: Color.fromARGB(255, 234, 202, 210),
     optimal: Colors.white,
     concern: Color.fromARGB(255, 234, 202, 210),
@@ -223,9 +165,6 @@ class RosiePalette {
     inactiveOptimal: Colors.white,
     inactiveConcern: Color.fromARGB(255, 234, 202, 210),
     inactiveUrgent: Color.fromARGB(255, 248, 119, 151),
-    error: Color(0xFF880000),
-    backgroundColor: Colors.black,
-    fontColor: Colors.white,
     speechBalloonBackground: Color.fromARGB(255, 13, 0, 2),
     speechBalloonShadow: Color.fromARGB(64, 0, 0, 0),
   );
@@ -331,10 +270,16 @@ class RosieTheme {
   }
 }
 
-ColorScheme createRosieColorScheme({required Brightness brightness}) {
+ColorScheme _createRosieColorScheme(RosiePalette palette) {
+  final light = palette.brightness == Brightness.light;
   return ColorScheme.fromSeed(
-    seedColor: RosiePalette.forBrightness(brightness).accent,
-    brightness: brightness,
+    seedColor: palette.accent,
+    primary: palette.accent,
+    onPrimary: light ? Colors.black : Colors.white,
+    error: const Color.fromARGB(255, 170, 58, 13),
+    background: light ? Colors.white : Colors.black,
+    onBackground: light ? Colors.black : Colors.white,
+    brightness: palette.brightness,
   );
 }
 
@@ -342,22 +287,39 @@ class RosieThemeExtension extends ThemeExtension<RosieThemeExtension> {
   const RosieThemeExtension({
     required this.palette,
     required this.comicTextStyle,
+    required this.chartTextStyle,
+    required this.chartNumericStyle,
     required this.secondaryButtonTheme,
   });
 
+  /// Additional Rosie colors that do not fit within the [ColorScheme].
   final RosiePalette palette;
+
+  /// Text style for "comic" text, used when Rosie is speaking.
   final TextStyle comicTextStyle;
+
+  /// Text style for chart labels.
+  final TextStyle chartTextStyle;
+
+  /// Text style for chart numeric labels.
+  final TextStyle chartNumericStyle;
+
+  /// Button style for "secondary" buttons.
   final ElevatedButtonThemeData secondaryButtonTheme;
 
   @override
   ThemeExtension<RosieThemeExtension> copyWith({
     RosiePalette? palette,
     TextStyle? comicTextStyle,
+    TextStyle? chartTextStyle,
+    TextStyle? chartNumericStyle,
     ElevatedButtonThemeData? secondaryButtonTheme,
   }) {
     return RosieThemeExtension(
       palette: palette ?? this.palette,
       comicTextStyle: comicTextStyle ?? this.comicTextStyle,
+      chartTextStyle: chartTextStyle ?? this.chartTextStyle,
+      chartNumericStyle: chartNumericStyle ?? this.chartNumericStyle,
       secondaryButtonTheme: secondaryButtonTheme ?? this.secondaryButtonTheme,
     );
   }
@@ -372,26 +334,41 @@ class RosieThemeExtension extends ThemeExtension<RosieThemeExtension> {
     return copyWith(
       palette: palette.lerp(other.palette, t),
       comicTextStyle: TextStyle.lerp(comicTextStyle, other.comicTextStyle, t),
+      chartTextStyle: TextStyle.lerp(chartTextStyle, other.chartTextStyle, t),
+      chartNumericStyle: TextStyle.lerp(chartNumericStyle, other.chartNumericStyle, t),
       secondaryButtonTheme: ElevatedButtonThemeData.lerp(
           secondaryButtonTheme, other.secondaryButtonTheme, t),
     );
   }
 }
 
-ThemeData createRosieTheme({brightness = Brightness.light}) {
+ThemeData createRosieTheme({
+  brightness = Brightness.light,
+  TargetPlatform? targetPlatform,
+}) {
   final palette = RosiePalette.forBrightness(brightness);
+  final colorScheme = _createRosieColorScheme(palette);
+  final typography = Typography.material2021(
+      platform: targetPlatform ?? defaultTargetPlatform);
+  // This is more to make code readable than anything else, for picking colors
+  final light = brightness == Brightness.light;
+  final baseTextTheme =
+      brightness == Brightness.light ? typography.black : typography.white;
   return ThemeData(
-    colorScheme: createRosieColorScheme(brightness: brightness),
+    colorScheme: colorScheme,
     extensions: <ThemeExtension<dynamic>>[
       RosieThemeExtension(
         palette: palette,
-        comicTextStyle: RosieTheme.comicFont(color: palette.fontColor),
+        comicTextStyle: GoogleFonts.comicNeue(color: colorScheme.onBackground),
+        // FIXME: Chart is always light
+        chartTextStyle: GoogleFonts.comicNeue(color: Colors.black, fontSize: 16.0,),
+        chartNumericStyle: GoogleFonts.comicNeue(color: Colors.black, fontSize: 16.0,),
         secondaryButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all<Color>(
-                palette.secondaryButtonBackground),
+                colorScheme.secondary),
             foregroundColor:
-                MaterialStateProperty.all<Color>(palette.buttonForeground),
+                MaterialStateProperty.all<Color>(colorScheme.onPrimary),
             shape: MaterialStateProperty.all<OutlinedBorder>(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
@@ -405,9 +382,9 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
         backgroundColor:
-            MaterialStateProperty.all<Color>(palette.buttonBackground),
+            MaterialStateProperty.all<Color>(colorScheme.primary),
         foregroundColor:
-            MaterialStateProperty.all<Color>(palette.buttonForeground),
+            MaterialStateProperty.all<Color>(colorScheme.onPrimary),
         shape: MaterialStateProperty.all<OutlinedBorder>(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),
@@ -418,17 +395,13 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
-        //backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
         backgroundColor: MaterialStateProperty.all<Color>(
-          const Color.fromARGB(255, 254, 242, 245),
+          light
+              ? const Color.fromARGB(255, 254, 242, 245)
+              : const Color.fromARGB(255, 12, 0, 3),
         ),
-        foregroundColor:
-            // MaterialStateProperty.all<Color>(RosieTheme.buttonColor),
-            MaterialStateProperty.all<Color>(Colors.black),
-        //side: MaterialStateProperty.all<BorderSide>(
-        //const BorderSide(color: Color.fromARGB(255, 121, 116, 126))),
+        foregroundColor: MaterialStateProperty.all<Color>(colorScheme.onPrimary),
         shape: MaterialStateProperty.all<OutlinedBorder>(
-          //const StadiumBorder()
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),
             side: const BorderSide(color: Colors.black, width: 0.5),
@@ -436,10 +409,16 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
         ),
       ),
     ),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Color.fromARGB(255, 231, 224, 236),
-      selectedItemColor: Color.fromARGB(255, 29, 25, 43),
-      unselectedItemColor: Color.fromARGB(255, 31, 31, 31),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: light
+          ? const Color.fromARGB(255, 231, 224, 236)
+          : const Color.fromARGB(255, 7, 0, 12),
+      selectedItemColor: light
+          ? const Color.fromARGB(255, 29, 25, 43)
+          : const Color.fromARGB(255, 241, 237, 255),
+      unselectedItemColor: light
+          ? const Color.fromARGB(255, 31, 31, 31)
+          : const Color.fromARGB(255, 224, 224, 224),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -456,10 +435,18 @@ ThemeData createRosieTheme({brightness = Brightness.light}) {
       selectionColor: palette.accent.withAlpha(128),
       selectionHandleColor: palette.accent,
     ),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black,
+    appBarTheme: AppBarTheme(
+      backgroundColor: light ? Colors.white : const Color(0xFF565051),
+      foregroundColor: light ? Colors.black : const Color(0xFFD0D0D0),
       elevation: 0,
+      systemOverlayStyle:
+          light ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
+    ),
+    textTheme: baseTextTheme.copyWith(
+      headlineLarge: GoogleFonts.ubuntu(textStyle: baseTextTheme.headlineLarge),
+      headlineMedium:
+          GoogleFonts.ubuntu(textStyle: baseTextTheme.headlineMedium),
+      headlineSmall: GoogleFonts.ubuntu(textStyle: baseTextTheme.headlineSmall),
     ),
   );
 }

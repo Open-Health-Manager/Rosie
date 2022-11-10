@@ -20,8 +20,6 @@ import '../../open_health_manager/patient_data.dart';
 import '../../open_health_manager/smoking_status.dart';
 import '../../open_health_manager/patient_demographics.dart';
 
-import '../../rosie_theme.dart';
-
 class PatientInfo extends StatefulWidget {
   const PatientInfo({Key? key}) : super(key: key);
 
@@ -513,7 +511,6 @@ class PatientInfoState extends State<PatientInfo> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Container(
-        decoration: createRosieScreenBoxDecoration(),
         constraints: const BoxConstraints.expand(),
         child: SingleChildScrollView(
           child: Container(

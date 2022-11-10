@@ -185,14 +185,11 @@ class _BloodPressureVisualizationState
   Widget _createChart(BuildContext context,
       BloodPressureObservation? bloodPressure, BPChartUrgency urgency,
       {loading = false}) {
+    final rosieTheme = Theme.of(context).extension<RosieThemeExtension>()!;
     Widget chart = BloodPressureChart(
       bloodPressure: bloodPressure,
-      /* typeLabelStyle: RosieTheme.comicFont(color: Colors.white, fontSize: 16),
-      numericLabelStyle:
-          RosieTheme.comicFont(color: Colors.white, fontSize: 20, height: 1.0), */
-      typeLabelStyle: RosieTheme.comicFont(color: Colors.black, fontSize: 16),
-      numericLabelStyle:
-          RosieTheme.comicFont(color: Colors.black, fontSize: 16),
+      typeLabelStyle: rosieTheme.chartTextStyle,
+      numericLabelStyle: rosieTheme.chartNumericStyle,
       scale: widget.scale,
       urgency: urgency,
     );
