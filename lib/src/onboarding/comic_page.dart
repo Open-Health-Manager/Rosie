@@ -15,6 +15,7 @@
 // A single page in the data agreement comic.
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'comic.dart';
 import 'onboarding.dart';
 import '../rosie_theme.dart';
@@ -36,18 +37,22 @@ class ComicPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     // This children change depending on page number, so build them first
     final List<Widget> children = [
       Container(
         margin: const EdgeInsets.all(15.0),
         padding: const EdgeInsets.all(25.0),
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(15)),
-          color: Color(0xFFFEF2F5),
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(Radius.circular(15)),
+          color: theme.colorScheme.secondary,
         ),
         child: Text(
           text,
-          style: const TextStyle(fontSize: 24.0, fontFamily: 'ComicNeue'),
+          style: GoogleFonts.comicNeue(
+            fontSize: 24.0,
+            color: theme.colorScheme.onSecondary,
+          ),
         ),
       ),
       Expanded(child: Image(image: AssetImage(comicPage), fit: BoxFit.contain)),
@@ -61,10 +66,7 @@ class ComicPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                nextLabel,
-                style: const TextStyle(fontSize: 24),
-              ),
+              Text(nextLabel),
               const SizedBox(width: 8, height: 42),
               const Icon(Icons.arrow_forward_ios),
             ],
@@ -79,20 +81,17 @@ class ComicPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: ElevatedButton(
-            style: Theme.of(context)
-                .extension<RosieThemeExtension>()
-                ?.secondaryButtonTheme
-                .style,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.colorScheme.secondary,
+              foregroundColor: theme.colorScheme.onSecondary,
+            ),
             onPressed: () {
               Navigator.pushNamed(context, "signIn");
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const <Widget>[
-                Text(
-                  "Skip to Sign In",
-                  style: TextStyle(fontSize: 24),
-                ),
+                Text("Skip to Sign In"),
                 SizedBox(width: 8, height: 42),
               ],
             ),

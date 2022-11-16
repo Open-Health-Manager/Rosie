@@ -396,7 +396,7 @@ ThemeData createRosieTheme({
             backgroundColor: MaterialStateProperty.all<Color>(
                 colorScheme.secondary),
             foregroundColor:
-                MaterialStateProperty.all<Color>(colorScheme.onPrimary),
+                MaterialStateProperty.all<Color>(colorScheme.onSecondary),
             shape: MaterialStateProperty.all<OutlinedBorder>(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
