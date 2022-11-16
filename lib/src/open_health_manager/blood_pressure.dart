@@ -18,6 +18,7 @@ import 'package:fhir/r4.dart'
         CodeableConcept,
         Coding,
         Decimal,
+        FhirDateTime,
         FhirUri,
         Instant,
         Observation,
@@ -105,6 +106,7 @@ class BloodPressureObservation {
         Coding(system: FhirUri(Systems.loinc), code: Code('55284-4'))
       ]),
       issued: issued == null ? null : Instant.fromDateTime(issued),
+      effectiveDateTime: issued == null ? null : FhirDateTime.fromDateTime(issued),
       component: <ObservationComponent>[
         ObservationComponent(
           code: CodeableConcept(
