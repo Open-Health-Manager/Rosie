@@ -155,26 +155,6 @@ class PatientInfoState extends State<PatientInfo> {
     }
   }
 
-/*
-  _selectBloodPressureRecordedDate(BuildContext context) async {
-    var initialBloodPressureRecordedDate = DateFormat('MM/dd/yy')
-        .parse(_dateofBloodPressureRecordedController.text);
-    final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: initialBloodPressureRecordedDate,
-        firstDate: DateTime(1930, 8),
-        lastDate: DateTime(2100));
-    if (picked != null && picked != selectedDateOfBloodPressureRecorded) {
-      setState(() {
-        selectedDateOfBloodPressureRecorded = picked;
-        var date =
-            "${picked.toLocal().month}/${picked.toLocal().day}/${picked.toLocal().year}";
-        _dateofBloodPressureRecordedController.text = date;
-      });
-    }
-  }
-  */
-
   Widget _buildTextField({
     required String label,
     TextEditingController? controller,
@@ -293,113 +273,6 @@ class PatientInfoState extends State<PatientInfo> {
     );
   }
 
-  /*
-  Widget _buildHeightField() {
-    return _buildTextField(
-      controller: _heightController,
-      label: 'Height',
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your Height';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        //Provider.of<PatientData>(context, listen: false).height = value!;
-      },
-    );
-  }
-
-  Widget _buildWeightField() {
-    return _buildTextField(
-      controller: _weightController,
-      keyboardType: TextInputType.number,
-      inputFormatters: <TextInputFormatter>[
-        FilteringTextInputFormatter.digitsOnly
-      ],
-      label: 'Weight (lb)',
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your Weight';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        //Provider.of<PatientData>(context, listen: false).weight = value!;
-      },
-    );
-  }*/
-  /*
-  Widget _buildBloodPressureLabel() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(0, 20, 20, 10),
-      child: Text(
-        'Blood Pressure',
-        style: TextStyle(
-            color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _buildSystolicField() {
-    return _buildTextField(
-      paddingTop: 10,
-      controller: _systolicController,
-      keyboardType: TextInputType.number,
-      inputFormatters: <TextInputFormatter>[
-        FilteringTextInputFormatter.digitsOnly
-      ],
-      label: 'Systolic (mmHg)',
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter a Systolic Blood Pressure Reading';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        Provider.of<PatientData>(context, listen: false).systolic = value!;
-      },
-    );
-  }
-
-  Widget _buildDiastolicField() {
-    return _buildTextField(
-      controller: _diastolicController,
-      keyboardType: TextInputType.number,
-      inputFormatters: <TextInputFormatter>[
-        FilteringTextInputFormatter.digitsOnly
-      ],
-      label: 'Diastolic (mmHg)',
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter a Diastolic Blood Pressure Reading';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        Provider.of<PatientData>(context, listen: false).diastolic = value!;
-      },
-    );
-  }
-
-  Widget _buildBloodPressureDateRecordedField() {
-    return _buildTextField(
-      controller: _dateofBloodPressureRecordedController,
-      onTap: () => _selectBloodPressureRecordedDate(context),
-      label: 'Date Recorded',
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter the Date of Blood Pressure Recording';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        Provider.of<PatientData>(context, listen: false)
-            .bloodPressureRecorded = value!;
-      },
-    );
-  }
-*/
   Widget _buildPregnancyField() {
     return _buildDropdown(
       value: '',
@@ -563,12 +436,6 @@ class PatientInfoState extends State<PatientInfo> {
                     },
                     future: _patientDemographicsFuture,
                   ),
-                  //_buildHeightField(),
-                  //_buildWeightField(),
-                  //_buildBloodPressureLabel(),
-                  //_buildSystolicField(),
-                  //_buildDiastolicField(),
-                  //_buildBloodPressureDateRecordedField(),
                   _buildPregnancyField(),
                   FutureBuilder<List<SmokingStatusObservation>>(
                     builder: (context, snapshot) {
