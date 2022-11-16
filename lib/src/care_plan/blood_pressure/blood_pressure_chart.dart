@@ -198,18 +198,11 @@ class BloodPressureChart extends StatelessWidget {
     // Make local so compiler believes it won't be null
     final bp = bloodPressure;
     final activeSlice = urgency.index;
+    final sliceBorder = Border.all(color: palette.chartBorder);
     var children = <Widget>[
-      // Base box fills the entire thing
+      // Base box fills the entire thing (so it's colored with the urgent color)
       Container(
         decoration: BoxDecoration(
-          /* boxShadow: const [
-            BoxShadow(
-              color: Color.fromARGB(128, 0, 0, 0),
-              offset: Offset(4, 4),
-              blurRadius: 4.0,
-            )
-          ],
-          borderRadius: BorderRadius.circular(5), */
           borderRadius: const BorderRadius.only(
             topRight: Radius.circular(5),
             bottomRight: Radius.circular(5),
@@ -228,12 +221,7 @@ class BloodPressureChart extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
             color: palette.urgencyColor(2, activeSlice == 2),
-            border: const Border(
-              top: BorderSide(width: 1.0, color: Colors.white),
-              bottom: BorderSide(width: 1.0, color: Colors.white),
-              left: BorderSide(width: 1.0, color: Colors.white),
-              right: BorderSide(width: 1.0, color: Colors.white),
-            ),
+            border: sliceBorder,
           ),
         ),
       ),
@@ -246,16 +234,11 @@ class BloodPressureChart extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
             color: palette.urgencyColor(1, activeSlice == 1),
-            border: const Border(
-              top: BorderSide(width: 1.0, color: Colors.white),
-              bottom: BorderSide(width: 1.0, color: Colors.white),
-              left: BorderSide(width: 1.0, color: Colors.white),
-              right: BorderSide(width: 1.0, color: Colors.white),
-            ),
+            border: sliceBorder,
           ),
         ),
       ),
-      // Low box? I guess
+      // Below optimal box
       FractionallySizedBox(
         alignment: AlignmentDirectional.bottomStart,
         widthFactor: diastolicPositions[0],
@@ -264,12 +247,7 @@ class BloodPressureChart extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
             color: palette.urgencyColor(0, activeSlice == 0),
-            border: const Border(
-              top: BorderSide(width: 1.0, color: Colors.white),
-              bottom: BorderSide(width: 1.0, color: Colors.white),
-              left: BorderSide(width: 1.0, color: Colors.white),
-              right: BorderSide(width: 1.0, color: Colors.white),
-            ),
+            border: sliceBorder,
           ),
         ),
       ),
@@ -383,18 +361,16 @@ class _BloodPressureCallout extends StatelessWidget {
   final Color highlightColor;
 
   Widget _buildText(BuildContext context) {
-    final highlightStyle = RosieTheme.font(color: highlightColor, fontSize: 18);
-    final highlightGoodStyle = RosieTheme.font(
-      color: const Color.fromARGB(255, 54, 127, 56),
-      fontSize: 18,
-      fontWeight: FontWeight.bold,
+    final textTheme = Theme.of(context).textTheme;
+    final baseTextStyle = textTheme.bodyLarge!;
+    final highlightStyle = baseTextStyle.copyWith(color: highlightColor, fontSize: 18);
+    final highlightGoodStyle = highlightStyle.copyWith(
+      color: const Color.fromARGB(255, 54, 127, 56)
     );
-    final highlightEmergencyStyle = RosieTheme.font(
-      color: const Color.fromARGB(255, 185, 47, 37),
-      fontSize: 18,
-      fontWeight: FontWeight.bold,
+    final highlightEmergencyStyle = highlightStyle.copyWith(
+      color: const Color.fromARGB(255, 185, 47, 37)
     );
-    final dateStyle = RosieTheme.font(color: Colors.grey, fontSize: 14);
+    final dateStyle = textTheme.bodyMedium!.copyWith(color: Colors.grey);
     DateTime? timeTaken = bloodPressure.taken;
     String formattedTimeTaken =
         "${timeTaken?.month}-${timeTaken?.day}-${timeTaken?.year}";
@@ -424,9 +400,8 @@ class _BloodPressureCallout extends StatelessWidget {
       }
     }
     final textWidget = Text.rich(TextSpan(children: text),
-        style: RosieTheme.comicFont(), softWrap: true);
+        style: textTheme.titleMedium, softWrap: true);
     if (urgency.emergency) {
-      //return textWidget;
       // Slightly different
       return SizedBox(
         height: 95,
@@ -460,8 +435,7 @@ class _BloodPressureCallout extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        //color: Color.fromARGB(255, 226, 235, 244),
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.background,
         borderRadius: BorderRadius.circular(10.0),
         boxShadow: const <BoxShadow>[
           BoxShadow(

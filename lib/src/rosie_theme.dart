@@ -33,14 +33,26 @@ class RosiePalette {
   /// Interactive color (currently, links)
   final Color interactive;
 
+  /// Color for below optimal values
   final Color belowOptimal;
+  /// Color for optimal values
   final Color optimal;
+  /// Color for values that are high and of concern
   final Color concern;
+  /// Color for values that are high and signify an urgent problem
   final Color urgent;
+  /// Color for below optimal values when not active
   final Color inactiveBelowOptimal;
+  /// Color for optimal values when not active
   final Color inactiveOptimal;
+  /// Color for values of concern when not active
   final Color inactiveConcern;
+  /// Color for urgent values when not active
   final Color inactiveUrgent;
+
+  /// Color for border around chart slices (colored via one of [urgencyColor]
+  /// colors).
+  final Color chartBorder;
 
   @Deprecated("use the theme data")
   final Color inputBackground = const Color(0xFFE7E0EC);
@@ -61,6 +73,7 @@ class RosiePalette {
     required this.inactiveOptimal,
     required this.inactiveConcern,
     required this.inactiveUrgent,
+    required this.chartBorder,
     required this.speechBalloonBackground,
     required this.speechBalloonShadow,
   });
@@ -93,6 +106,7 @@ class RosiePalette {
     Color? inactiveOptimal,
     Color? inactiveConcern,
     Color? inactiveUrgent,
+    Color? chartBorder,
     Color? speechBalloonBackground,
     Color? speechBalloonShadow,
   }) {
@@ -109,6 +123,7 @@ class RosiePalette {
       inactiveOptimal: inactiveOptimal ?? this.inactiveOptimal,
       inactiveConcern: inactiveConcern ?? this.inactiveConcern,
       inactiveUrgent: inactiveUrgent ?? this.inactiveUrgent,
+      chartBorder: chartBorder ?? this.chartBorder,
       speechBalloonBackground:
           speechBalloonBackground ?? this.speechBalloonBackground,
       speechBalloonShadow: speechBalloonShadow ?? this.speechBalloonShadow,
@@ -135,6 +150,8 @@ class RosiePalette {
           inactiveConcern,
       inactiveUrgent:
           Color.lerp(inactiveUrgent, other.inactiveUrgent, t) ?? inactiveUrgent,
+      chartBorder:
+          Color.lerp(chartBorder, other.chartBorder, t) ?? chartBorder,
       speechBalloonBackground: Color.lerp(
               speechBalloonBackground, other.speechBalloonBackground, t) ??
           speechBalloonBackground,
@@ -153,6 +170,7 @@ class RosiePalette {
     optimal: Colors.white,
     concern: Color.fromARGB(255, 234, 202, 210),
     urgent: Color.fromARGB(255, 248, 119, 151),
+    chartBorder: Colors.white,
     inactiveBelowOptimal: Color.fromARGB(255, 234, 202, 210),
     inactiveOptimal: Colors.white,
     inactiveConcern: Color.fromARGB(255, 234, 202, 210),
@@ -170,6 +188,7 @@ class RosiePalette {
     optimal: Colors.white,
     concern: Color.fromARGB(255, 234, 202, 210),
     urgent: Color.fromARGB(255, 248, 119, 151),
+    chartBorder: Colors.black,
     inactiveBelowOptimal: Color.fromARGB(255, 234, 202, 210),
     inactiveOptimal: Colors.white,
     inactiveConcern: Color.fromARGB(255, 234, 202, 210),
@@ -435,9 +454,6 @@ ThemeData createRosieTheme({
         borderSide: BorderSide(color: palette.accent, width: 2),
       ),
       focusColor: palette.accent,
-      hoverColor: const Color(0x141C1B1F),
-      fillColor: palette.inputBackground,
-      labelStyle: const TextStyle(color: Colors.black, fontSize: 14),
     ),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: palette.accent,
@@ -456,6 +472,9 @@ ThemeData createRosieTheme({
       headlineMedium:
           GoogleFonts.ubuntu(textStyle: baseTextTheme.headlineMedium),
       headlineSmall: GoogleFonts.ubuntu(textStyle: baseTextTheme.headlineSmall),
+      titleLarge: GoogleFonts.ubuntu(textStyle: baseTextTheme.titleLarge),
+      titleMedium: GoogleFonts.ubuntu(textStyle: baseTextTheme.titleMedium),
+      titleSmall: GoogleFonts.ubuntu(textStyle: baseTextTheme.titleSmall),
     ),
   );
 }
