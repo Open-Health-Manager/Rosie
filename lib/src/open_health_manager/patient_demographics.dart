@@ -13,8 +13,7 @@
 // limitations under the License.
 
 import 'dart:developer';
-import 'package:fhir/r4.dart'
-    show Date, Patient, PatientGender, Resource;
+import 'package:fhir/r4.dart' show Date, Patient, PatientGender, Resource;
 import 'open_health_manager.dart';
 
 /// internal representation of FHIR Patient Resource
@@ -76,6 +75,11 @@ class PatientDemographics {
     if (_rawFHIR != null) {
       _rawFHIR = _rawFHIR!.copyWith(gender: genderEnumValue);
     }
+  }
+
+  @override
+  String toString() {
+    return 'PatientDemographics(dateOfBirth=$dateOfBirth, gender=$gender)';
   }
 }
 

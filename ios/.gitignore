@@ -1,3 +1,10 @@
+# Generated icon images
+/Runner/Assets.xcassets/AppIcon.appiconset/*.png
+
+# Build directory (is this something Xcode creates now?)
+/build/
+
+# Flutter ignores
 **/dgph
 *.mode1v3
 *.mode2v3

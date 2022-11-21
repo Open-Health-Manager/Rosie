@@ -1,0 +1,257 @@
+{
+  "rosie": "Rosie",
+  "@rosie": {
+    "description": "The Rosie name used for the app title."
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Shown for buttons that lead back"
+  },
+  "signInTitle": "Sign In",
+  "@signInTitle": {
+    "description": "The title for the Sign In page"
+  },
+  "signUpTitle": "Create an Account",
+  "@signUpTitle": {
+    "description": "Title for the account creation page"
+  },
+  "firstNameHint": "First Name",
+  "@firstNameHint": {
+    "description": "First name hint text"
+  },
+  "firstNameRequired": "First name cannot be blank",
+  "@firstNameRequired": {
+    "description": "Validation error if first name is blank"
+  },
+  "lastNameHint": "Last Name",
+  "@lastNameHint": {
+    "description": "Last name hint text"
+  },
+  "lastNameRequired": "Last name cannot be blank",
+  "@lastNameRequired": {
+    "description": "Validation error if last name is blank"
+  },
+  "emailAddressHint": "Email Address",
+  "@emailAddressHint": {
+    "description": "The hint text for entering email on the account screens"
+  },
+  "emailRequired": "Email is required",
+  "@emailRequired": {
+    "description": "The validation error if an email address isn't given"
+  },
+  "invalidEmailFormat": "The email entered is not a valid email address. Please try again.",
+  "@invalidEmailFormat": {
+    "description": "Validation error if the given email does not pass email format validator"
+  },
+  "passwordHint": "Password",
+  "@passwordHint": {
+    "description": "The hint text for the password field"
+  },
+  "passwordRequired": "Password cannot be blank",
+  "@passwordRequired": {
+    "description": "Validation error for a blank password"
+  },
+  "confirmPasswordHint": "Confirm Password",
+  "@confirmPasswordHint": {
+    "description": "The hint text for the confirm password field"
+  },
+  "confirmPasswordMismatch": "Passwords do not match",
+  "@confirmPasswordMismatch": {
+    "description": "Validation error when the two password fields do not match"
+  },
+  "passwordServerErrorMessage": "Invalid password: Please ensure that {errors}",
+  "@passwordServerErrorMessage": {
+    "description": "Error message displayed for password errors",
+    "placeholders": {
+      "errors": {
+        "type": "String",
+        "description": "Detailed error messages"
+      }
+    }
+  },
+  "emailServerErrorMessage": "Invalid email: Please ensure that {errors}",
+  "@emailServerErrorMessage": {
+    "description": "Error message display for email errors",
+    "placeholders": {
+      "errors": {
+        "type": "String",
+        "description": "Detailed error messages"
+      }
+    }
+  },
+  "insufficientSpecialPassword": "password contains 1 or more special characters",
+  "@insufficientSpecialPassword": {
+    "description": "Validation error for password that does not contain enough special characters"
+  },
+  "tooShortPassword": "password is 4 or more characters in length",
+  "@tooShortPassword": {
+    "description": "Validation error for password that does not contain enough characters"
+  },
+  "tooLongPassword": "password is 60 or less characters in length",
+  "@tooLongPassword": {
+    "description": "Validation error for password that contains too many characters"
+  },
+  "insufficientDigitPassword": "password contains 1 or more digit characters",
+  "@insufficientDigitPassword": {
+    "description": "Validation error for password that does not contain enough digit characters"
+  },
+  "insufficientUpperCasePassword": "password contains 1 or more uppercase characters",
+  "@insufficientUpperCasePassword": {
+    "description": "Validation error for password that does not contain enough uppercase characters"
+  },
+  "insufficientLowerCasePassword": "password contains 1 or more lowercase characters",
+  "@insufficientLowerCasePassword": {
+    "description": "Validation error for password that does not contain enough lowercase characters"
+  },
+  "illegalWhiteSpacePassword": "password does not contain a whitespace character",
+  "@illegalWhiteSpacePassword": {
+    "description": "Validation error for password that does not contain enough whitespace characters"
+  },
+  "illegalAlphabeticalSequencePassword": "password does not contain an illegal alphabetical sequence of 5 or more consecutive letters",
+  "@illegalAlphabeticalSequencePassword": {
+    "description": "Validation error for password that contains an illegal alphabetical sequence"
+  },
+  "illegalNumericalSequencePassword": "password does not contain an illegal numerical sequence of 5 or more consecutive digits",
+  "@illegalNumericalSequencePassword": {
+    "description": "Validation error for password that contains an illegal numerical sequence"
+  },
+  "emailFormatServerErrorMessage": "email is a valid email address",
+  "@emailFormatServerErrorMessage": {
+    "description": "Validation error displayed when server sends back email format error"
+  },
+  "emailLengthServerErrorMessage": "email is between 5 and 254 characters",
+  "@emailLengthServerErrorMessage": {
+    "description": "Validation error displayed when server sends back email length error"
+  },
+  "errorListJoin": ", and ",
+  "@errorListJoin": {
+    "description": "Text used to join multiple errors (e.g., [error 1][this text][error 2], which becomes [error 1], and [error 2]"
+  },
+  "unknownServerValidationError": "Unknown validation errors returned from the server",
+  "@unknownServerValidationError": {
+    "description": "Error message displayed when the server returns field error messages for fields that aren't recognized"
+  },
+  "incorrectPassword401Error": "The password entered is incorrect, please try again.",
+  "@incorrectPassword401Error": {
+    "description": "Error message when server responds with status 401 due to incorrect submitted password"
+  },
+  "signInButton": "Confirm",
+  "@signInButton": {
+    "description": "Label for the sign in button on the sign in page"
+  },
+  "signUpButton": "Confirm",
+  "@signUpButton": {
+    "description": "Label for the sign up button on the account creation page"
+  },
+  "emailPasswordRequired": "Email and password are required",
+  "@emailPasswordRequired": {
+    "description": "Error message displayed under the sign-in button if either the email or password are missing"
+  },
+  "loginFailed": "Login failed (check your email and password)",
+  "@loginFailed": {
+    "description": "Error message when login fails"
+  },
+  "retrieveAccountPassword": "Retrieve account or password?",
+  "@retrieveAccountPassword": {
+    "description": "Link text for password reset"
+  },
+  "needAccount": "Need to Create An Account? ",
+  "@needAccount": {
+    "description": "Need account starter text"
+  },
+  "needAccountLink": "Sign Up",
+  "@needAccountLink": {
+    "description": "Link text for the need account"
+  },
+  "haveAccount": "Already Have An Account? ",
+  "@haveAccount": {
+    "description": "Have account starter"
+  },
+  "haveAccountLink": "Sign In",
+  "@haveAccountLink": {
+    "description": "Link text for the have account message"
+  },
+  "agreeTOSBefore": "I agree to the ",
+  "@agreeTOSBefore": {
+    "description": "Text before the terms of service link on the agree to TOS checkbox"
+  },
+  "agreeTOSLink": "terms and conditions",
+  "@agreeTOSLink": {
+    "description": "The terms of service link text"
+  },
+  "agreeTOSAfter": ".",
+  "@agreeTOSAfter": {
+    "description": "Text after the terms of service link on the agree to TOS checkbox"
+  },
+  "errorAgreeTOS": "You must agree to the terms and conditions.",
+  "@errorAgreeTOS": {
+    "description": "Validation error if the agree to the TOS checkbox isn't checked"
+  },
+  "assertAge": "I am at least 18 years of age or older.",
+  "@assertAge": {
+    "description": "Label for the age assertion checkbox"
+  },
+  "errorAssertAge": "You must be at least 18 years of age to use this app",
+  "@errorAssertAge": {
+    "description": "Error message displayed if the age assertion checkbox isn't checked"
+  },
+  "correctAboveErrors": "Please correct the above errors and try again",
+  "@correctAboveErrors": {
+    "description": "Error message shown on the account creation screen when there are validation errors"
+  },
+  "tabCarePlan": "Care Plan",
+  "@tabCarePlan": {
+    "description": "Label for the Care Plan tab"
+  },
+  "carePlanTitle": "Care Plan",
+  "@carePlanTitle": {
+    "description": "The text shown on the top of the Care Plan screen"
+  },
+  "carePlanLoading": "Loading...",
+  "@carePlanLoading": {
+    "description": "The text shown while loading care plans"
+  },
+  "carePlanError": "Unable to load Care Plan recommendations:",
+  "@carePlanError": {
+    "description": "Message when care plans cannot be loaded"
+  },
+  "tabRecords": "Records",
+  "@tabRecords": {
+    "description": "Label for the Records tab"
+  },
+  "getStartedTitle": "Get Started with Preventative Health Check",
+  "@getStartedTitle": {
+    "description": "Text displayed for the Get Started page"
+  },
+  "getStartedNoConnections": "Looks like you don\u2019t have any health data sources yet. Connect your health data to have a more complete view of your own health.",
+  "@getStartedNoConnections": {
+    "description": "Rosie dialog when no connections exist"
+  },
+  "getStartedConnectDataServices": "Connect Data & Services",
+  "@getStartedConnectDataServices": {
+    "description": "Button label for connecting data and services"
+  },
+  "tabPrivacy": "Privacy",
+  "@tabPrivacy": {
+    "description": "Label for the Privacy tab"
+  },
+  "tabHelp": "Help",
+  "@tabHelp": {
+    "description": "Label for the Help tab"
+  },
+  "errorInternal": "Internal error: {message}",
+  "@errorInternal": {
+    "description": "Error message for an internal error",
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "unknownServerError": "Unknown error from server",
+  "@unknownServerError": {
+    "description": "Error message for an unknown server error"
+  },
+  "unknownError": "Unknown error",
+  "@unknownError": {
+    "description": "Error message for an unknown error"
+  }
+}

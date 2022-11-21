@@ -12,9 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'src/app.dart';
 
 void main() {
+  // Configure logging before starting the app
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    developer.log(
+      record.message,
+      time: record.time,
+      sequenceNumber: record.sequenceNumber,
+      level: record.level.value,
+      name: record.loggerName,
+      error: record.error,
+      stackTrace: record.stackTrace,
+    );
+  });
   runApp(const RosieApp());
 }

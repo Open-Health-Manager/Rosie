@@ -1,3 +1,17 @@
+// Copyright 2022 The MITRE Corporation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import UIKit
 import Flutter
 import HealthKit
@@ -5,17 +19,41 @@ import HealthKit
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
     @available(iOS 12.0, *)
-    static let supportedTypes = [
-//        // For now, only request access to vital sign records
-//        HKClinicalTypeIdentifier.allergyRecord,
-//        HKClinicalTypeIdentifier.conditionRecord,
-//        HKClinicalTypeIdentifier.immunizationRecord,
-//        HKClinicalTypeIdentifier.labResultRecord,
-//        HKClinicalTypeIdentifier.medicationRecord,
-//        HKClinicalTypeIdentifier.procedureRecord,
-        HKClinicalTypeIdentifier.vitalSignRecord
+    /// Supported clinical types. This is the list of types that are requested when approval is requested.
+    static let supportedClinicalTypes: [HKClinicalTypeIdentifier] = [
+        .allergyRecord,
+        .conditionRecord,
+        .immunizationRecord,
+        .labResultRecord,
+        .medicationRecord,
+        .procedureRecord,
+        .vitalSignRecord
+        // .coverage - skip, required ios 15
     ];
+    /// Supported characteristic types. This is the list of types that are requested when approval is requested.
+    static let supportedCharacteristicTypes: [HKCharacteristicTypeIdentifier] = [
+        .dateOfBirth,
+        .biologicalSex
+    ];
+    @available(iOS 14.3, *)
+    /// Supported category types. This is the list of types that are requested when approval is requested.
+    static let supportedCategoryTypes: [HKCategoryTypeIdentifier] = [
+        .pregnancy
+    ];
+    @available(iOS 12.0, *)
+    // Supported quantity types. This is the list of types that identify samples that store numerical values.
+    static let supportedQuantityTypes: [HKQuantityTypeIdentifier] = [
+        .bloodPressureDiastolic,
+        .bloodPressureSystolic
+    ];
+    @available(iOS 12.0, *)
+    // Supported correlation types. This is the list of types that identify samples that group multiple subsamples.
+    static let supportedCorrelationTypes: [HKCorrelationTypeIdentifier] = [
+        .bloodPressure
+    ];
+
     lazy var healthStore = HKHealthStore()
+    let converters = HealthKitConverter()
 
     override func application(
         _ application: UIApplication,
@@ -28,12 +66,24 @@ import HealthKit
             switch (call.method) {
             case "isHealthDataAvailable":
                 result(HKHealthStore.isHealthDataAvailable())
+            case "supportsHealthRecords":
+                result(self?.supportsHealthRecords())
             case "requestAccess":
                 self?.requestHealthKitAccess(result: result)
             case "supportedClinicalTypes":
                 self?.supportedClinicalTypes(result: result)
+            case "supportedCategoryTypes":
+                self?.supportedCategoryTypes(result: result)
+            case "supportedCorrelationTypes":
+                self?.supportedCorrelationTypes(result: result)
             case "queryClinicalRecords":
                 self?.queryClinicalRecords(call: call, result: result)
+            case "getPatientCharacteristicData":
+                self?.getPatientCharacteristicData(call: call, result: result)
+            case "queryCategoryData":
+                self?.queryCategoryData(call: call, result: result)
+            case "queryCorrelationData":
+                self?.queryCorrelationData(call: call, result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -43,15 +93,47 @@ import HealthKit
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
+    func supportsHealthRecords() -> Bool {
+        if #available(iOS 12.0, *) {
+            return healthStore.supportsHealthRecords()
+        } else {
+            return false
+        }
+    }
+
     func requestHealthKitAccess(result: @escaping FlutterResult) {
         if #available(iOS 12.0, *) {
-            // Create the sample types if possible
+            // Create the sample types
+            // Failures are only really possible if forIdentifier is given an invalid identifier, which is only really possible when created via deserialization (as they're ultimately just strings)
             var types = Set<HKObjectType>()
-            for type in AppDelegate.supportedTypes {
+            for type in AppDelegate.supportedClinicalTypes {
                 if let clinicalType = HKObjectType.clinicalType(forIdentifier: type) {
                     types.insert(clinicalType)
                 }
             }
+            // Add characteristic types
+            for identifier in AppDelegate.supportedCharacteristicTypes {
+                if let characteristicType = HKObjectType.characteristicType(forIdentifier: identifier) {
+                    types.insert(characteristicType)
+                }
+            }
+
+            if #available(iOS 14.3, *) {
+                // Add category types
+                for identifier in AppDelegate.supportedCategoryTypes {
+                    if let categoryType = HKObjectType.categoryType(forIdentifier: identifier) {
+                        types.insert(categoryType)
+                    }
+                }
+            }
+
+            // Add quantity types
+            for identifier in AppDelegate.supportedQuantityTypes {
+                if let quantityType = HKObjectType.quantityType(forIdentifier: identifier) {
+                    types.insert(quantityType)
+                }
+            }
+
             healthStore.requestAuthorization(toShare: nil, read: types, completion: { success, error in
                 // The result happens in a background thread, but we want to invoke Flutter only from the main thread, so:
                 DispatchQueue.main.async {
@@ -68,10 +150,11 @@ import HealthKit
     }
 
     func supportedClinicalTypes(result: FlutterResult) {
+        // Wait, doesn't this collide with "supportedClinicalTypes"? Nope! This is "supportedClinicalTypes:result:", of course. Swift being based on Objective-C is fun.
         // For this, just create a list of strings
         if #available(iOS 12.0, *) {
             print("Building supported clinical types")
-            result(AppDelegate.supportedTypes.map { $0.rawValue })
+            result(AppDelegate.supportedClinicalTypes.map { $0.rawValue })
         } else {
             result([])
         }
@@ -102,6 +185,152 @@ import HealthKit
                     let jsonData = createResponse(fromClinicalRecord: sample)
                     if let json = jsonData {
                         records.append(json)
+                    }
+                }
+                result(records)
+            }
+            healthStore.execute(query)
+        } else {
+            result(healthKitNotSupported())
+        }
+    }
+
+    func getPatientCharacteristicData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if #available(iOS 12.0, *) {
+            let birthdayComponents = getDateOfBirthComponents()
+            let biologicalSex = getBiologicalSex()
+            result([
+                "gender": getGenderCodeString(fromBiologicalSex: biologicalSex),
+                "dateOfBirth": FHIRUtils.createFHIRDate(fromDateComponents: birthdayComponents)
+            ])
+        } else {
+            result(healthKitNotSupported())
+        }
+    }
+
+    @available(iOS 12.0, *)
+    func getDateOfBirthComponents() -> DateComponents? {
+        do {
+            return try healthStore.dateOfBirthComponents()
+        } catch {
+            // It's unclear what errors can be raised. Presumably the error would indicate if the user denied permission, but in any case, return nil, as if was simply not specified.
+            return nil
+        }
+    }
+
+    @available(iOS 12.0, *)
+    func getBiologicalSex() -> HKBiologicalSexObject? {
+        do {
+            return try healthStore.biologicalSex()
+        } catch {
+            // It's unclear what errors can be raised. Presumably the error would indicate if the user denied permission, but in any case, return nil, as if was simply not specified.
+            return nil
+        }
+    }
+
+    func supportedCategoryTypes(result: FlutterResult) {
+        if #available(iOS 14.3, *) {
+            print("Building supported category types")
+            result(AppDelegate.supportedCategoryTypes.map { $0.rawValue })
+        } else {
+            result([])
+        }
+    }
+
+    func supportedCorrelationTypes(result: FlutterResult) {
+        if #available(iOS 12.0, *) {
+            print("Building supported correlation types")
+            result(AppDelegate.supportedCorrelationTypes.map { $0.rawValue })
+        } else {
+            result([])
+        }
+    }
+
+    func queryCategoryData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if #available(iOS 14.3, *) {
+            // Create the query. For this method we expect an argument that's a string
+            guard let typeString = call.arguments as? String else {
+                result(FlutterError(code: "MissingArgumentsError", message: "Missing required argument type", details: nil))
+                return
+            }
+
+            let typeIdentifier = HKCategoryTypeIdentifier(rawValue: typeString)
+            // ...we try and create an HKObjectType from it
+            guard let type = HKObjectType.categoryType(forIdentifier: typeIdentifier) else {
+                result(FlutterError(code: "HealthKitError", message: "Unsupported type", details: typeString))
+                return
+            }
+
+            let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+            let query = HKSampleQuery(sampleType: type, predicate: nil, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { query, samples, error in
+                guard let actualSamples = samples else {
+                    result(FlutterError(code: "HealthKitError", message: error?.localizedDescription ?? "No error given", details: error))
+                    return
+                }
+
+                var records: [[String: String?]] = []
+                for sample in actualSamples {
+                    let response = self.converters.createCategoryValueResponse(fromCategory: sample)
+                    if let record = response {
+                        records.append(record)
+                    }
+                }
+                result(records)
+            }
+            healthStore.execute(query)
+        } else {
+            result(healthKitNotSupported())
+        }
+    }
+
+    func queryCorrelationData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if #available(iOS 12.0, *) {
+            // Create the query. For this method we expect an argument that's a string
+            guard let typeString = call.arguments as? String else {
+                result(FlutterError(code: "MissingArgumentsError", message: "Missing required argument type", details: nil))
+                return
+            }
+
+            let typeIdentifier = HKCorrelationTypeIdentifier(rawValue: typeString)
+            // ...we try and create an HKObjectType from it
+            guard let type = HKObjectType.correlationType(forIdentifier: typeIdentifier) else {
+                result(FlutterError(code: "HealthKitError", message: "Unsupported type", details: typeString))
+                return
+            }
+
+            let calendar = NSCalendar.current
+            let now = Date()
+            let components = calendar.dateComponents([.year, .month, .day], from: now)
+
+            guard let calendarCurrent = calendar.date(from: components) else {
+                result(FlutterError(code: "HealthKitError", message: "Unable to create the current data calendar", details: "Error creating current data calendar for HKStatistic Query"))
+                return
+            }
+
+            guard let endDate = calendar.date(byAdding: .day, value: 1, to: calendarCurrent) else {
+                result(FlutterError(code: "HealthKitError", message: "Unable to create the end date", details: "Error creating start date for HKStatistic Query"))
+                return
+            }
+
+            guard let startDate = calendar.date(byAdding: .month, value: -6, to: calendarCurrent) else {
+                result(FlutterError(code: "HealthKitError", message: "Unable to create the start date", details: "Error creating start date for HKStatistic Query"))
+                return
+            }
+
+            let queryTime = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
+            let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+
+            let query = HKSampleQuery(sampleType: type, predicate: queryTime, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { query, samples, error in
+                guard let actualSamples = samples else {
+                    result(FlutterError(code: "HealthKitError", message: error?.localizedDescription ?? "No error given", details: error))
+                    return
+                }
+
+                var records: [[String: String?]] = []
+                for sample in actualSamples {
+                    let response = self.converters.createCorrelationValueResponse(fromCorrelation: sample)
+                    if let record = response {
+                        records.append(record)
                     }
                 }
                 result(records)
@@ -154,4 +383,16 @@ func extractJSON(fromClinicalRecord record: HKClinicalRecord) -> String? {
     // This call is an optional constructor: if it fails, it returns nil.
     // Fortunately if it fails, it should return nil.
     return String(data: fhirResource.data, encoding: .utf8)
+}
+
+@available(iOS 12.0, *)
+func getGenderCodeString(fromBiologicalSex biologicalSex: HKBiologicalSexObject?) -> String {
+    guard let biologicalSexEnum = biologicalSex?.biologicalSex else { return "" }
+    switch (biologicalSexEnum) {
+        case HKBiologicalSex.notSet: return ""
+        case HKBiologicalSex.female: return "female"
+        case HKBiologicalSex.male: return "male"
+        case HKBiologicalSex.other: return "other"
+        default: return ""
+    }
 }

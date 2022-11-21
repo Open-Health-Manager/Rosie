@@ -31,7 +31,7 @@
       "size" : "29x29"
     },
     {
-      "filename" : "Rosie-ios-icon-40x40@2x-1.png",
+      "filename" : "Rosie-ios-icon-40x40@2x.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "40x40"
@@ -61,19 +61,19 @@
       "size" : "20x20"
     },
     {
-      "filename" : "Rosie-ios-icon-20x20@2x-1.png",
+      "filename" : "Rosie-ios-icon-20x20@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "20x20"
     },
     {
-      "filename" : "Rosie-ios-icon-29x29-1.png",
+      "filename" : "Rosie-ios-icon-29x29.png",
       "idiom" : "ipad",
       "scale" : "1x",
       "size" : "29x29"
     },
     {
-      "filename" : "Rosie-ios-icon-29x29@2x-1.png",
+      "filename" : "Rosie-ios-icon-29x29@2x.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "29x29"

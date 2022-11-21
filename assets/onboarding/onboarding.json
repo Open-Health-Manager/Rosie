@@ -1,0 +1,48 @@
+{
+  "pages": [
+    {
+      "text": "Get control of your health. Follow me and learn how!",
+      "nextLabel": "Learn More"
+    },
+    {
+      "text": "Your data can come from anywhere... from you, the doctor\u2019s office, or a device like your phone. We put it all in the same place."
+    },
+    {
+      "text": "Now you can finally have one place to see your entire health picture."
+    },
+    {
+      "text": "Mistakes Happen. This is why you can correct (with some exceptions) and annotate your data."
+    },
+    {
+      "text": "You can share your data with anyone. We always need your permission before sharing your data."
+    },
+    {
+      "text": "You can share your data with recommendation services to access suggestions for a healthier lifestyle."
+    },
+    {
+      "text": "You can share data automatically during an emergency. First responders would be able to see critical health information about you."
+    },
+    {
+      "text": "You can review who has access to your data."
+    },
+    {
+      "text": "You can stop sharing your data at any time."
+    },
+    {
+      "text": "However, those you have shared with may keep a copy of your data. But, they cannot get any new data after you stop sharing."
+    },
+    {
+      "text": "You can delete your data. We won\u2019t keep a copy. However, we can\u2019t make people delete the data you already shared with them."
+    },
+    {
+      "text": "You can transfer your data. We won\u2019t keep a copy."
+    },
+    {
+      "text": "We\u2019re responsible for keeping your data safe. You can hold us accountable if there is a data breach from Open Health Manager."
+    }
+  ],
+  "dataUseAgreement": {
+    "source": "https://open-health-manager.github.io/patient-data-use-agreement/v2020-03-21/patient-data-use-agreement",
+    "version": "v2020-03-21"
+  }
+}

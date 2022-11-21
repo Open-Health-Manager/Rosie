@@ -33,24 +33,28 @@ extension ToSnomed on SmokingStatus {
     switch (this) {
       case SmokingStatus.unknown:
         return Coding(
-            system: FhirUri(Systems.sct),
-            code: Code('266927001'),
-            display: "Tobacco smoking consumption unknown (finding)");
+          system: FhirUri(Systems.sct),
+          code: Code('266927001'),
+          display: "Tobacco smoking consumption unknown (finding)",
+        );
       case SmokingStatus.neverSmoked:
         return Coding(
-            system: FhirUri(Systems.sct),
-            code: Code('266919005'),
-            display: "Never smoked tobacco (finding)");
+          system: FhirUri(Systems.sct),
+          code: Code('266919005'),
+          display: "Never smoked tobacco (finding)",
+        );
       case SmokingStatus.formerSmoker:
         return Coding(
-            system: FhirUri(Systems.sct),
-            code: Code('8517006'),
-            display: "Ex-smoker (finding)");
+          system: FhirUri(Systems.sct),
+          code: Code('8517006'),
+          display: "Ex-smoker (finding)",
+        );
       case SmokingStatus.currentSmoker:
         return Coding(
-            system: FhirUri(Systems.sct),
-            code: Code('77176002'),
-            display: "Smoker (finding)");
+          system: FhirUri(Systems.sct),
+          code: Code('77176002'),
+          display: "Smoker (finding)",
+        );
     }
   }
 }
@@ -109,28 +113,37 @@ class SmokingStatusObservation {
     final effectiveDateTime = DateTime.now();
 
     return Observation(
-        code: CodeableConcept(coding: <Coding>[
+      code: CodeableConcept(
+        coding: <Coding>[
           Coding(
-              system: FhirUri(Systems.loinc),
-              code: Code('72166-2'),
-              display: "Tobacco smoking status")
-        ]),
-        effectiveDateTime: (effectiveDateTime == null)
-            ? null
-            : FhirDateTime.fromDateTime(effectiveDateTime),
-        valueCodeableConcept:
-            CodeableConcept(coding: <Coding>[smokingStatus.toSnomedCoding()]),
-        subject: subject,
-        status: ObservationStatus.final_,
-        category: [
-          CodeableConcept(coding: <Coding>[
+            system: FhirUri(Systems.loinc),
+            code: Code('72166-2'),
+            display: "Tobacco smoking status",
+          ),
+        ],
+      ),
+      effectiveDateTime: FhirDateTime.fromDateTime(effectiveDateTime),
+      valueCodeableConcept:
+          CodeableConcept(coding: <Coding>[smokingStatus.toSnomedCoding()]),
+      subject: subject,
+      status: ObservationStatus.final_,
+      category: [
+        CodeableConcept(
+          coding: <Coding>[
             Coding(
                 system: FhirUri(
                     "http://terminology.hl7.org/CodeSystem/observation-category"),
                 code: Code('social-history'),
-                display: "Social History")
-          ])
-        ]);
+                display: "Social History"),
+          ],
+        ),
+      ],
+    );
+  }
+
+  @override
+  String toString() {
+    return "SmokingStatus($smokingStatus)";
   }
 }
 

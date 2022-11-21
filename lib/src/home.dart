@@ -16,12 +16,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'account_settings/account_settings.dart';
 import 'care_plan/care_plan_home.dart';
 import 'get_started/get_started.dart';
-import 'open_health_manager/open_health_manager.dart';
 import 'app_config.dart';
-import 'rosie_theme.dart';
+import 'app_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -38,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = context.read<OpenHealthManager>().authData?.dataConnected == true ? 1 : 2;
+    _selectedIndex = context.read<AppState>().initialLogin ? 1 : 0;
     // Grab the API key if possible
     _uspstfApiKey = context.read<AppConfig>().getString("uspstfApi.key");
   }
@@ -51,57 +52,60 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _addRosieBackground(Widget child) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-        child: Container(
-          decoration: createRosieScreenBoxDecoration(),
-          child: child
-        ),
-        value: SystemUiOverlayStyle.dark
-      );
+      value: SystemUiOverlayStyle.dark,
+      child: child
+    );
   }
 
   Widget _buildSelectedPage() {
     switch (_selectedIndex) {
+      case 0:
+        return _addRosieBackground(
+          Center(
+            child: _uspstfApiKey == null
+                ? const Text("Not configured (API key missing)")
+                : CarePlanHome(apiKey: _uspstfApiKey!),
+          ),
+        );
       case 1:
-        return _addRosieBackground(Center(
-          child: _uspstfApiKey == null ?
-            const Text("Not configured (API key missing)") :
-            CarePlanHome(apiKey: _uspstfApiKey!)
-          ));
-      case 2:
         return _addRosieBackground(const Center(child: GetStarted()));
+      case 3:
+        return _addRosieBackground(const AccountSettingsScreen());
       default:
-        return _addRosieBackground(const Center(child: Text("Not Implemented")));
+        return _addRosieBackground(
+            const Center(child: Text("Not Implemented")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return Scaffold(
       body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
         child: _buildSelectedPage(),
-        value: SystemUiOverlayStyle.dark
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.download),
-            label: 'Data Manager',
+            icon: const Icon(Icons.home),
+            label: localizations.tabCarePlan,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.mail),
-            label: 'Care Plan'
+            icon: const Icon(Icons.folder),
+            label: localizations.tabRecords,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.arrow_upward),
-            label: 'Home'
+            icon: const Icon(Icons.people),
+            label: localizations.tabPrivacy,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.share),
-            label: 'Community'
-          )
+            icon: const Icon(Icons.account_circle_outlined),
+            label: localizations.tabHelp,
+          ),
         ],
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped
+        onTap: _onItemTapped,
       ),
     );
   }

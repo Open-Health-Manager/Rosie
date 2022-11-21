@@ -13,74 +13,14 @@
 // limitations under the License.
 
 import 'dart:io';
-import 'dart:convert';
-import 'dart:developer';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:fhir/r4.dart';
 import 'package:flutter/services.dart';
+import 'health_kit_resource.dart';
+import '../../open_health_manager/open_health_manager.dart';
 
-enum FhirVersion {
-  dstu2,
-  r4,
-  unknown
-}
-
-FhirVersion parseFhirVersion(String version) {
-  if (version == "dstu2") {
-    return FhirVersion.dstu2;
-  } else if (version == "r4") {
-    return FhirVersion.r4;
-  }
-  return FhirVersion.unknown;
-}
-
-/// Represents a resource from HealthKit
-class HealthKitResource {
-  const HealthKitResource({required this.resource, required this.fhirVersion, this.sourceUrl});
-
-  final FhirVersion fhirVersion;
-  final Uri? sourceUrl;
-  final Map<String, dynamic> resource;
-
-  static HealthKitResource? fromJson(Map<String, dynamic> jsonObject) {
-    // Basically make sure the data is there and correct
-    var version = FhirVersion.unknown;
-    var versionJson = jsonObject['fhirVersion'];
-    if (versionJson is String) {
-      version = parseFhirVersion(versionJson);
-    }
-    var sourceUrlJson = jsonObject['sourceUrl'];
-    Uri? sourceUrl;
-    if (sourceUrlJson is String) {
-      try {
-        sourceUrl = Uri.parse(sourceUrlJson);
-      } on FormatException catch(error, stackTrace) {
-        // Log but otherwise ignore
-        log("Unparseable URL", level: 800, error: error, stackTrace: stackTrace);
-      }
-    }
-    var resourceJson = jsonObject["resource"];
-    // Resource will be a string that needs to be parsed as JSON
-    if (resourceJson is String) {
-      try {
-        final resource = json.decode(resourceJson);
-        if (resource is Map<String, dynamic>) {
-          return HealthKitResource(fhirVersion: version, sourceUrl: sourceUrl, resource: resource);;
-        } else {
-          // Log this but otherwise ignore it
-          log('Invalid object from FHIR record: expected JSON object, got ${resource.runtimeType}', level: 800);
-          return null;
-        }
-      } on FormatException catch (error, stackTrace) {
-        // Log the error but otherwise ignore it
-        log('Error parsing FHIR record', level: 800, error: error, stackTrace: stackTrace);
-        return null;
-      }
-    } else if (resourceJson is Map<String, dynamic>) {
-      return HealthKitResource(fhirVersion: version, sourceUrl: sourceUrl, resource: resourceJson);
-    }
-    return null;
-  }
-}
+export 'health_kit_resource.dart';
 
 /// HealthKit interface: provides methods for accessing HealthKit data.
 class HealthKit {
@@ -94,7 +34,7 @@ class HealthKit {
   /// all other function calls will return null!
   static Future<bool> isHealthDataAvailable() async {
     // Only possibly available on iOS
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       final available = await platform.invokeMethod("isHealthDataAvailable");
       return available as bool;
     } else {
@@ -102,8 +42,9 @@ class HealthKit {
     }
   }
 
+  /// Determines if health records are supported on this device.
   static Future<bool> supportsHealthRecords() async {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       final available = await platform.invokeMethod("supportsHealthRecords");
       return available as bool;
     } else {
@@ -119,33 +60,154 @@ class HealthKit {
   }
 
   static Future<List<String>> supportedClinicalTypes() async {
-    final supported = await platform.invokeListMethod<String>("supportedClinicalTypes");
+    final supported =
+        await platform.invokeListMethod<String>("supportedClinicalTypes");
+    return supported ?? <String>[];
+  }
+
+  static Future<List<String>> supportedCategoryTypes() async {
+    final supported =
+        await platform.invokeListMethod<String>("supportedCategoryTypes");
+    return supported ?? <String>[];
+  }
+
+  static Future<List<String>> supportedCorrelationTypes() async {
+    final supported =
+        await platform.invokeListMethod<String>("supportedCorrelationTypes");
     return supported ?? <String>[];
   }
 
   /// Starts a query on the given set of clinical records. This method is truly asynchronous: it is also asynchronous
   /// on the HealthKit side.
-  static Future<List<HealthKitResource>> queryClinicalRecords(String type) async {
-    final results = await platform.invokeListMethod<Map<dynamic, dynamic>>("queryClinicalRecords", type);
+  static Future<List<HealthKitResource>> queryClinicalRecords(
+      String type) async {
+    final results = await platform.invokeListMethod<Map<dynamic, dynamic>>(
+        "queryClinicalRecords", type);
     if (results == null) {
       // Just return an empty list
       return <HealthKitResource>[];
     }
-    return results.map<HealthKitResource?>(
-      (e) => HealthKitResource.fromJson(Map<String, dynamic>.from(e))
-    ).whereType<HealthKitResource>().toList(growable: false);
+    return results
+        .map<HealthKitResource?>(
+            (e) => HealthKitResource.fromJson(Map<String, dynamic>.from(e)))
+        .whereType<HealthKitResource>()
+        .toList(growable: false);
+  }
+
+  static Future<HealthKitResource?> getPatientCharacteristicData(
+      Patient currentPatient) async {
+    final results =
+        await platform.invokeMapMethod("getPatientCharacteristicData");
+    if (results == null) {
+      // if no data, return nothing
+      return null;
+    }
+    return HealthKitResource(
+        fhirVersion: FhirVersion.r4,
+        sourceUrl: Uri.parse("urn:apple:health-kit"),
+        resource: getHealthKitPatientFHIRJSON(
+            Map<String, dynamic>.from(results), currentPatient));
   }
 
   /// Attempts to query all known supported types.
-  static Future<List<HealthKitResource>> queryAllClinicalRecords() async {
+  static Future<List<HealthKitResource>> queryAllClinicalRecords(
+      OpenHealthManager healthManager) async {
     final supportedTypes = await supportedClinicalTypes();
     // With the list of types, create futures for each supported type
     final results = await Future.wait(
       supportedTypes.map<Future<List<HealthKitResource>>>(
-        (String type) => queryClinicalRecords(type)
-      )
+        (String type) => queryClinicalRecords(type),
+      ),
     );
+    // need current patient to update it with new data from HealthKit
+    final currentPatient = await healthManager.queryPatient();
+    final patientData = await getPatientCharacteristicData(currentPatient);
+    // category types
+    final supportedCatTypes = await supportedCategoryTypes();
+    // With the list of types, create futures for each supported type
+    final categoryResults = await Future.wait(
+      supportedCatTypes.map<Future<List<HealthKitResource>>>(
+        (String type) => queryCategoryData(type),
+      ),
+    );
+
+    // correlation types
+    final supportedCorTypes = await supportedCorrelationTypes();
+    // With the list of types, create futures for each supported type
+    final correlationResults = await Future.wait(
+      supportedCorTypes.map<Future<List<HealthKitResource>>>(
+        (String type) => queryCorrelationData(type),
+      ),
+    );
+
     // Results is a list of lists, so flatten it
-    return results.expand((e) => e).toList();
+    final resourceList = results.expand((e) => e).toList();
+    if (patientData != null) {
+      resourceList.add(patientData);
+    }
+    final categoryList = categoryResults.expand((e) => e).toList();
+    resourceList.addAll(categoryList);
+
+    final correlationList = correlationResults.expand((e) => e).toList();
+    resourceList.addAll(correlationList);
+
+    return resourceList;
+  }
+
+  // Updates the current FHIR patient record with Health Kit
+  // data and returns the JSON representation
+  static Map<String, dynamic> getHealthKitPatientFHIRJSON(
+      Map<String, dynamic> healthKitCharacteristics, Patient currentPatient) {
+    final patientJSON = currentPatient.toJson();
+
+    // clean up JSON metadata and text
+    patientJSON.remove("meta");
+    patientJSON.remove("text");
+
+    // update gender and birthdate if information provided
+    // otherwise, leave existing data
+    if (healthKitCharacteristics["gender"] != "") {
+      patientJSON["gender"] = healthKitCharacteristics["gender"];
+    }
+    if (healthKitCharacteristics["dateOfBirth"] != "") {
+      patientJSON["birthDate"] = healthKitCharacteristics["dateOfBirth"];
+    }
+
+    return patientJSON;
+  }
+
+  static Future<List<HealthKitResource>> queryCategoryData(String type) async {
+    final results = await platform.invokeListMethod<Map<dynamic, dynamic>>(
+        "queryCategoryData", type);
+    if (results == null) {
+      // Just return an empty list
+      return <HealthKitResource>[];
+    }
+
+    return results
+        .map<HealthKitResource?>((e) => HealthKitResource.fromNonFhirR4(
+            Map<String, dynamic>.from(e),
+            "urn:apple:health-kit",
+            FhirVersion.unknown))
+        .whereType<HealthKitResource>()
+        .toList(growable: false);
+  }
+
+  static Future<List<HealthKitResource>> queryCorrelationData(
+      String type) async {
+    final results = await platform.invokeListMethod<Map<dynamic, dynamic>>(
+        "queryCorrelationData", type);
+    if (results == null) {
+      // Just return an empty list
+      return <HealthKitResource>[];
+    }
+
+    return results
+        .map<HealthKitResource?>((e) => HealthKitResource.fromNonFhirR4(
+            Map<String, dynamic>.from(e),
+            "urn:apple:health-kit",
+            FhirVersion.unknown))
+        .whereType<HealthKitResource>()
+        .toList(growable: false);
   }
 }

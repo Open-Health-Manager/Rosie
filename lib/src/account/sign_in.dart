@@ -15,9 +15,13 @@
 // This provides the sign in process
 
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'account_screen.dart';
+import 'reset_password.dart';
 import '../open_health_manager/open_health_manager.dart';
+import '../debug_details.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
@@ -27,51 +31,161 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-  String? email;
-  String? password;
+  String? _email;
+  String? _password;
+
+  // Creates the buttons on the bottom of the page.
+  Widget _createButtonBar(BuildContext context) {
+    // Go back button is always the same
+    final goBack = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFFEF2F5),
+        foregroundColor: const Color(0xFF1F201D),
+      ),
+      child: Text(AppLocalizations.of(context)!.back),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    return Align(alignment: AlignmentDirectional.center, child: goBack);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AccountScreen(
-      title: "Sign In",
-      fields: [
-        TextFormField(
-          autocorrect: false,
-          decoration: const InputDecoration(hintText: "Email", prefixIcon: Icon(Icons.email)),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Email is required";
-            }
-            return null;
-          },
-          onChanged: (value) {
-            email = value;
-          },
-          autofillHints: const [AutofillHints.email],
-        ),
-        TextFormField(
-          autocorrect: false,
-          decoration: const InputDecoration(hintText: "Password", prefixIcon: Icon(Icons.lock)),
-          obscureText: true,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Password cannot be blank";
-            }
-            return null;
-          },
-          onChanged: (value) {
-            password = value;
-          }
-        ),
-      ],
-      submitLabel: "Sign In",
+    final localizations = AppLocalizations.of(context);
+    return AccountScreenForm(
+      title: localizations!.signInTitle,
+      formBuilder: (BuildContext context) {
+        return AutofillGroup(
+          child: Column(
+            children: [
+              TextFormField(
+                autocorrect: false,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: localizations.emailAddressHint,
+                  prefixIcon: const Icon(Icons.email),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return localizations.emailRequired;
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  _email = value;
+                },
+                autofillHints: const [AutofillHints.email],
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 15.0),
+              TextFormField(
+                autocorrect: false,
+                decoration: InputDecoration(
+                  hintText: localizations.passwordHint,
+                  prefixIcon: const Icon(Icons.lock),
+                ),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return localizations.passwordRequired;
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  _password = value;
+                },
+                onEditingComplete: () {
+                  Actions.invoke(context, const SubmitIntent());
+                },
+                autofillHints: const [AutofillHints.password],
+                textInputAction: TextInputAction.done,
+              ),
+            ],
+          ),
+        );
+      },
+      submitLabel: localizations.signInButton,
       onSubmit: () async {
+        final email = _email, password = _password;
         if (email != null && password != null) {
-          final auth = await context.read<OpenHealthManager>().signIn(email!, password!);
-          return auth == null ? "Login failed (check your username and password)" : null;
+          if (email.isEmpty || password.isEmpty) {
+            return localizations.emailPasswordRequired;
+          } else if (!isValidEmail(email)) {
+            return localizations.invalidEmailFormat;
+          }
+          final auth =
+              await context.read<OpenHealthManager>().signIn(email, password);
+          return auth == null ? localizations.loginFailed : null;
         } else {
-          return "Username and password are required";
+          return localizations.emailPasswordRequired;
         }
+      },
+      afterFormBuilder: (BuildContext context) {
+        // A link to retrieve the password
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            _createButtonBar(context),
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: ""),
+                  TextSpan(
+                    text: localizations.retrieveAccountPassword,
+                    style: const TextStyle(
+                      color: Color(0xFF4C4D4A),
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.push<void>(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (context) => const ResetPassword(),
+                          ),
+                        );
+                      },
+                  ),
+                ],
+              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: localizations.needAccount),
+                  TextSpan(
+                    text: localizations.needAccountLink,
+                    style: const TextStyle(
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.pushNamed(context, "signUp");
+                      },
+                  ),
+                  const TextSpan(
+                    text: ".",
+                  )
+                ],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DebugDetailsScreen(),
+                  ),
+                );
+              },
+              child: const Text('Show debug information'),
+            ),
+          ],
+        );
       },
     );
   }

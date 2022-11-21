@@ -24,7 +24,9 @@ import '../../rosie_theme.dart';
 import 'blood_pressure_help.dart';
 
 class BloodPressureEntry extends StatefulWidget {
-  const BloodPressureEntry({Key? key, required this.initialSystolic, required this.initialDiastolic}) : super(key: key);
+  const BloodPressureEntry(
+      {Key? key, required this.initialSystolic, required this.initialDiastolic})
+      : super(key: key);
 
   final double? initialSystolic;
   final double? initialDiastolic;
@@ -42,7 +44,8 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
   initState() {
     super.initState();
     _systolicController.text = widget.initialSystolic?.toStringAsFixed(0) ?? "";
-    _diastolicController.text = widget.initialDiastolic?.toStringAsFixed(0) ?? "";
+    _diastolicController.text =
+        widget.initialDiastolic?.toStringAsFixed(0) ?? "";
   }
 
   Widget _createTextField(String label, TextEditingController controller) {
@@ -50,9 +53,7 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
       controller: controller,
       decoration: InputDecoration(labelText: label),
       keyboardType: TextInputType.number,
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly
-      ],
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
     );
   }
 
@@ -64,18 +65,26 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            SizedBox(child: _createTextField("Systolic", _systolicController), width: 88),
+            SizedBox(
+              width: 88,
+              child: _createTextField("Systolic", _systolicController),
+            ),
             const Text("/", style: TextStyle(fontSize: 48)),
-            SizedBox(child: _createTextField("Diastolic", _diastolicController), width: 85)
-          ]
+            SizedBox(
+              width: 85,
+              child: _createTextField("Diastolic", _diastolicController),
+            ),
+          ],
         ),
         InkWell(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
-              Text("on ${DateFormat.yMd().format(_entryDate)}",
-              style: RosieTheme.comicFont(color: RosieTheme.accent)),
-              const Icon(Icons.edit_outlined, size: 14)
+              Text(
+                "on ${DateFormat.yMd().format(_entryDate)}",
+                style: Theme.of(context).extension<RosieThemeExtension>()!.comicTextStyle,
+              ),
+              const Icon(Icons.edit_outlined, size: 14),
             ],
           ),
           onTap: () async {
@@ -83,23 +92,24 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
               context: context,
               initialDate: _entryDate,
               firstDate: DateTime(1970),
-              lastDate: DateTime.now()
+              lastDate: DateTime.now(),
             );
             if (pickedDate != null) {
               setState(() {
                 _entryDate = pickedDate;
               });
             }
-          }
-        )
-    ]);
+          },
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Text("Enter your blood pressure", style: RosieTheme.font(fontSize: 20)),
+        Text("Enter your blood pressure", style: Theme.of(context).textTheme.titleLarge),
         _createEntryFields(context),
         ButtonBar(
           children: <Widget>[
@@ -110,15 +120,16 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
                   context: context,
                   builder: (context) {
                     return const RosieDialog(
-                      expression: RosieExpression.surprised,
+                      //expression: RosieExpression.surprised,
+                      expression: RosieExpression.neutral,
                       children: [
                         // For right now, this is never an "emergency" when
                         // showing the help, that's only ever accessed via the
                         // main page
                         BloodPressureHelp(emergency: false)
-                      ]
+                      ],
                     );
-                  }
+                  },
                 );
               },
             ),
@@ -130,29 +141,32 @@ class _BloodPressureEntryState extends State<BloodPressureEntry> {
                 final obs = BloodPressureObservation(
                   double.tryParse(_systolicController.text) ?? 0,
                   double.tryParse(_diastolicController.text) ?? 0,
-                  _entryDate
+                  _entryDate,
                 );
                 final patientData = context.read<PatientData>();
                 // Push on a dialog state, not awaiting the future
-                Navigator.of(context).push(DialogRoute(context: context,
+                Navigator.of(context).push(DialogRoute(
+                  context: context,
                   builder: (BuildContext context) {
-                    return const RosieDialog(title: "Updating Health Record...",
+                    return const RosieDialog(
+                      title: "Updating Health Record...",
                       children: <Widget>[
                         CircularProgressIndicator(),
-                      ]
+                      ],
                     );
-                  })
-                );
+                  },
+                ));
                 await patientData.addBloodPressureObservation(obs);
+                if (!mounted) return;
                 // Pop off our loading modal
                 Navigator.of(context).pop();
                 // And the observation we just created
                 Navigator.of(context).pop(obs);
-              }
-            )
-          ]
-        )
-      ]
+              },
+            ),
+          ],
+        ),
+      ],
     );
   }
 
