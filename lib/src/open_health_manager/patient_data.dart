@@ -129,7 +129,7 @@ class PatientData extends ChangeNotifier {
     return await healthManager.querySmokingStatus();
   });
   late final pregnancyStatus =
-      CachedData<List<PregnancyStatusCondition>>(() async {
+      CachedData<List<PregnancyStatusObservation>>(() async {
     return await healthManager.queryPregnancyStatus();
   });
   late final account = CachedData<Account>(() async {

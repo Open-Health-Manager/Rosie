@@ -13,40 +13,55 @@
 // limitations under the License.
 
 import 'dart:developer';
-import 'package:fhir/r4/resource_types/clinical/summary/summary.dart';
+import 'package:fhir/r4.dart'
+    show
+        Code,
+        CodeableConcept,
+        Coding,
+        FhirDateTime,
+        FhirUri,
+        Observation,
+        ObservationStatus,
+        Reference;
 import 'open_health_manager.dart';
+import 'util.dart';
 
 /// A condition of a Pregnancy Status.
-class PregnancyStatusCondition {
+class PregnancyStatusObservation {
   final bool pregnancyStatus;
 
-  const PregnancyStatusCondition(this.pregnancyStatus);
+  const PregnancyStatusObservation(this.pregnancyStatus);
 
   /// Attempts to parse a Pregnancy Status condition from a given FHIR condition.
   ///
   /// The coding in the condition itself is **ignored**. This will assume it's a valid coding, and will look for the
   /// pregnancy status value
-  factory PregnancyStatusCondition.fromCondition(Condition condition) {
-    final conditionCodes = condition.code?.coding;
-    if (conditionCodes == null || conditionCodes.isEmpty) {
+  factory PregnancyStatusObservation.fromObservation(Observation observation) {
+    final observationCodes = observation.valueCodeableConcept?.coding;
+    if (observationCodes == null || observationCodes.isEmpty) {
       throw const InvalidResourceException(
-          "No conditionCodes in pregnancy status condition.");
+          "No observationCodes in pregnancy status observation.");
     }
     bool pregnancyStatus = false;
 
-    var period = condition.onsetPeriod;
-    var startDate = period?.start?.valueDateTime;
-    var endDate = period?.end?.valueDateTime;
+    var dateTime = observation.effectiveDateTime?.valueDateTime;
 
     final now = DateTime.now();
 
-    if (startDate != null) {
-      for (final conditionCode in conditionCodes) {
-        final theCode = conditionCode.code?.value;
+    if (dateTime != null) {
+      for (final observationCode in observationCodes) {
+        final theCode = observationCode.code?.value;
 
         if (theCode == "77386006") {
-          if (now.isAfter(startDate) &&
-              (endDate == null || now.isBefore(endDate))) {
+          // Pregnant Status Code
+          if (now.isAfter(dateTime)) {
+            pregnancyStatus = true;
+          } else {
+            pregnancyStatus = false;
+          }
+        } else if (theCode == "60001007") {
+          // Not Pregnant Status Code
+          if (now.isBefore(dateTime)) {
             pregnancyStatus = true;
           } else {
             pregnancyStatus = false;
@@ -54,37 +69,41 @@ class PregnancyStatusCondition {
         }
       }
     }
-
-    return PregnancyStatusCondition(pregnancyStatus);
+    return PregnancyStatusObservation(pregnancyStatus);
   }
 }
 
 extension PregnancyStatusQuerying on OpenHealthManager {
-  /// Loads a list of Pregnancy conditions.
+  /// Loads a list of Pregnancy observations.
   ///
   /// Any exceptions during loading are thrown, and any exceptions during parsing are logged to the FINE (500) log level
   /// but otherwise eaten and simply left out of the result.
-  Future<List<PregnancyStatusCondition>> queryPregnancyStatus() async {
-    // return most recent ones first
-    final bundle = await queryResource("Condition",
-        {"code": "http://snomed.info/sct|77386006", "_sort": "-onset-date"});
-    final results = <PregnancyStatusCondition>[];
-    final entries = bundle.entry;
+  Future<List<PregnancyStatusObservation>> queryPregnancyStatus() async {
+    // returns most recent Observations first
+    final bundle = await queryResource(
+        "Observation", {"code": "http://loinc.org|82810-3", "_sort": "-date"});
+    final results = <PregnancyStatusObservation>[];
+    var entries = bundle.entry;
     if (entries == null) {
       return results;
     }
-    for (final entry in entries) {
-      final resource = entry.resource;
-      if (resource != null && resource is Condition) {
-        try {
-          // add to front so that most recent entries are last in the list
-          results.insert(0, PregnancyStatusCondition.fromCondition(resource));
-        } on InvalidResourceException catch (error) {
-          log('Unable to parse Condition for a Pregnancy Status',
-              level: 500, error: error);
-        }
+
+    // Get latest entry - first Observation
+    var finalEntry = entries.first;
+
+    final resource = finalEntry.resource;
+    if (resource != null && resource is Observation) {
+      try {
+        var pregnancyStatusObservation =
+            PregnancyStatusObservation.fromObservation(resource);
+        // add to result list
+        results.insert(0, pregnancyStatusObservation);
+      } on InvalidResourceException catch (error) {
+        log('Unable to parse Observation for a Pregnancy Status',
+            level: 500, error: error);
       }
     }
+
     return results;
   }
 }
