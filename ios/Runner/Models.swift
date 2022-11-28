@@ -14,22 +14,12 @@
 
 import Foundation
 
-// declares that class can convert to FHIR JSON
-protocol FHIRJSONSerializable {
-    func toJson() -> String
-}
-// declares that class can convert to FHIR XML
-protocol FHIRXMLSerializable {
-    func toXML() -> String
-}
-/// Consider: remove the above because structure map's may take care of them
-
 /// Abstract Class for Apple Health Kit
-class AppleHealthKitObject {
+class AppleHealthKitObject: Codable {
     var uuid: String { get; set }
     var metadata: Dictionary [String: String]? // TODO value choice type
 
-    var device: Device?; struct Device {
+    var device: Device?; struct Device: Codeable {
         var udiDeviceIdentifier: String?
         var firmwareVersion: String?
         var hardwareVersion: String?
@@ -40,7 +30,7 @@ class AppleHealthKitObject {
         var softwareVersion? String
     }
 
-    struct SourceRevision {
+    struct SourceRevision: Codeable {
         var source: Source; struct Source {
             var bundleIdentifier: String
             var name: String
@@ -48,7 +38,7 @@ class AppleHealthKitObject {
 
         var version: String?
 
-        var operatingSystemVersion: OperatingSystemVersion?; struct OperatingSystemVersion {
+        var operatingSystemVersion: OperatingSystemVersion?; struct OperatingSystemVersion: Codeable {
             var majorVersion: Int?
             var minorVersion: Int?
             var patchVersion: Int?
@@ -58,6 +48,7 @@ class AppleHealthKitObject {
     }
 }
 
+/// Abstract Class for Apple Health Kit Sample, inherits codable
 class AppleHealthKitSample: AppleHealthKitObject {
     var startDate: Date?
     var endDate: Date?
@@ -65,12 +56,16 @@ class AppleHealthKitSample: AppleHealthKitObject {
     var sampleType: String // confirmed?
 }
 
-class AppleHealthKitCategorySample: AppleHealthKitSample, FHIRJSONSerializable {
+/// CategorySample class
+class AppleHealthKitCategorySample: AppleHealthKitSample {
     var categoryType: String
     var value: Int
 
-    func toJson() -> String {
-        return "{}" // TODO
-    }
+    /* to override attribute <-> json keys if not identical:
+       enum CodingKeys: String, CodingKey {
+         case key1 = "jsonKey1"
+       }
+     */
+
 }
 
