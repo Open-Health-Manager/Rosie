@@ -62,7 +62,7 @@ class FHIRUtils {
                 if let hour = dateComponents.hour {
                     // If we have a time, we may have a timezone
                     let timezone = dateComponents.timeZone
-                    var timezoneStr = "Z";
+                    var timezoneStr = "-00:00";
                     // If timezone is set, attempt to generate a string for it
                     if let timezone = timezone, let dateObject = dateComponents.date {
                         let offset = timezone.secondsFromGMT(for: dateObject)
