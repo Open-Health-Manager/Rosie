@@ -16,6 +16,7 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'account_screen.dart';
@@ -101,6 +102,7 @@ class _SignUpState extends State<SignUp> {
   }
 
   Widget _buildForm(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return AutofillGroup(
       child: Form(
         key: _formKey,
@@ -108,54 +110,60 @@ class _SignUpState extends State<SignUp> {
           children: <Widget>[
             TextFormField(
               autofillHints: const <String>[AutofillHints.givenName],
-              decoration: const InputDecoration(
-                hintText: "First Name",
-                prefixIcon: Icon(Icons.badge),
+              decoration: InputDecoration(
+                hintText: localizations.firstNameHint,
+                prefixIcon: const Icon(Icons.badge),
               ),
               controller: _firstName,
               validator: (String? value) => value == null || value.isEmpty
-                  ? "First name cannot be blank"
+                  ? localizations.firstNameRequired
                   : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
             TextFormField(
               autofillHints: const <String>[AutofillHints.familyName],
-              decoration: const InputDecoration(
-                hintText: "Last Name",
-                prefixIcon: Icon(Icons.badge),
+              decoration: InputDecoration(
+                hintText: localizations.lastNameHint,
+                prefixIcon: const Icon(Icons.badge),
               ),
               controller: _lastName,
               validator: (String? value) => value == null || value.isEmpty
-                  ? "Last name cannot be blank"
+                  ? localizations.lastNameRequired
                   : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
             TextFormField(
               autofillHints: const <String>[AutofillHints.email],
-              decoration: const InputDecoration(
-                hintText: "Email Address",
-                prefixIcon: Icon(Icons.email),
+              decoration: InputDecoration(
+                hintText: localizations.emailAddressHint,
+                prefixIcon: const Icon(Icons.email),
               ),
               controller: _email,
               // TODO (maybe): Validate that this is at least sort of accurate
-              validator: (String? value) => value == null || value.isEmpty
-                  ? "Email cannot be blank"
-                  : null,
+              validator: (String? value) {
+                if (value == null || value.isEmpty) {
+                  return localizations.emailRequired;
+                } else if (!isValidEmail(value)) {
+                  return localizations.invalidEmailFormat;
+                } else {
+                  return null;
+                }
+              },
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 15),
             TextFormField(
               autofillHints: const <String>[AutofillHints.newPassword],
-              decoration: const InputDecoration(
-                hintText: "Password",
-                prefixIcon: Icon(Icons.lock),
+              decoration: InputDecoration(
+                hintText: localizations.passwordHint,
+                prefixIcon: const Icon(Icons.lock),
               ),
               controller: _password,
               obscureText: true,
               validator: (String? value) => value == null || value.isEmpty
-                  ? "Password cannot be blank"
+                  ? localizations.passwordRequired
                   : null,
               textInputAction: TextInputAction.next,
             ),
@@ -163,9 +171,9 @@ class _SignUpState extends State<SignUp> {
             TextFormField(
               // Apparently should also be "new password"
               autofillHints: const <String>[AutofillHints.newPassword],
-              decoration: const InputDecoration(
-                hintText: "Confirm Password",
-                prefixIcon: Icon(Icons.lock),
+              decoration: InputDecoration(
+                hintText: localizations.confirmPasswordHint,
+                prefixIcon: const Icon(Icons.lock),
               ),
               controller: _confirmPassword,
               obscureText: true,
@@ -176,7 +184,7 @@ class _SignUpState extends State<SignUp> {
                 // Otherwise, check if they match
                 return value == _password.text
                     ? null
-                    : "Passwords do not match";
+                    : localizations.confirmPasswordMismatch;
               },
               textInputAction: TextInputAction.done,
               onEditingComplete: () {
@@ -197,9 +205,9 @@ class _SignUpState extends State<SignUp> {
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      const TextSpan(text: "I agree to the "),
+                      TextSpan(text: localizations.agreeTOSBefore),
                       TextSpan(
-                        text: "terms and conditions",
+                        text: localizations.agreeTOSLink,
                         style: const TextStyle(
                           decoration: TextDecoration.underline,
                         ),
@@ -208,7 +216,7 @@ class _SignUpState extends State<SignUp> {
                             launchUrl(widget.dataUseAgreement.source);
                           },
                       ),
-                      const TextSpan(text: "."),
+                      TextSpan(text: localizations.agreeTOSAfter),
                     ],
                   ),
                 ),
@@ -216,7 +224,7 @@ class _SignUpState extends State<SignUp> {
               validator: (value) {
                 return value == true
                     ? null
-                    : "You must agree to the terms and conditions.";
+                    : localizations.errorAgreeTOS;
               },
               initialValue: _agreesToTerms,
             ),
@@ -231,12 +239,12 @@ class _SignUpState extends State<SignUp> {
                   });
                 },
                 errorText: field.errorText,
-                child: const Text("I am at least 18 years of age or older."),
+                child: Text(localizations.assertAge),
               ),
               validator: (value) {
                 return value == true
                     ? null
-                    : "You must be at least 18 years of age to use this app";
+                    : localizations.errorAssertAge;
               },
               initialValue: _assertsAge,
             ),
@@ -248,72 +256,79 @@ class _SignUpState extends State<SignUp> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return AccountScreenForm(
-        title: "Create an Account",
-        formBuilder: _buildForm,
-        submitLabel: "Confirm",
-        onSubmit: () async {
-          // currentState being null would indicate an actual error in the code
-          if (_formKey.currentState!.validate()) {
-            // It doesn't seem likely this can change during load but go ahead and
-            // make it immutable anyway
-            final email = _email.text;
-            await context.read<OpenHealthManager>().createAccount(
-                email, _password.text,
+      title: localizations.signUpTitle,
+      formBuilder: _buildForm,
+      submitLabel: localizations.signUpButton,
+      onSubmit: () async {
+        // currentState being null would indicate an actual error in the code
+        if (_formKey.currentState!.validate()) {
+          // It doesn't seem likely this can change during load but go ahead and
+          // make it immutable anyway
+          final email = _email.text;
+          await context.read<OpenHealthManager>().createAccount(
+                email,
+                _password.text,
                 firstName: _firstName.text,
                 lastName: _lastName.text,
                 dataUseAgreement: widget.dataUseAgreement,
                 duaAccepted: _agreesToTerms,
-                ageAttested: _assertsAge);
-            // Ensure the view is still mounted
-            if (!mounted) return null;
-            // If here, we need to push on to the verify account page
-            // TODO: Should this reset the nav stack?
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => VerifyAccountScreen(email: email)));
-            return null;
-          } else {
-            return "Please correct the above errors and try again";
-          }
-        },
-        afterFormBuilder: (BuildContext context) {
-          return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Color(0xFFFEF2F5),
-                  ),
-                  child: const Text(
-                    "Back",
-                    style: TextStyle(color: Color(0xFF1F201D)),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                Text.rich(TextSpan(children: [
-                  const TextSpan(
-                    text: "Already Have An Account? ",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                ageAttested: _assertsAge,
+              );
+          // Ensure the view is still mounted
+          if (!mounted) return null;
+          // If here, we need to push on to the verify account page
+          // TODO: Should this reset the nav stack?
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VerifyAccountScreen(email: email),
+            ),
+          );
+          return null;
+        } else {
+          return localizations.correctAboveErrors;
+        }
+      },
+      afterFormBuilder: (BuildContext context) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFEF2F5),
+              ),
+              child: Text(
+                localizations.back,
+                style: const TextStyle(color: Color(0xFF1F201D)),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: localizations.haveAccount),
                   TextSpan(
-                      text: "Sign In",
-                      style: const TextStyle(
-                          decoration: TextDecoration.underline,
-                          fontWeight: FontWeight.bold),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () {
-                          Navigator.pushNamed(context, "signIn");
-                        }),
-                  const TextSpan(
-                    text: ".",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    text: localizations.haveAccountLink,
+                    style: const TextStyle(
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        Navigator.pushNamed(context, "signIn");
+                      },
                   ),
-                ])),
-              ]);
-        });
+                  const TextSpan(text: ".")
+                ],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

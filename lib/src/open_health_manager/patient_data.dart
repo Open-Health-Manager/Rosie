@@ -17,6 +17,7 @@
 // useful as a Flutter model.
 
 import 'package:flutter/foundation.dart';
+import 'account.dart';
 import 'open_health_manager.dart';
 import 'blood_pressure.dart';
 import 'smoking_status.dart';
@@ -126,11 +127,16 @@ class PatientData extends ChangeNotifier {
       CachedData<List<SmokingStatusObservation>>(() async {
     return await healthManager.querySmokingStatus();
   });
+  late final account = CachedData<Account>(() async {
+    return await healthManager.getAccount();
+  });
 
   void reloadAll() {
     patientDemographics.reload();
     bloodPressure.reload();
     smokingStatus.reload();
+    // Reloading the account data may be excessive
+    account.reload();
   }
 
   /// Adds a blood pressure observation to the current data (even if it hasn't been loaded yet) and then attempts to

@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'account_theme.dart';
 import '../open_health_manager/open_health_manager.dart';
 import '../open_health_manager/server_error_message.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Intent for submitting the form within the account screen. This is intented
 /// to be used to inform the account screen that some action has happened within
@@ -46,7 +47,7 @@ class AccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Theme(
-      data: createAccountTheme(),
+      data: createAccountTheme(Theme.of(context).brightness),
       child: Scaffold(
         appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
         backgroundColor: AccountThemePalette.background,
@@ -109,6 +110,68 @@ class AccountScreenForm extends StatefulWidget {
   createState() => _AccountScreenFormState();
 }
 
+@visibleForTesting
+String createLocalizedErrorMessage(
+    ServerErrorMessage error, AppLocalizations localizations) {
+  if (error.fieldErrors.isEmpty) {
+    return error.title ?? localizations.unknownServerError;
+  }
+
+  String passwordFieldErrors = error.fieldErrors
+      .where((field) => field.field == 'password')
+      .map<String>((field) {
+    switch (field.message) {
+      case "INSUFFICIENT_SPECIAL":
+        return localizations.insufficientSpecialPassword;
+      case "TOO_SHORT":
+        return localizations.tooShortPassword;
+      case "TOO_LONG":
+        return localizations.tooLongPassword;
+      case "INSUFFICIENT_DIGIT":
+        return localizations.insufficientDigitPassword;
+      case "INSUFFICIENT_UPPERCASE":
+        return localizations.insufficientUpperCasePassword;
+      case "INSUFFICIENT_LOWERCASE":
+        return localizations.insufficientLowerCasePassword;
+      case "ILLEGAL_WHITESPACE":
+        return localizations.illegalWhiteSpacePassword;
+      case "ILLEGAL_ALPHABETICAL_SEQUENCE":
+        return localizations.illegalAlphabeticalSequencePassword;
+      case "ILLEGAL_NUMERICAL_SEQUENCE":
+        return localizations.illegalNumericalSequencePassword;
+      default:
+        return field.message;
+    }
+  }).join(localizations.errorListJoin);
+  // Add prefix if it exists
+
+  String emailFieldErrors = error.fieldErrors
+      .where((field) => field.field == 'email')
+      .map<String>((field) {
+    switch (field.message) {
+      case "must be a well-formed email address":
+        return localizations.emailFormatServerErrorMessage;
+      case "size must be between 5 and 254":
+        return localizations.emailLengthServerErrorMessage;
+      default:
+        return field.message;
+    }
+  }).join(localizations.errorListJoin);
+
+  // Check if either email field errors or password field errors are null to avoid displaying
+  if (emailFieldErrors.isNotEmpty && passwordFieldErrors.isNotEmpty) {
+    return "${localizations.emailServerErrorMessage(emailFieldErrors)} \n\n ${localizations.passwordServerErrorMessage(passwordFieldErrors)}";
+  } else if (emailFieldErrors.isNotEmpty) {
+    return localizations.emailServerErrorMessage(emailFieldErrors);
+  } else if (passwordFieldErrors.isNotEmpty) {
+    return localizations.passwordServerErrorMessage(passwordFieldErrors);
+  } else {
+    // This means that fields were marked invalid, but we don't know what they
+    // are.
+    return localizations.unknownServerValidationError;
+  }
+}
+
 class _AccountScreenFormState extends State<AccountScreenForm> {
   // This is the future that indicates if a login/account creation is in process
   Future<String?>? _submitFuture;
@@ -131,22 +194,20 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
     });
   }
 
-  String _parseErrorMessage(dynamic error) {
+  String _parseErrorMessage(dynamic error, AppLocalizations localizations) {
     if (error is ServerErrorException) {
       // This is "special" - a more detailed error message may be available
       if (error.statusCode == 400) {
         // "Bad Request" - attempt to parse out the body
         try {
           final serverError = ServerErrorMessage.fromJson(error.responseObject);
-          if (serverError.fieldErrors.isEmpty) {
-            return serverError.title ?? "Unknown error from server";
-          }
-          return serverError.fieldErrors
-              .map((field) => "Invalid ${field.field}: ${field.message}")
-              .join("\n\n");
+          return createLocalizedErrorMessage(serverError, localizations);
         } on FormatException catch (_) {
-          // Ignore this and fall through
+          // The specific error information could not be parsed so just fall
+          // through and go with the generic handling.
         }
+      } else if (error.statusCode == 401) {
+        return localizations.incorrectPassword401Error;
       }
     }
     // Default: return whatever toString does
@@ -154,8 +215,9 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
   }
 
   Widget _buildErrorMessage(BuildContext context, dynamic error) {
+    final localizations = AppLocalizations.of(context)!;
     return Text(
-      _parseErrorMessage(error),
+      _parseErrorMessage(error, localizations),
       softWrap: true,
       style: TextStyle(color: Theme.of(context).errorColor),
     );
@@ -163,6 +225,7 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final afterFormBuilder = widget.afterFormBuilder;
     List<Widget> formChildren = [
       Text(
@@ -184,17 +247,14 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
             case ConnectionState.done:
               // refactor so that styling is the same as other buttons
               final submitButton = ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Color(0xFFFA99AF),
-                  ),
-                  onPressed: submit,
-                  child: Text(
-                    widget.submitLabel,
-                    style: TextStyle(color: Color(0xFF1F201D)),
-                  ));
-              String? error;
+                onPressed: submit,
+                child: Text(widget.submitLabel),
+              );
+              // Error is an error object from the backend and is likely a
+              // ServerErrorException
+              dynamic error;
               if (snapshot.hasError) {
-                //error = snapshot.error ?? "Unknown error";
+                error = snapshot.error ?? localizations.unknownError;
               } else if (snapshot.hasData) {
                 error = snapshot.data;
               }
@@ -234,4 +294,11 @@ class _AccountScreenFormState extends State<AccountScreenForm> {
       ),
     );
   }
+}
+
+/// Checks if a given email address is valid.
+bool isValidEmail(String email) {
+  return RegExp(
+          r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@([a-zA-Z0-9]+\.)+[a-zA-Z]+")
+      .hasMatch(email);
 }

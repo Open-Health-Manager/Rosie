@@ -76,6 +76,11 @@ class PatientDemographics {
       _rawFHIR = _rawFHIR!.copyWith(gender: genderEnumValue);
     }
   }
+
+  @override
+  String toString() {
+    return 'PatientDemographics(dateOfBirth=$dateOfBirth, gender=$gender)';
+  }
 }
 
 extension PatientDemographicsQuerying on OpenHealthManager {

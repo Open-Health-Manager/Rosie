@@ -13,42 +13,59 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../rosie_theme.dart';
 
 class AccountThemePalette {
-  static const Color boxColor = Color(0xFFFEF2F5);
-  static const Color background = Colors.white;
-  static const Color textColor = Color(0xFF1F201D);
+  static const boxColor = Color(0xFFFEF2F5);
+  static const background = Colors.white;
+  static const textColor = Color(0xFF1F201D);
 }
 
-ThemeData createAccountTheme() {
+ThemeData createAccountTheme(Brightness brightness) {
+  final palette = RosiePalette.forBrightness(brightness);
   return ThemeData(
-      checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateColor.resolveWith(
-          (states) {
-            if (states.contains(MaterialState.selected)) {
-              return AccountThemePalette
-                  .textColor; // the color when checkbox is selected;
-            }
-            return AccountThemePalette
-                .textColor; //the color when checkbox is unselected;
-          },
-        ),
+    brightness: Brightness.light,
+    appBarTheme: AppBarTheme(
+      backgroundColor: AccountThemePalette.background,
+      foregroundColor: palette.accent,
+      elevation: 0.0,
+      systemOverlayStyle: const SystemUiOverlayStyle(
+          systemNavigationBarIconBrightness: Brightness.dark),
+    ),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: MaterialStateColor.resolveWith(
+        (states) {
+          if (states.contains(MaterialState.selected)) {
+            // the color when checkbox is selected
+            return AccountThemePalette.textColor;
+          }
+          // the color when checkbox is unselected
+          return AccountThemePalette.textColor;
+        },
       ),
-      brightness: Brightness.dark,
-      appBarTheme:
-          const AppBarTheme(backgroundColor: Colors.white, elevation: 0.0),
-      backgroundColor: AccountThemePalette.boxColor,
-      inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10.0))),
-          fillColor: Colors.white,
-          filled: true,
-          hintStyle: TextStyle(color: Colors.black54),
-          prefixIconColor: Colors.black),
-      textTheme: Typography.material2018()
-          .black
-          .copyWith(subtitle1: const TextStyle(color: Color(0xFF1F201D))),
-      toggleableActiveColor: AccountThemePalette.background);
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: palette.accent,
+        foregroundColor: AccountThemePalette.textColor,
+      ),
+    ),
+    backgroundColor: AccountThemePalette.boxColor,
+    inputDecorationTheme: const InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      ),
+      fillColor: Colors.white,
+      filled: true,
+      hintStyle: TextStyle(color: Colors.black54),
+      prefixIconColor: Colors.black,
+    ),
+    textTheme: Typography.material2018().black.copyWith(
+        subtitle1: const TextStyle(color: AccountThemePalette.textColor)),
+    toggleableActiveColor: AccountThemePalette.background,
+    unselectedWidgetColor: AccountThemePalette.textColor,
+  );
 }
 
 BoxDecoration createAccountBoxDecoration() {

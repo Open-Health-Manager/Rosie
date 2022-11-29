@@ -20,7 +20,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:rosie/src/open_health_manager/jwt_token.dart';
 import 'package:rosie/src/open_health_manager/open_health_manager.dart';
-import 'open_health_manager.mocks.dart';
+import 'open_health_manager_test.mocks.dart';
 
 /// Used to match only parts of a request (basically, ignore extra headers)
 class RequestMatcher extends Matcher {

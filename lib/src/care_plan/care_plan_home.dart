@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'care_plan_cards.dart';
 import 'patient_info_form/patient_info.dart';
@@ -34,7 +35,8 @@ class _CarePlanHomeState extends State<CarePlanHome> {
   void triggerAPICall() {
     _taskforceAPIFuture = PreventativeServicesTaskForce(apiKey: widget.apiKey)
         .getRecommendedServicesForPatient(
-            Provider.of<PatientData>(context, listen: false));
+      Provider.of<PatientData>(context, listen: false),
+    );
   }
 
   @override
@@ -45,71 +47,72 @@ class _CarePlanHomeState extends State<CarePlanHome> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     context.watch<PatientData>();
     return Scaffold(
-      appBar: AppBar(title: const Text("Care Plan")),
+      appBar: AppBar(title: Text(localizations.carePlanTitle)),
       body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: FutureBuilder<Map<String, dynamic>?>(
-              builder: (context, snapshot) {
-                final List<CarePlanCards> cards = <CarePlanCards>[];
-                switch (snapshot.connectionState) {
-                  case ConnectionState.none:
-                    cards.add(CarePlanCards(
-                      title: 'Blood Pressure',
-                      heading: 'Blood Pressure Screening',
-                      subheading: 'Annual',
-                      screeningText: 'Based on your ',
-                      patientInfoText: 'current info ',
-                      patientInfoOnTap: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const PatientInfo()),
-                        );
-                        triggerAPICall();
-                      },
-                      recommendationText:
-                          'you should get your blood pressure checked at least once a year.',
-                      dataServicesHeading: 'US Preventative Services',
-                      dataServicesSubHeading: 'Preventative Task Force',
-                      imageReferenceText:
-                          'assets/care_plan/hypertension-in-adults-screening.png',
-                    ));
-                    break;
-                  case ConnectionState.waiting:
-                    // When loading, show that
-                    /*cards.add(const CarePlanCards(
-                  title: 'Calling API',
-                  heading: 'Calling API',
-                  subheading: '',
-                  screeningText: '',
-                  patientInfoText: '',
-                  recommendationText: '',
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: FutureBuilder<Map<String, dynamic>?>(
+          builder: (context, snapshot) {
+            final List<CarePlanCards> cards = <CarePlanCards>[];
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+                cards.add(CarePlanCards(
+                  title: 'Blood Pressure',
+                  heading: 'Blood Pressure Screening',
+                  subheading: 'Annual',
+                  screeningText: 'Based on your ',
+                  patientInfoText: 'current info ',
+                  patientInfoOnTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const PatientInfo()),
+                    );
+                    triggerAPICall();
+                  },
+                  recommendationText:
+                      'you should get your blood pressure checked at least once a year.',
                   dataServicesHeading: 'US Preventative Services',
                   dataServicesSubHeading: 'Preventative Task Force',
                   imageReferenceText:
-                      'assets/care_plan/lung-cancer-screening.png',
-                ));*/
-                    return Row(children: const [
-                      CircularProgressIndicator(),
-                      SizedBox(width: 8),
-                      Flexible(flex: 1, child: Text("Loading..."))
-                    ]);
-                  // break;
-                  case ConnectionState.active:
-                  case ConnectionState.done:
-                    if (snapshot.data != null) {
-                      _createCards(cards, snapshot.data!);
-                    }
-                }
-                return Column(children: <Widget>[
-                  const SizedBox(height: 8),
-                  ...cards,
-                  const SizedBox(height: 16)
+                      'assets/care_plan/hypertension-in-adults-screening.png',
+                ));
+                break;
+              case ConnectionState.waiting:
+                // When loading, show that
+                return Row(children: const [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 8),
+                  Flexible(flex: 1, child: Text("Loading...")),
                 ]);
-              },
-              future: _taskforceAPIFuture)),
+              case ConnectionState.active:
+              case ConnectionState.done:
+                if (snapshot.error != null) {
+                  return Column(
+                    children: [
+                      const Text('Error loading Care Plan data'),
+                      const SizedBox(height: 16),
+                      Text(snapshot.error.toString()),
+                    ],
+                  );
+                }
+                if (snapshot.data != null) {
+                  _createCards(cards, snapshot.data!);
+                }
+            }
+            return Column(
+              children: <Widget>[
+                const SizedBox(height: 8),
+                ...cards,
+                const SizedBox(height: 16),
+              ],
+            );
+          },
+          future: _taskforceAPIFuture,
+        ),
+      ),
     );
   }
 
@@ -118,27 +121,28 @@ class _CarePlanHomeState extends State<CarePlanHome> {
       if (rec["title"].startsWith("Hypertension in Adults: Screening")) {
         // put hypertension first if present
         cards.insert(
-            0,
-            CarePlanCards(
-              title: 'Blood Pressure',
-              heading: 'Blood Pressure Screening',
-              subheading: 'Annual',
-              screeningText: 'Based on your ',
-              patientInfoText: 'current info ',
-              patientInfoOnTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PatientInfo()),
-                );
-                setState(() => triggerAPICall());
-              },
-              recommendationText:
-                  'you should get your blood pressure checked at least once a year.',
-              dataServicesHeading: 'US Preventative Services',
-              dataServicesSubHeading: 'Preventative Task Force',
-              imageReferenceText:
-                  'assets/care_plan/hypertension-in-adults-screening.png',
-            ));
+          0,
+          CarePlanCards(
+            title: 'Blood Pressure',
+            heading: 'Blood Pressure Screening',
+            subheading: 'Annual',
+            screeningText: 'Based on your ',
+            patientInfoText: 'current info ',
+            patientInfoOnTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PatientInfo()),
+              );
+              setState(() => triggerAPICall());
+            },
+            recommendationText:
+                'you should get your blood pressure checked at least once a year.',
+            dataServicesHeading: 'US Preventative Services',
+            dataServicesSubHeading: 'Preventative Task Force',
+            imageReferenceText:
+                'assets/care_plan/hypertension-in-adults-screening.png',
+          ),
+        );
       } else {
         cards.add(CarePlanCards(
           title: rec["title"] ?? "",

@@ -1,3 +1,17 @@
+// Copyright 2022 The MITRE Corporation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import UIKit
 import Flutter
 import HealthKit
@@ -26,7 +40,20 @@ import HealthKit
     static let supportedCategoryTypes: [HKCategoryTypeIdentifier] = [
         .pregnancy
     ];
+    @available(iOS 12.0, *)
+    // Supported quantity types. This is the list of types that identify samples that store numerical values.
+    static let supportedQuantityTypes: [HKQuantityTypeIdentifier] = [
+        .bloodPressureDiastolic,
+        .bloodPressureSystolic
+    ];
+    @available(iOS 12.0, *)
+    // Supported correlation types. This is the list of types that identify samples that group multiple subsamples.
+    static let supportedCorrelationTypes: [HKCorrelationTypeIdentifier] = [
+        .bloodPressure
+    ];
+
     lazy var healthStore = HKHealthStore()
+    let converters = HealthKitConverter()
 
     override func application(
         _ application: UIApplication,
@@ -39,18 +66,24 @@ import HealthKit
             switch (call.method) {
             case "isHealthDataAvailable":
                 result(HKHealthStore.isHealthDataAvailable())
+            case "supportsHealthRecords":
+                result(self?.supportsHealthRecords())
             case "requestAccess":
                 self?.requestHealthKitAccess(result: result)
             case "supportedClinicalTypes":
                 self?.supportedClinicalTypes(result: result)
             case "supportedCategoryTypes":
-                self?.supportedCategoryTypes(result: result)                
+                self?.supportedCategoryTypes(result: result)
+            case "supportedCorrelationTypes":
+                self?.supportedCorrelationTypes(result: result)
             case "queryClinicalRecords":
                 self?.queryClinicalRecords(call: call, result: result)
             case "getPatientCharacteristicData":
                 self?.getPatientCharacteristicData(call: call, result: result)
             case "queryCategoryData":
-                self?.queryCategoryData(call: call, result: result)                
+                self?.queryCategoryData(call: call, result: result)
+            case "queryCorrelationData":
+                self?.queryCorrelationData(call: call, result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -58,6 +91,14 @@ import HealthKit
 
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+
+    func supportsHealthRecords() -> Bool {
+        if #available(iOS 12.0, *) {
+            return healthStore.supportsHealthRecords()
+        } else {
+            return false
+        }
     }
 
     func requestHealthKitAccess(result: @escaping FlutterResult) {
@@ -83,6 +124,13 @@ import HealthKit
                     if let categoryType = HKObjectType.categoryType(forIdentifier: identifier) {
                         types.insert(categoryType)
                     }
+                }
+            }
+
+            // Add quantity types
+            for identifier in AppDelegate.supportedQuantityTypes {
+                if let quantityType = HKObjectType.quantityType(forIdentifier: identifier) {
+                    types.insert(quantityType)
                 }
             }
 
@@ -150,10 +198,10 @@ import HealthKit
     func getPatientCharacteristicData(call: FlutterMethodCall, result: @escaping FlutterResult) {
         if #available(iOS 12.0, *) {
             let birthdayComponents = getDateOfBirthComponents()
-            let biologicalSex =  getBiologicalSex()
+            let biologicalSex = getBiologicalSex()
             result([
                 "gender": getGenderCodeString(fromBiologicalSex: biologicalSex),
-                "dateOfBirth" : getFHIRDateString(fromDateComponents: birthdayComponents)
+                "dateOfBirth": FHIRUtils.createFHIRDate(fromDateComponents: birthdayComponents)
             ])
         } else {
             result(healthKitNotSupported())
@@ -165,6 +213,7 @@ import HealthKit
         do {
             return try healthStore.dateOfBirthComponents()
         } catch {
+            // It's unclear what errors can be raised. Presumably the error would indicate if the user denied permission, but in any case, return nil, as if was simply not specified.
             return nil
         }
     }
@@ -174,6 +223,7 @@ import HealthKit
         do {
             return try healthStore.biologicalSex()
         } catch {
+            // It's unclear what errors can be raised. Presumably the error would indicate if the user denied permission, but in any case, return nil, as if was simply not specified.
             return nil
         }
     }
@@ -182,6 +232,15 @@ import HealthKit
         if #available(iOS 14.3, *) {
             print("Building supported category types")
             result(AppDelegate.supportedCategoryTypes.map { $0.rawValue })
+        } else {
+            result([])
+        }
+    }
+
+    func supportedCorrelationTypes(result: FlutterResult) {
+        if #available(iOS 12.0, *) {
+            print("Building supported correlation types")
+            result(AppDelegate.supportedCorrelationTypes.map { $0.rawValue })
         } else {
             result([])
         }
@@ -208,13 +267,71 @@ import HealthKit
                     result(FlutterError(code: "HealthKitError", message: error?.localizedDescription ?? "No error given", details: error))
                     return
                 }
-                
+
                 var records: [[String: String?]] = []
                 for sample in actualSamples {
-                    let response = createCategoryValueResponse(fromCategory: sample)
+                    let response = self.converters.createCategoryValueResponse(fromCategory: sample)
                     if let record = response {
-                        records.append(record)  
-                    }                                      
+                        records.append(record)
+                    }
+                }
+                result(records)
+            }
+            healthStore.execute(query)
+        } else {
+            result(healthKitNotSupported())
+        }
+    }
+
+    func queryCorrelationData(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if #available(iOS 12.0, *) {
+            // Create the query. For this method we expect an argument that's a string
+            guard let typeString = call.arguments as? String else {
+                result(FlutterError(code: "MissingArgumentsError", message: "Missing required argument type", details: nil))
+                return
+            }
+
+            let typeIdentifier = HKCorrelationTypeIdentifier(rawValue: typeString)
+            // ...we try and create an HKObjectType from it
+            guard let type = HKObjectType.correlationType(forIdentifier: typeIdentifier) else {
+                result(FlutterError(code: "HealthKitError", message: "Unsupported type", details: typeString))
+                return
+            }
+
+            let calendar = NSCalendar.current
+            let now = Date()
+            let components = calendar.dateComponents([.year, .month, .day], from: now)
+
+            guard let calendarCurrent = calendar.date(from: components) else {
+                result(FlutterError(code: "HealthKitError", message: "Unable to create the current data calendar", details: "Error creating current data calendar for HKStatistic Query"))
+                return
+            }
+
+            guard let endDate = calendar.date(byAdding: .day, value: 1, to: calendarCurrent) else {
+                result(FlutterError(code: "HealthKitError", message: "Unable to create the end date", details: "Error creating start date for HKStatistic Query"))
+                return
+            }
+
+            guard let startDate = calendar.date(byAdding: .month, value: -6, to: calendarCurrent) else {
+                result(FlutterError(code: "HealthKitError", message: "Unable to create the start date", details: "Error creating start date for HKStatistic Query"))
+                return
+            }
+
+            let queryTime = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: [])
+            let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+
+            let query = HKSampleQuery(sampleType: type, predicate: queryTime, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { query, samples, error in
+                guard let actualSamples = samples else {
+                    result(FlutterError(code: "HealthKitError", message: error?.localizedDescription ?? "No error given", details: error))
+                    return
+                }
+
+                var records: [[String: String?]] = []
+                for sample in actualSamples {
+                    let response = self.converters.createCorrelationValueResponse(fromCorrelation: sample)
+                    if let record = response {
+                        records.append(record)
+                    }
                 }
                 result(records)
             }
@@ -278,40 +395,4 @@ func getGenderCodeString(fromBiologicalSex biologicalSex: HKBiologicalSexObject?
         case HKBiologicalSex.other: return "other"
         default: return ""
     }
-}
-
-@available(iOS 12.0, *)
-func getFHIRDateString(fromDateComponents dateComponents: DateComponents?) -> String {
-    guard let dateYear = dateComponents?.year else { return "" }
-    guard let dateMonth = dateComponents?.month else { return "" }
-    guard let dateDay = dateComponents?.day else { return "" }
-    let dateMonthString = dateMonth > 10 ? "\(dateMonth)" : "0\(dateMonth)"
-    let dateDayString = dateDay > 10 ? "\(dateDay)" : "0\(dateDay)"
-    
-    return "\(dateYear)-\(dateMonthString)-\(dateDayString)"
-}
-
-@available(iOS 12.0, *)
-func createCategoryValueResponse(fromCategory sample: HKSample) -> [String: String?]? {
-    guard let record = sample as? HKCategorySample else { return nil }
-    var value: String = "unknown"
-    if #available(iOS 14.3, *) {
-        if(type(of: record.sampleType.identifier) == type(of: HKCategoryTypeIdentifier.pregnancy.rawValue)){
-            switch (record.value) {
-                case HKCategoryValue.notApplicable.rawValue: value = "notApplicable"
-                default: value = "unknown"
-            }
-        }
-    }
-
-    let startDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.startDate))
-    let endDate = getFHIRDateString(fromDateComponents: Calendar.current.dateComponents([.year, .month, .day], from: record.endDate))
-     
-    return [
-        "uuid": record.uuid.uuidString,
-        "sampleType": record.sampleType.identifier,
-        "value": value,
-        "startDate": startDate,
-        "endDate": endDate
-    ];
 }

@@ -14,8 +14,8 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import '../rosie_theme.dart';
 import 'blood_pressure/blood_pressure_vis_screen.dart';
+import '../rosie_theme.dart';
 
 class CarePlanCards extends StatelessWidget {
   final String title;
@@ -29,26 +29,35 @@ class CarePlanCards extends StatelessWidget {
   final Function()? patientInfoOnTap;
   final String recommendationText;
 
-  const CarePlanCards(
-      {Key? key,
-      required this.heading,
-      required this.subheading,
-      required this.screeningText,
-      required this.dataServicesHeading,
-      required this.dataServicesSubHeading,
-      required this.imageReferenceText,
-      required this.patientInfoText,
-      required this.patientInfoOnTap,
-      required this.recommendationText,
-      required this.title})
-      : super(key: key);
+  const CarePlanCards({
+    Key? key,
+    required this.heading,
+    required this.subheading,
+    required this.screeningText,
+    required this.dataServicesHeading,
+    required this.dataServicesSubHeading,
+    required this.imageReferenceText,
+    required this.patientInfoText,
+    required this.patientInfoOnTap,
+    required this.recommendationText,
+    required this.title,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final rosiePalette = theme.extension<RosieThemeExtension>()!.palette;
+    final titleTextStyle =
+        theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold);
+    final subtitleTextStyle =
+        theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.normal);
+    final linkTextStyle = theme.textTheme.bodyLarge?.copyWith(
+      color: rosiePalette.interactive,
+      fontWeight: FontWeight.bold,
+    );
     return Container(
       margin: const EdgeInsets.only(top: 30.0),
       child: Card(
-        color: Colors.white,
         elevation: 4.0,
         child: Column(
           children: [
@@ -56,19 +65,17 @@ class CarePlanCards extends StatelessWidget {
               title: Text(
                 heading,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black),
+                style: titleTextStyle,
               ),
               subtitle: Text(
                 subheading,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black),
+                style: subtitleTextStyle,
               ),
             ),
             SizedBox(
               height: 80, //170.0,
               child: Image(
-                //Placeholder(),
                 image: AssetImage(imageReferenceText),
                 //fit: BoxFit.cover,
               ),
@@ -76,14 +83,11 @@ class CarePlanCards extends StatelessWidget {
             ListTile(
               title: Text(
                 dataServicesHeading,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: titleTextStyle,
               ),
               subtitle: Text(
                 dataServicesSubHeading,
-                style: const TextStyle(color: Colors.black),
+                style: subtitleTextStyle,
               ),
             ),
             Container(
@@ -91,18 +95,18 @@ class CarePlanCards extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: RichText(
                 text: TextSpan(
-                    style: const TextStyle(color: Colors.black),
-                    children: <TextSpan>[
-                      TextSpan(text: screeningText),
-                      TextSpan(
-                          text: patientInfoText,
-                          style: const TextStyle(
-                              color: Color(0xFF6750A4),
-                              fontWeight: FontWeight.bold),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = patientInfoOnTap),
-                      TextSpan(text: recommendationText),
-                    ]),
+                  style: theme.textTheme.bodyLarge,
+                  children: <TextSpan>[
+                    TextSpan(text: screeningText),
+                    TextSpan(
+                      text: patientInfoText,
+                      style: linkTextStyle,
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = patientInfoOnTap,
+                    ),
+                    TextSpan(text: recommendationText),
+                  ],
+                ),
               ),
             ),
             ButtonBar(
@@ -117,23 +121,23 @@ class CarePlanCards extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => Scaffold(
-                                appBar: AppBar(title: Text(title)),
-                                body: Container(
-                                    decoration:
-                                        createRosieScreenBoxDecoration(),
-                                    child: const SafeArea(
-                                        child:
-                                            BloodPressureVisualizationScreen())))));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Scaffold(
+                          appBar: AppBar(title: Text(title)),
+                          body: const SafeArea(
+                            child: BloodPressureVisualizationScreen(),
+                          ),
+                        ),
+                      ),
+                    );
                   },
                   child: Text(
                       //'Update $title',
                       title == 'Blood Pressure' ? 'Update $title' : 'Update'),
-                )
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),

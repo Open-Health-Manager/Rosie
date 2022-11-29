@@ -12,19 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:developer';
 import 'package:fhir/r4.dart'
     show
         Code,
         CodeableConcept,
         Coding,
         Decimal,
+        FhirDateTime,
         FhirUri,
         Instant,
         Observation,
         ObservationComponent,
         Quantity,
         Reference;
+import 'package:logging/logging.dart';
 import 'open_health_manager.dart';
 import 'util.dart';
 
@@ -105,6 +106,7 @@ class BloodPressureObservation {
         Coding(system: FhirUri(Systems.loinc), code: Code('55284-4'))
       ]),
       issued: issued == null ? null : Instant.fromDateTime(issued),
+      effectiveDateTime: issued == null ? null : FhirDateTime.fromDateTime(issued),
       component: <ObservationComponent>[
         ObservationComponent(
           code: CodeableConcept(
@@ -146,6 +148,11 @@ class BloodPressureObservation {
       subject: subject,
     );
   }
+
+  @override
+  String toString() {
+    return 'BloodPressureObservation(systolic=$systolic,diastolic=$diastolic,taken=$taken)';
+  }
 }
 
 extension BloodPressureQuerying on OpenHealthManager {
@@ -154,11 +161,15 @@ extension BloodPressureQuerying on OpenHealthManager {
   /// Any exceptions during loading are thrown, and any exceptions during parsing are logged to the FINE (500) log level
   /// but otherwise eaten and simply left out of the result.
   Future<List<BloodPressureObservation>> queryBloodPressure() async {
-    final bundle = await queryResource(
-        "Observation", {"code": "http://loinc.org|55284-4", "_sort": "-date"});
+    final bundle = await queryResource("Observation", {
+      "code": "http://loinc.org|55284-4,http://loinc.org|85354-9",
+      "_sort": "-date",
+    });
+    final logger = Logger('rosie:open_health_manager');
     final results = <BloodPressureObservation>[];
     final entries = bundle.entry;
     if (entries == null) {
+      logger.fine('No results from server (received no entries in bundle)');
       return results;
     }
     for (final entry in entries) {
@@ -167,8 +178,7 @@ extension BloodPressureQuerying on OpenHealthManager {
         try {
           results.add(BloodPressureObservation.fromObservation(resource));
         } on InvalidResourceException catch (error) {
-          log('Unable to parse Observation into blood pressure',
-              level: 500, error: error);
+          logger.fine('Unable to parse Observation into blood pressure', error);
         }
       }
     }

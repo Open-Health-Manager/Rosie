@@ -52,13 +52,23 @@ class BloodPressureScale {
     return List.from(diastolicRange.map<double>((e) => e.toDouble() / max));
   }
 
-  // Determines which slice of the scale the given BP value falls in.
+  /// Determines which slice of the scale the given BP value falls in. If the
+  /// values are out of range, the values are clamped to the highest/lowest
+  /// range.
   int activeSlice(double systolic, double diastolic) {
     // Range are maxmium values for each slice, so find the first one they fit in
     int systolicSlice =
         systolicRange.indexWhere((element) => systolic < element);
+    if (systolicSlice < 0) {
+      // This means the value was higher than every range
+      return systolicRange.length - 1;
+    }
     int diastolicSlice =
         diastolicRange.indexWhere((element) => diastolic < element);
+    if (diastolicSlice < 0) {
+      // This means the value was higher than every range
+      return systolicRange.length - 1;
+    }
     // Return whichever slice is greatest, capping to whatever the ranges are
     return math.min(
         math.max(systolicSlice, diastolicSlice), systolicRange.length - 1);
@@ -173,6 +183,7 @@ class _BloodPressureVisualizationState
     }
     return RosieTextBalloon.text(
       text,
+      context: context,
       action:
           _createUpdateAction(updateLabel, context, patientData, bloodPressure),
       //actionPosition: RosieActionPosition.after,
@@ -184,14 +195,11 @@ class _BloodPressureVisualizationState
   Widget _createChart(BuildContext context,
       BloodPressureObservation? bloodPressure, BPChartUrgency urgency,
       {loading = false}) {
+    final rosieTheme = Theme.of(context).extension<RosieThemeExtension>()!;
     Widget chart = BloodPressureChart(
       bloodPressure: bloodPressure,
-      /* typeLabelStyle: RosieTheme.comicFont(color: Colors.white, fontSize: 16),
-      numericLabelStyle:
-          RosieTheme.comicFont(color: Colors.white, fontSize: 20, height: 1.0), */
-      typeLabelStyle: RosieTheme.comicFont(color: Colors.black, fontSize: 16),
-      numericLabelStyle:
-          RosieTheme.comicFont(color: Colors.black, fontSize: 16),
+      typeLabelStyle: rosieTheme.chartTextStyle,
+      numericLabelStyle: rosieTheme.chartNumericStyle,
       scale: widget.scale,
       urgency: urgency,
     );
@@ -224,6 +232,7 @@ class _BloodPressureVisualizationState
                   context, null, const BPChartUrgency(-1, outdated: true));
               rosieBubble = RosieTextBalloon.text(
                 "No blood pressure available.",
+                context: context,
                 action: _createReloadAction("Reload", context, patientData),
               );
               break;
@@ -236,7 +245,9 @@ class _BloodPressureVisualizationState
                 loading: true,
               );
               rosieBubble = RosieTextBalloon.text(
-                  "Please wait while your blood pressure data is loaded...");
+                "Please wait while your blood pressure data is loaded...",
+                context: context,
+              );
               break;
             case ConnectionState.active:
             case ConnectionState.done:
@@ -260,12 +271,13 @@ class _BloodPressureVisualizationState
                       TextSpan(
                         text: snapshot.error?.toString() ??
                             "No error data available",
-                        style: const TextStyle(color: RosieTheme.error),
+                        style: TextStyle(color: Theme.of(context).errorColor),
                       )
                     ],
                   ),
                   //expression: RosieExpression.surprised,
                   expression: RosieExpression.neutral,
+                  context: context,
                   action: _createReloadAction("Retry", context, patientData),
                 );
               } else {

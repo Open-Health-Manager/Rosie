@@ -14,6 +14,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
@@ -120,8 +121,8 @@ class _RosieAppState extends State<RosieApp> {
     });
   }
 
-  /// Creates the Rosie home part
-  Widget _createRosieHome(BuildContext context) {
+  /// Creates the main Rosie widget.
+  Widget _createRosie(BuildContext context) {
     final patientData = _patientData;
     if (patientData == null) {
       // Patient data existing is our signal that the account is logged in -
@@ -134,18 +135,25 @@ class _RosieAppState extends State<RosieApp> {
       // The patient data provider has to be kept outside the MaterialApp
       // wrapper, so create it here.
       return ChangeNotifierProvider<PatientData>.value(
-          value: patientData,
-          child: _createRosieMaterialApp(context, home: const HomeScreen()));
+        value: patientData,
+        child: _createRosieMaterialApp(context, home: const HomeScreen()),
+      );
     }
   }
 
+  /// Create the root MaterialApp. This moves slightly around the tree
+  /// depending on if the app is logged in or not. (The PatientData provider
+  /// must be above it, but also must not exist when logged out.)
   MaterialApp _createRosieMaterialApp(BuildContext context,
       {required Widget home}) {
     return MaterialApp(
       title: 'Rosie',
+      debugShowCheckedModeBanner: false,
       theme: createRosieTheme(),
       darkTheme: createRosieTheme(brightness: Brightness.dark),
       home: home,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
     );
   }
 
@@ -154,15 +162,15 @@ class _RosieAppState extends State<RosieApp> {
     // This is so the compiler knows it won't change during the build
     final manager = _healthManager;
     if (manager != null) {
-      // Otherwise, we have what we need to create providers, which need to be above the MaterialApp to ensure they're
-      // accessible on all routes.
+      // Otherwise, we have what we need to create providers, which need to be
+      // above the MaterialApp to ensure they're accessible on all routes.
       return ChangeNotifierProvider.value(
         value: _appState,
         child: Provider.value(
           value: _config,
           child: ChangeNotifierProvider<OpenHealthManager>.value(
             value: manager,
-            child: _createRosieHome(context),
+            child: _createRosie(context),
           ),
         ),
       );
@@ -175,20 +183,6 @@ class _RosieAppState extends State<RosieApp> {
           child: Center(child: Text("Rosie")),
         ),
       );
-    }
-  }
-}
-
-class _RosieHome extends StatelessWidget {
-  const _RosieHome({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final model = context.watch<OpenHealthManager>();
-    if (model.isSignedIn) {
-      return const HomeScreen();
-    } else {
-      return const Onboarding();
     }
   }
 }

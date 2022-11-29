@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
-// import 'package:flutter/cupertino.dart';
+import '../rosie_theme.dart';
 
 class OnboardingTheme {
   static const Color primary = Color(0xFFFA99AF);
@@ -22,12 +22,16 @@ class OnboardingTheme {
 
 ThemeData createOnboardingTheme({brightness = Brightness.light}) {
   // Currently you are allowed to pass a brightness, and it will be happily ignored.
-  return ThemeData(
+  final baseTheme = createRosieTheme(brightness: brightness);
+  final baseButtonTheme = baseTheme.elevatedButtonTheme.style ?? const ButtonStyle();
+  return baseTheme.copyWith(
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.light,
       seedColor: OnboardingTheme.primary,
       primary: OnboardingTheme.primary,
       onPrimary: OnboardingTheme.onPrimary,
+      secondary: const Color(0xFFFEF2F5),
+      onSecondary: const Color(0xFF1F201D),
       background: Colors.white,
     ),
     appBarTheme: const AppBarTheme(
@@ -36,6 +40,12 @@ ThemeData createOnboardingTheme({brightness = Brightness.light}) {
       elevation: 0.0,
     ),
     scaffoldBackgroundColor: Colors.white,
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      // Require the base theme to have defined the button style
+      style: baseButtonTheme.copyWith(
+        textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 24)),
+      ),
+    ),
   );
 }
 

@@ -60,3 +60,29 @@ version of the Open Health Manager. This can be done via:
 ```sh
 flutter run -d chrome --web-port 57757
 ```
+
+## Generating Localization Code
+
+The easiest way to generate the required code is by simply triggering a build,
+such as via `flutter run`. However, if you want to start developing prior to
+running the app, and wish to ensure that all the necessary generated code
+exists, you can run the following commands:
+
+```sh
+flutter gen-l10n
+```
+
+## Running Tests
+
+Some of the tests use Mockito to mock running real web requests. In order to
+build these files, run:
+
+```sh
+flutter pub run build_runner build
+```
+
+This will build the required files. The tests can then be run via:
+
+```sh
+flutter test
+```

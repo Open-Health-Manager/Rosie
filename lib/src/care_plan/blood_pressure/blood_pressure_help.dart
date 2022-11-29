@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
-import '../../rosie_theme.dart';
 
 class BloodPressureHelp extends StatelessWidget {
   const BloodPressureHelp({Key? key, required this.emergency})
@@ -30,7 +29,7 @@ class BloodPressureHelp extends StatelessWidget {
           emergency
               ? "Let's get some help!"
               : "Here are some helpful options to check your blood pressure:",
-          style: RosieTheme.font(fontSize: 18),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 15),
         ..._createActionButtons(context),
