@@ -13,38 +13,48 @@
 // limitations under the License.
 
 import Foundation
+import HealthKit
 
 /// Abstract Class for Apple Health Kit
 class AppleHealthKitObject: Codable {
-    var uuid: String { get; set }
-    var metadata: Dictionary [String: String]? // TODO value choice type
+    var uuid: String;
+    var metadata: [String:String]?;
 
-    var device: Device?; struct Device: Codeable {
-        var udiDeviceIdentifier: String?
-        var firmwareVersion: String?
-        var hardwareVersion: String?
-        var localIdentifier: String?
-        var manufacturer: String?
-        var model: String?
-        var name: String?
-        var softwareVersion? String
+    var device: Device?; struct Device: Codable {
+        var udiDeviceIdentifier: String?;
+        var firmwareVersion: String?;
+        var hardwareVersion: String?;
+        var localIdentifier: String?;
+        var manufacturer: String?;
+        var model: String?;
+        var name: String?;
+        var softwareVersion: String?;
     }
 
-    var sourceRevision: SourceRevision?; struct SourceRevision: Codeable {
-        var source: Source; struct Source: Codeable {
-            var bundleIdentifier: String
-            var name: String
+    var sourceRevision: SourceRevision?; struct SourceRevision: Codable {
+        var source: Source; struct Source: Codable {
+            var bundleIdentifier: String;
+            var name: String;
         }
 
         var version: String?
 
-        var operatingSystemVersion: OperatingSystemVersion?; struct OperatingSystemVersion: Codeable {
-            var majorVersion: Int?
-            var minorVersion: Int?
-            var patchVersion: Int?
+        var operatingSystemVersion: OperatingSystemVersion?; struct OperatingSystemVersion: Codable {
+            var majorVersion: Int?;
+            var minorVersion: Int?;
+            var patchVersion: Int?;
         }
 
-        var productType: String?
+        var productType: String?;
+    }
+    
+    init(from hk_object: HKObject) {
+        self.uuid = "\(hk_object.uuid)";
+        // TODO
+    }
+    
+    required init(from decoder: Decoder) throws {
+        fatalError("init(from:) has not been implemented")
     }
 }
 
@@ -53,19 +63,37 @@ class AppleHealthKitSample: AppleHealthKitObject {
     var startDate: Date?
     var endDate: Date?
     var hasUndeterminedDuration: Bool?
-    var sampleType: String // confirmed?
+    var sampleType: String
+    
+    init(from hk_sample: HKSample) {
+        
+        self.sampleType = "category" // TODO
+        
+        super.init(from: hk_sample);
+    }
+    
+    required init(from decoder: Decoder) throws {
+        fatalError("init(from:) has not been implemented")
+    }
+    
 }
 
 /// CategorySample class
 class AppleHealthKitCategorySample: AppleHealthKitSample {
     var categoryType: String
     var value: Int
-
-    /* to override attribute <-> json keys if not identical:
-       enum CodingKeys: String, CodingKey {
-         case key1 = "jsonKey1"
-       }
-     */
-
+    
+    init(from hk_category_sample: HKCategorySample) {
+        
+        self.categoryType = "\(hk_category_sample.categoryType)";
+        self.value = hk_category_sample.value
+        
+        super.init(from: hk_category_sample);
+    }
+    
+    required init(from decoder: Decoder) throws {
+        fatalError("init(from:) has not been implemented")
+    }
+    
 }
 
