@@ -30,7 +30,7 @@ class AppleHealthKitObject: Codable {
         var softwareVersion? String
     }
 
-    struct SourceRevision: Codeable {
+    var sourceRevision: SourceRevision?; struct SourceRevision: Codeable {
         var source: Source; struct Source: Codeable {
             var bundleIdentifier: String
             var name: String
