@@ -19,6 +19,11 @@ final class ModelTests: XCTestCase {
     func testCategorySample() throws {
       var mySample = AppleHealthKitCategorySample();
       mySample.uuid = "f4c4ad59-e611-43d1-ba2e-d36b62b0ece7";
+      mySample.sampleType = "category";
+      mySample.categoryType = "fever";
+      mySample.value = 1;
+
+      mySample.to_json();
     }
 
 }
