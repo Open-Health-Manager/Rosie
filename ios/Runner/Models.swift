@@ -48,14 +48,6 @@ class AppleHealthKitObject: Codable {
         var productType: String?;
     }
     
-    init(from hk_object: HKObject) {
-        self.uuid = "\(hk_object.uuid)";
-        // TODO
-    }
-    
-    required init(from decoder: Decoder) throws {
-        fatalError("init(from:) has not been implemented")
-    }
 }
 
 /// Abstract Class for Apple Health Kit Sample, inherits codable
@@ -65,15 +57,14 @@ class AppleHealthKitSample: AppleHealthKitObject {
     var hasUndeterminedDuration: Bool?
     var sampleType: String
     
-    init(from hk_sample: HKSample) {
-        
-        self.sampleType = "category" // TODO
-        
-        super.init(from: hk_sample);
-    }
-    
     required init(from decoder: Decoder) throws {
-        fatalError("init(from:) has not been implemented")
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        
+      }
+
+    override func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+
     }
     
 }
@@ -83,17 +74,14 @@ class AppleHealthKitCategorySample: AppleHealthKitSample {
     var categoryType: String
     var value: Int
     
-    init(from hk_category_sample: HKCategorySample) {
-        
-        self.categoryType = "\(hk_category_sample.categoryType)";
-        self.value = hk_category_sample.value
-        
-        super.init(from: hk_category_sample);
-    }
-    
     required init(from decoder: Decoder) throws {
-        fatalError("init(from:) has not been implemented")
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        
+      }
+
+    override func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        
     }
-    
 }
 
