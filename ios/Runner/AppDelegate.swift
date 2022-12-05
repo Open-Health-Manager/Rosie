@@ -396,3 +396,4 @@ func getGenderCodeString(fromBiologicalSex biologicalSex: HKBiologicalSexObject?
         default: return ""
     }
 }
+
