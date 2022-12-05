@@ -13,17 +13,36 @@
 // limitations under the License.
 
 
- import XCTest
+import XCTest
  
- final class ModelTests: XCTestCase {
- 
- func testCategorySample() throws {
-     var mySample = AppleHealthKitCategorySample(from: "TODO");
-         mySample.uuid = "f4c4ad59-e611-43d1-ba2e-d36b62b0ece7";
-         mySample.sampleType = "category";
-         mySample.categoryType = "fever";
-         mySample.value = 1;
+final class ModelTests: XCTestCase {
+    
+    func testCategorySample() throws {
+        // test json -> model
+        let json_data_src = Data("""
+            {
+                "uuid":"d7e824b5-1aa1-4a36-b556-870d9ff5066e",
+                "sourceRevision":{
+                    "bundleIdentifier":"123",
+                    "name":"rosie"
+                },
+                "sampleType":"category",
+                "categoryType":"fever",
+                "value":1
+            }
+        """.utf8);
+        let decoder = JSONDecoder();
+        
+        let category_sample = try decoder.decode(AppleHealthKitCategorySample.self, from: json_data_src);
+        XCTAssertNotNil(category_sample);
+        
+        // test model -> json
+        let encoder = JSONEncoder();
+        let json_data_out = try encoder.encode(category_sample);
+        print(String(data: json_data_out, encoding: .utf8)!);
+        XCTAssertNotNil(json_data_out);
+        XCTAssertEqual(json_data_src, json_data_out);
+        
     }
- 
- }
- 
+    
+}

@@ -31,7 +31,7 @@ class AppleHealthKitObject: Codable {
         var softwareVersion: String?;
     }
 
-    var sourceRevision: SourceRevision?; struct SourceRevision: Codable {
+    var sourceRevision: SourceRevision; struct SourceRevision: Codable {
         var source: Source; struct Source: Codable {
             var bundleIdentifier: String;
             var name: String;
@@ -51,21 +51,13 @@ class AppleHealthKitObject: Codable {
 }
 
 /// Abstract Class for Apple Health Kit Sample, inherits codable
+/// ERROR: Class 'AppleHealthKitSample' has no initializers, although it should inherit it from Codable
+/// Details: https://forums.swift.org/t/why-does-subclassing-a-codable-class-produce-class-has-no-initializers/23586/4
 class AppleHealthKitSample: AppleHealthKitObject {
     var startDate: Date?
     var endDate: Date?
     var hasUndeterminedDuration: Bool?
     var sampleType: String
-    
-    required init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        
-      }
-
-    override func encode(to encoder: Encoder) throws {
-        var values = encoder.container(keyedBy: CodingKeys.self)
-
-    }
     
 }
 
@@ -74,14 +66,6 @@ class AppleHealthKitCategorySample: AppleHealthKitSample {
     var categoryType: String
     var value: Int
     
-    required init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        
-      }
-
-    override func encode(to encoder: Encoder) throws {
-        var values = encoder.container(keyedBy: CodingKeys.self)
-        
-    }
+    
 }
 
